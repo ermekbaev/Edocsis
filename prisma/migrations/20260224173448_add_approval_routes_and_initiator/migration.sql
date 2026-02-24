@@ -5,6 +5,7 @@ ALTER TYPE "Role" ADD VALUE IF NOT EXISTS 'INITIATOR';
 CREATE TABLE "ApprovalRoute" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "description" TEXT,
     "templateId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -16,8 +17,10 @@ CREATE TABLE "ApprovalRouteStep" (
     "id" TEXT NOT NULL,
     "routeId" TEXT NOT NULL,
     "stepNumber" INTEGER NOT NULL,
-    "approverId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "approverIds" JSONB NOT NULL,
+    "requireAll" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "ApprovalRouteStep_pkey" PRIMARY KEY ("id")
 );
@@ -45,6 +48,3 @@ ALTER TABLE "ApprovalRoute" ADD CONSTRAINT "ApprovalRoute_templateId_fkey" FOREI
 
 -- AddForeignKey
 ALTER TABLE "ApprovalRouteStep" ADD CONSTRAINT "ApprovalRouteStep_routeId_fkey" FOREIGN KEY ("routeId") REFERENCES "ApprovalRoute"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ApprovalRouteStep" ADD CONSTRAINT "ApprovalRouteStep_approverId_fkey" FOREIGN KEY ("approverId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
