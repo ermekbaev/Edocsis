@@ -559,10 +559,10 @@ export default function CreateDocumentPage() {
               </div>
 
               <div className="px-5 py-4">
-                {template.approvalRoute.steps && template.approvalRoute.steps.length > 0 ? (
+                {template.approvalRoute?.steps && template.approvalRoute.steps.length > 0 ? (
                   <ol className="space-y-0">
                     {template.approvalRoute.steps.map((step, idx) => {
-                      const isLast = idx === template.approvalRoute.steps.length - 1;
+                      const isLast = idx === template.approvalRoute!.steps.length - 1;
                       return (
                         <li key={step.id} className="relative flex gap-3">
                           {/* Connector line */}
