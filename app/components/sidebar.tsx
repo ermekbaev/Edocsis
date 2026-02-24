@@ -8,10 +8,12 @@ import {
   TemplatesIcon,
   ApprovalsIcon,
   UsersIcon,
+  RoutesIcon,
   SettingsIcon,
   LogoIcon,
   XIcon,
 } from "./icons";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 import type { ComponentType, SVGProps } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -38,6 +40,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const ADMIN_ITEMS: NavItem[] = [
   { label: "Users",    href: "/users",    icon: UsersIcon    },
+  { label: "Routes",   href: "/routes",   icon: RoutesIcon   },
   { label: "Settings", href: "/settings", icon: SettingsIcon },
 ];
 
@@ -45,6 +48,29 @@ const ADMIN_ITEMS: NavItem[] = [
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const user = useCurrentUser();
+
+  // Filter nav items based on role
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (!user) return true; // Show all if no user loaded yet
+
+    if (user.role === "ADMIN") return true;
+
+    if (user.role === "APPROVER") {
+      // Hide Templates
+      return item.href !== "/templates";
+    }
+
+    if (user.role === "USER") {
+      // Hide Templates and My Approvals
+      return item.href !== "/templates" && item.href !== "/approvals";
+    }
+
+    return true;
+  });
+
+  // Filter admin items based on role
+  const visibleAdminItems = user?.role === "ADMIN" ? ADMIN_ITEMS : [];
 
   // Label visibility:
   //   - Always visible on mobile (sidebar is off-screen when closed, so no harm)
@@ -127,7 +153,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           Main
         </p>
 
-        {NAV_ITEMS.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
@@ -151,18 +177,22 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           );
         })}
 
-        <div className="my-3 border-t border-zinc-100" />
+        {visibleAdminItems.length > 0 && (
+          <>
+            <div className="my-3 border-t border-zinc-100" />
 
-        <p
-          className={[
-            "mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-zinc-400",
-            labelClass,
-          ].join(" ")}
-        >
-          Settings
-        </p>
+            <p
+              className={[
+                "mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-zinc-400",
+                labelClass,
+              ].join(" ")}
+            >
+              Settings
+            </p>
+          </>
+        )}
 
-        {ADMIN_ITEMS.map((item) => {
+        {visibleAdminItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link

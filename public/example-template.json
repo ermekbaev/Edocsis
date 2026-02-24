@@ -1,0 +1,79 @@
+{
+  "name": "Vacation Request",
+  "description": "Employee vacation and leave request form for HR approval",
+  "content": "ЗАЯВКА НА ОТПУСК\n\nСотрудник: {{employeeName}}\nТабельный номер: {{employeeId}}\nОтдел: {{department}}\nДолжность: {{position}}\n\nДЕТАЛИ ОТПУСКА\nТип отпуска: {{leaveType}}\nДата начала: {{startDate}}\nДата окончания: {{endDate}}\nКоличество дней: {{totalDays}}\nПричина: {{reason}}\n\nКОНТАКТЫ НА ВРЕМЯ ОТПУСКА\nТелефон: {{contactPhone}}\nEmail: {{contactEmail}}\n\nЯ подтверждаю, что завершил передачу своих обязанностей.\n\nДата заявки: {{requestDate}}",
+  "fields": [
+    {
+      "key": "employeeName",
+      "label": "Имя сотрудника",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "employeeId",
+      "label": "Табельный номер",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "department",
+      "label": "Отдел",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "position",
+      "label": "Должность",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "leaveType",
+      "label": "Тип отпуска",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "startDate",
+      "label": "Дата начала",
+      "type": "date",
+      "required": true
+    },
+    {
+      "key": "endDate",
+      "label": "Дата окончания",
+      "type": "date",
+      "required": true
+    },
+    {
+      "key": "totalDays",
+      "label": "Количество дней",
+      "type": "number",
+      "required": true
+    },
+    {
+      "key": "reason",
+      "label": "Причина отпуска",
+      "type": "textarea",
+      "required": false
+    },
+    {
+      "key": "contactPhone",
+      "label": "Контактный телефон",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "contactEmail",
+      "label": "Контактный email",
+      "type": "text",
+      "required": true
+    },
+    {
+      "key": "requestDate",
+      "label": "Дата заявки",
+      "type": "date",
+      "required": true
+    }
+  ]
+}

@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { RoleGuard } from "@/app/components/role-guard";
+import { TemplateModal } from "@/app/components/template-modal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,99 +21,6 @@ interface TemplateItem {
   updatedDate: string;
   status: TemplateStatus;
 }
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const TEMPLATES: TemplateItem[] = [
-  {
-    id: "tpl-001",
-    name: "Service Contract",
-    category: "Legal",
-    description: "Agreements with external service providers, suppliers, and vendors covering scope, SLA, and payment terms.",
-    fieldCount: 6,
-    approvalSteps: 2,
-    createdDate: "12 Jan 2026",
-    updatedDate: "15 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-002",
-    name: "Non-Disclosure Agreement",
-    category: "Legal",
-    description: "Confidentiality agreement restricting disclosure of proprietary or sensitive information shared with third parties.",
-    fieldCount: 6,
-    approvalSteps: 2,
-    createdDate: "12 Jan 2026",
-    updatedDate: "12 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-003",
-    name: "HR Contract",
-    category: "HR",
-    description: "Employment and service agreements establishing terms and conditions for new or existing personnel.",
-    fieldCount: 6,
-    approvalSteps: 2,
-    createdDate: "14 Jan 2026",
-    updatedDate: "20 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-004",
-    name: "Budget Memo",
-    category: "Finance",
-    description: "Formal budget requests and revisions submitted by departments for management and finance sign-off.",
-    fieldCount: 5,
-    approvalSteps: 3,
-    createdDate: "14 Jan 2026",
-    updatedDate: "14 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-005",
-    name: "Transfer Order",
-    category: "Operations",
-    description: "Authorises physical and administrative transfer of assets or resources between organisational units.",
-    fieldCount: 5,
-    approvalSteps: 1,
-    createdDate: "16 Jan 2026",
-    updatedDate: "16 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-006",
-    name: "Vendor Form",
-    category: "Operations",
-    description: "Vendor qualification and registration form for onboarding new suppliers and service partners.",
-    fieldCount: 5,
-    approvalSteps: 2,
-    createdDate: "18 Jan 2026",
-    updatedDate: "22 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-007",
-    name: "DPA Template",
-    category: "Compliance",
-    description: "Data Processing Agreement covering GDPR obligations and responsibilities between data controller and processor.",
-    fieldCount: 7,
-    approvalSteps: 2,
-    createdDate: "20 Jan 2026",
-    updatedDate: "20 Jan 2026",
-    status: "Active",
-  },
-  {
-    id: "tpl-008",
-    name: "Escrow Agreement",
-    category: "IT",
-    description: "Software escrow agreement ensuring source code access in the event of vendor insolvency or breach.",
-    fieldCount: 4,
-    approvalSteps: 2,
-    createdDate: "25 Jan 2026",
-    updatedDate: "25 Jan 2026",
-    status: "Draft",
-  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -150,13 +62,189 @@ function EyeIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TemplatesPage() {
-  const activeCount = TEMPLATES.filter((t) => t.status === "Active").length;
+  const [templates, setTemplates] = useState<TemplateItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateItem | null>(null);
+
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/templates", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const mapped: TemplateItem[] = data.map((tpl: any) => ({
+            id: tpl.id,
+            name: tpl.name,
+            category: "Legal" as TemplateCategory, // TODO: add to API
+            description: tpl.description || "",
+            fieldCount: (tpl.fields && Array.isArray(tpl.fields)) ? tpl.fields.length : 0,
+            approvalSteps: tpl.approvalRoute?.steps?.length || 0,
+            createdDate: new Date(tpl.createdAt).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            }),
+            updatedDate: new Date(tpl.createdAt).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            }),
+            status: "Active" as TemplateStatus, // TODO: add status to API
+          }));
+          setTemplates(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch templates:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTemplates();
+  }, []);
+
+  // Handler functions
+  async function handleCreateTemplate(data: { name: string; description: string }) {
+    const token = localStorage.getItem("token");
+    const res = await fetch("/api/templates", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to create template");
+    }
+
+    const newTemplate = await res.json();
+    const mapped: TemplateItem = {
+      id: newTemplate.id,
+      name: newTemplate.name,
+      category: "Legal" as TemplateCategory,
+      description: newTemplate.description || "",
+      fieldCount: 0,
+      approvalSteps: 0,
+      createdDate: new Date(newTemplate.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      updatedDate: new Date(newTemplate.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      status: "Active" as TemplateStatus,
+    };
+
+    setTemplates([mapped, ...templates]);
+  }
+
+  async function handleEditTemplate(data: { name: string; description: string }) {
+    if (!selectedTemplate) return;
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(`/api/templates/${selectedTemplate.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to update template");
+    }
+
+    const updatedTemplate = await res.json();
+    const mapped: TemplateItem = {
+      id: updatedTemplate.id,
+      name: updatedTemplate.name,
+      category: selectedTemplate.category,
+      description: updatedTemplate.description || "",
+      fieldCount: selectedTemplate.fieldCount,
+      approvalSteps: selectedTemplate.approvalSteps,
+      createdDate: selectedTemplate.createdDate,
+      updatedDate: new Date(updatedTemplate.updatedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      status: selectedTemplate.status,
+    };
+
+    setTemplates(templates.map((t) => (t.id === mapped.id ? mapped : t)));
+  }
+
+  async function handleDeleteTemplate(templateId: string, templateName: string) {
+    if (!window.confirm(`Are you sure you want to delete "${templateName}"?`)) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(`/api/templates/${templateId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.error || "Failed to delete template");
+      return;
+    }
+
+    setTemplates(templates.filter((t) => t.id !== templateId));
+  }
+
+  const activeCount = templates.filter((t) => t.status === "Active").length;
+
+  if (loading) {
+    return (
+      <RoleGuard allowedRoles={["ADMIN"]}>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Templates
+            </h2>
+            <p className="mt-1 text-[14px] text-zinc-500">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </RoleGuard>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <RoleGuard allowedRoles={["ADMIN"]}>
+      <div className="space-y-6">
 
       {/* ── Page Header ───────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
@@ -168,22 +256,22 @@ export default function TemplatesPage() {
             Manage document templates and approval workflows.
           </p>
         </div>
-        <button
-          type="button"
+        <Link
+          href="/templates/create"
           className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
         >
           <span className="text-[16px] leading-none font-light">+</span>
           Create Template
-        </button>
+        </Link>
       </div>
 
       {/* ── Summary strip ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "Total Templates",  value: TEMPLATES.length },
+          { label: "Total Templates",  value: templates.length },
           { label: "Active",           value: activeCount },
-          { label: "Draft",            value: TEMPLATES.length - activeCount },
-          { label: "Categories",       value: new Set(TEMPLATES.map((t) => t.category)).size },
+          { label: "Draft",            value: templates.length - activeCount },
+          { label: "Categories",       value: new Set(templates.map((t) => t.category)).size },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -233,7 +321,7 @@ export default function TemplatesPage() {
 
             {/* Body */}
             <tbody className="divide-y divide-zinc-100">
-              {TEMPLATES.map((tpl) => (
+              {templates.map((tpl) => (
                 <tr
                   key={tpl.id}
                   className="group transition-colors hover:bg-zinc-50"
@@ -309,19 +397,25 @@ export default function TemplatesPage() {
                       {/* Edit */}
                       <button
                         type="button"
+                        onClick={() => {
+                          setSelectedTemplate(tpl);
+                          setModalMode("edit");
+                          setModalOpen(true);
+                        }}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
                       >
                         <EditIcon />
                         Edit
                       </button>
 
-                      {/* View / Preview */}
+                      {/* Delete */}
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
+                        onClick={() => handleDeleteTemplate(tpl.id, tpl.name)}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
                       >
-                        <EyeIcon />
-                        View
+                        <TrashIcon />
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -334,12 +428,29 @@ export default function TemplatesPage() {
         {/* Footer */}
         <div className="border-t border-zinc-100 bg-zinc-50 px-5 py-3">
           <p className="text-[12px] text-zinc-400">
-            <span className="font-medium text-zinc-600">{TEMPLATES.length}</span>{" "}
+            <span className="font-medium text-zinc-600">{templates.length}</span>{" "}
             templates total —{" "}
             <span className="font-medium text-zinc-600">{activeCount}</span> active
           </p>
         </div>
       </div>
-    </div>
+
+      {/* Template Modal */}
+      <TemplateModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedTemplate(null);
+        }}
+        onSubmit={modalMode === "create" ? handleCreateTemplate : handleEditTemplate}
+        initialData={
+          selectedTemplate
+            ? { name: selectedTemplate.name, description: selectedTemplate.description }
+            : undefined
+        }
+        mode={modalMode}
+      />
+      </div>
+    </RoleGuard>
   );
 }

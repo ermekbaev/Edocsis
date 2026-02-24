@@ -2,19 +2,21 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { SearchIcon, BellIcon, MenuIcon } from "./icons";
+import { NotificationsDropdown } from "./notifications-dropdown";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
 // ─── Page title map ───────────────────────────────────────────────────────────
 
 const PAGE_TITLES: Record<string, string> = {
-  "/":          "Dashboard",
+  "/": "Dashboard",
   "/documents": "Documents",
   "/templates": "Templates",
   "/approvals": "My Approvals",
-  "/users":     "Users",
-  "/settings":  "Settings",
-  "/profile":   "My Profile",
+  "/users": "Users",
+  "/settings": "Settings",
+  "/profile": "My Profile",
 };
 
 function resolveTitle(pathname: string): string {
@@ -28,25 +30,49 @@ function resolveTitle(pathname: string): string {
 // ─── Search mock data ─────────────────────────────────────────────────────────
 
 const SEARCH_DOCS = [
-  { id: "DOC-2024-0891", title: "Procurement Contract — Azure Cloud Services", status: "In Approval" },
-  { id: "DOC-2024-0889", title: "NDA with TechPartners LLC",                   status: "In Approval" },
-  { id: "DOC-2024-0887", title: "Vendor Qualification Form — LogiSoft",         status: "Approved"   },
-  { id: "DOC-2024-0885", title: "Software License Agreement — Figma Enterprise", status: "Draft"     },
-  { id: "DOC-2024-0883", title: "Annual Maintenance Agreement — Cisco",          status: "Approved"   },
+  {
+    id: "DOC-2024-0891",
+    title: "Procurement Contract — Azure Cloud Services",
+    status: "In Approval",
+  },
+  {
+    id: "DOC-2024-0889",
+    title: "NDA with TechPartners LLC",
+    status: "In Approval",
+  },
+  {
+    id: "DOC-2024-0887",
+    title: "Vendor Qualification Form — LogiSoft",
+    status: "Approved",
+  },
+  {
+    id: "DOC-2024-0885",
+    title: "Software License Agreement — Figma Enterprise",
+    status: "Draft",
+  },
+  {
+    id: "DOC-2024-0883",
+    title: "Annual Maintenance Agreement — Cisco",
+    status: "Approved",
+  },
 ];
 
 const SEARCH_TEMPLATES = [
-  { id: "tpl-001", name: "Service Contract",          category: "Legal"      },
-  { id: "tpl-002", name: "Non-Disclosure Agreement",  category: "Legal"      },
-  { id: "tpl-003", name: "HR Contract",               category: "HR"         },
-  { id: "tpl-007", name: "DPA Template",              category: "Compliance" },
+  { id: "tpl-001", name: "Service Contract", category: "Legal" },
+  { id: "tpl-002", name: "Non-Disclosure Agreement", category: "Legal" },
+  { id: "tpl-003", name: "HR Contract", category: "HR" },
+  { id: "tpl-007", name: "DPA Template", category: "Compliance" },
 ];
 
 const SEARCH_USERS = [
-  { id: "usr-001", name: "Adil Kaliyev",     email: "a.kaliyev@edocsis.com"     },
-  { id: "usr-002", name: "Elena Volkova",    email: "e.volkova@edocsis.com"     },
-  { id: "usr-004", name: "Maria Kuznetsova", email: "m.kuznetsova@edocsis.com"  },
-  { id: "usr-005", name: "Sergey Lebedev",   email: "s.lebedev@edocsis.com"    },
+  { id: "usr-001", name: "Adil Kaliyev", email: "a.kaliyev@edocsis.com" },
+  { id: "usr-002", name: "Elena Volkova", email: "e.volkova@edocsis.com" },
+  {
+    id: "usr-004",
+    name: "Maria Kuznetsova",
+    email: "m.kuznetsova@edocsis.com",
+  },
+  { id: "usr-005", name: "Sergey Lebedev", email: "s.lebedev@edocsis.com" },
 ];
 
 // ─── Notifications mock data ──────────────────────────────────────────────────
@@ -63,11 +89,46 @@ interface Notif {
 }
 
 const INITIAL_NOTIFS: Notif[] = [
-  { id: "n1", type: "approved", title: "Document Approved",     body: "Vendor Qualification Form — LogiSoft was approved by Elena Volkova.", time: "Just now", read: false },
-  { id: "n2", type: "assigned", title: "New Document Assigned", body: "NDA with TechPartners LLC requires your approval.",                   time: "2h ago",   read: false },
-  { id: "n3", type: "deadline", title: "Deadline Reminder",     body: "Annual Maintenance Agreement — Cisco is due tomorrow.",               time: "5h ago",   read: false },
-  { id: "n4", type: "rejected", title: "Document Rejected",     body: "Q4 Budget Revision — Engineering Dept. was rejected.",               time: "1d ago",   read: true  },
-  { id: "n5", type: "approved", title: "Document Approved",     body: "Travel Policy Amendment — Q1 2026 was approved.",                    time: "2d ago",   read: true  },
+  {
+    id: "n1",
+    type: "approved",
+    title: "Document Approved",
+    body: "Vendor Qualification Form — LogiSoft was approved by Elena Volkova.",
+    time: "Just now",
+    read: false,
+  },
+  {
+    id: "n2",
+    type: "assigned",
+    title: "New Document Assigned",
+    body: "NDA with TechPartners LLC requires your approval.",
+    time: "2h ago",
+    read: false,
+  },
+  {
+    id: "n3",
+    type: "deadline",
+    title: "Deadline Reminder",
+    body: "Annual Maintenance Agreement — Cisco is due tomorrow.",
+    time: "5h ago",
+    read: false,
+  },
+  {
+    id: "n4",
+    type: "rejected",
+    title: "Document Rejected",
+    body: "Q4 Budget Revision — Engineering Dept. was rejected.",
+    time: "1d ago",
+    read: true,
+  },
+  {
+    id: "n5",
+    type: "approved",
+    title: "Document Approved",
+    body: "Travel Policy Amendment — Q1 2026 was approved.",
+    time: "2d ago",
+    read: true,
+  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -75,29 +136,43 @@ const INITIAL_NOTIFS: Notif[] = [
 function docStatusColor(status: string): string {
   const m: Record<string, string> = {
     "In Approval": "text-amber-600",
-    Approved:      "text-emerald-600",
-    Draft:         "text-zinc-400",
-    Rejected:      "text-rose-600",
+    Approved: "text-emerald-600",
+    Draft: "text-zinc-400",
+    Rejected: "text-rose-600",
   };
   return m[status] ?? "text-zinc-400";
 }
 
 const NOTIF_STYLE: Record<NotifType, { bg: string; icon: string }> = {
   approved: { bg: "bg-emerald-50", icon: "text-emerald-600" },
-  rejected: { bg: "bg-rose-50",    icon: "text-rose-600"    },
-  assigned: { bg: "bg-indigo-50",  icon: "text-indigo-600"  },
-  deadline: { bg: "bg-amber-50",   icon: "text-amber-600"   },
+  rejected: { bg: "bg-rose-50", icon: "text-rose-600" },
+  assigned: { bg: "bg-indigo-50", icon: "text-indigo-600" },
+  deadline: { bg: "bg-amber-50", icon: "text-amber-600" },
 };
 
 function nameInitials(name: string): string {
-  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 // ─── Inline icon components ───────────────────────────────────────────────────
 
 function SmallDocIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <polyline points="14 2 14 8 20 8" />
     </svg>
@@ -106,9 +181,20 @@ function SmallDocIcon() {
 
 function SmallTemplateIcon() {
   return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-      <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+    <svg
+      width="11"
+      height="11"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
     </svg>
   );
 }
@@ -117,24 +203,60 @@ function NotifIcon({ type }: { type: NotifType }) {
   const { bg, icon } = NOTIF_STYLE[type];
   const s = { className: `h-[13px] w-[13px]` };
   return (
-    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${bg} ${icon}`}>
+    <span
+      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${bg} ${icon}`}
+    >
       {type === "approved" && (
-        <svg {...s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          {...s}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <polyline points="20 6 9 17 4 12" />
         </svg>
       )}
       {type === "rejected" && (
-        <svg {...s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+        <svg
+          {...s}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       )}
       {type === "deadline" && (
-        <svg {...s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+        <svg
+          {...s}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
         </svg>
       )}
       {type === "assigned" && (
-        <svg {...s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          {...s}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
         </svg>
@@ -145,15 +267,34 @@ function NotifIcon({ type }: { type: NotifType }) {
 
 function ProfileMenuIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }
 
 function GearMenuIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
@@ -162,7 +303,16 @@ function GearMenuIcon() {
 
 function LogoutMenuIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
@@ -172,8 +322,18 @@ function LogoutMenuIcon() {
 
 function ClearIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   );
 }
@@ -188,25 +348,31 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
-  const title    = resolveTitle(pathname);
+  const router = useRouter();
+  const title = resolveTitle(pathname);
+  const currentUser = useCurrentUser();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [activePanel, setActivePanel] = useState<null | "search" | "notifications" | "user">(null);
-  const [notifs, setNotifs]           = useState<Notif[]>(INITIAL_NOTIFS);
+  const [activePanel, setActivePanel] = useState<null | "search" | "user">(
+    null,
+  );
 
   const searchRef = useRef<HTMLDivElement>(null);
-  const notifRef  = useRef<HTMLDivElement>(null);
-  const userRef   = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
+
+  // Get user display data
+  const userName = currentUser?.name || "User";
+  const userEmail = currentUser?.email || "user@edocsis.com";
+  const userRole = currentUser?.role || "USER";
+  const userInitials = nameInitials(userName);
+  const userShortName = userName.split(" ")[0] + " " + (userName.split(" ")[1]?.[0] || "") + ".";
 
   // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       const t = e.target as Node;
-      if (
-        searchRef.current?.contains(t) ||
-        notifRef.current?.contains(t) ||
-        userRef.current?.contains(t)
-      ) return;
+      if (searchRef.current?.contains(t) || userRef.current?.contains(t))
+        return;
       setActivePanel(null);
     }
     document.addEventListener("mousedown", handler);
@@ -223,36 +389,45 @@ export function Header({ onMenuClick }: HeaderProps) {
   }, []);
 
   // Close on route change
-  useEffect(() => { setActivePanel(null); setSearchQuery(""); }, [pathname]);
+  const prevPathnameRef = useRef(pathname);
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActivePanel(null);
+      setSearchQuery("");
+      prevPathnameRef.current = pathname;
+    }
+  }, [pathname]);
 
   // ── Derived: filtered search results ──
   const q = searchQuery.toLowerCase().trim();
 
-  const filteredDocs  = SEARCH_DOCS
-    .filter((d) => !q || d.title.toLowerCase().includes(q) || d.id.toLowerCase().includes(q))
-    .slice(0, 4);
+  const filteredDocs = SEARCH_DOCS.filter(
+    (d) =>
+      !q || d.title.toLowerCase().includes(q) || d.id.toLowerCase().includes(q),
+  ).slice(0, 4);
 
-  const filteredTpls  = SEARCH_TEMPLATES
-    .filter((t) => !q || t.name.toLowerCase().includes(q) || t.category.toLowerCase().includes(q))
-    .slice(0, 3);
+  const filteredTpls = SEARCH_TEMPLATES.filter(
+    (t) =>
+      !q ||
+      t.name.toLowerCase().includes(q) ||
+      t.category.toLowerCase().includes(q),
+  ).slice(0, 3);
 
-  const filteredUsers = SEARCH_USERS
-    .filter((u) => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
-    .slice(0, 3);
+  const filteredUsers = SEARCH_USERS.filter(
+    (u) =>
+      !q ||
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q),
+  ).slice(0, 3);
 
-  const hasResults  = filteredDocs.length > 0 || filteredTpls.length > 0 || filteredUsers.length > 0;
-  const unreadCount = notifs.filter((n) => !n.read).length;
+  const hasResults =
+    filteredDocs.length > 0 ||
+    filteredTpls.length > 0 ||
+    filteredUsers.length > 0;
 
-  function toggle(panel: "search" | "notifications" | "user") {
+  function toggle(panel: "search" | "user") {
     setActivePanel((prev) => (prev === panel ? null : panel));
-  }
-
-  function markAllRead() {
-    setNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
-  }
-
-  function markRead(id: string) {
-    setNotifs((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   }
 
   function closeSearch() {
@@ -260,9 +435,27 @@ export function Header({ onMenuClick }: HeaderProps) {
     setSearchQuery("");
   }
 
+  async function handleLogout() {
+    try {
+      // Call logout API to clear httpOnly cookies
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (error) {
+      console.error("Logout API error:", error);
+    } finally {
+      // Clear localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      // Notify components that user data has been cleared
+      window.dispatchEvent(new Event("user-updated"));
+
+      // Redirect to login
+      router.push("/login");
+    }
+  }
+
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/90 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
-
       {/* ── Left: hamburger + page title ─────────────────────────────────── */}
       <div className="flex items-center gap-3">
         <button
@@ -306,12 +499,13 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="px-4 py-8 text-center">
                   <p className="text-[13px] text-zinc-400">
                     No results for{" "}
-                    <span className="font-medium text-zinc-600">"{searchQuery}"</span>
+                    <span className="font-medium text-zinc-600">
+                      &quot;{searchQuery}&quot;
+                    </span>
                   </p>
                 </div>
               ) : (
                 <div className="max-h-[420px] overflow-y-auto">
-
                   {/* Documents group */}
                   {filteredDocs.length > 0 && (
                     <div>
@@ -332,7 +526,9 @@ export function Header({ onMenuClick }: HeaderProps) {
                             <p className="truncate text-[12.5px] font-medium text-zinc-800">
                               {doc.title}
                             </p>
-                            <p className={`text-[11px] font-medium ${docStatusColor(doc.status)}`}>
+                            <p
+                              className={`text-[11px] font-medium ${docStatusColor(doc.status)}`}
+                            >
                               {doc.status} · {doc.id}
                             </p>
                           </div>
@@ -361,7 +557,9 @@ export function Header({ onMenuClick }: HeaderProps) {
                             <p className="truncate text-[12.5px] font-medium text-zinc-800">
                               {tpl.name}
                             </p>
-                            <p className="text-[11px] text-zinc-400">{tpl.category}</p>
+                            <p className="text-[11px] text-zinc-400">
+                              {tpl.category}
+                            </p>
                           </div>
                         </Link>
                       ))}
@@ -388,7 +586,9 @@ export function Header({ onMenuClick }: HeaderProps) {
                             <p className="truncate text-[12.5px] font-medium text-zinc-800">
                               {user.name}
                             </p>
-                            <p className="truncate text-[11px] text-zinc-400">{user.email}</p>
+                            <p className="truncate text-[11px] text-zinc-400">
+                              {user.email}
+                            </p>
                           </div>
                         </Link>
                       ))}
@@ -414,88 +614,8 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* ── Right: notifications + user ──────────────────────────────────── */}
       <div className="flex items-center gap-2">
-
         {/* ── Bell / Notifications ── */}
-        <div ref={notifRef} className="relative">
-          <button
-            type="button"
-            onClick={() => toggle("notifications")}
-            className="relative flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
-            aria-label="Notifications"
-          >
-            <BellIcon className="h-4.5 w-4.5" />
-            {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-500 px-0.5 text-[9px] font-bold leading-none text-white">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-
-          {/* Notifications panel */}
-          {activePanel === "notifications" && (
-            <div className="absolute right-0 top-full mt-2 w-[360px] rounded-xl border border-zinc-200 bg-white shadow-lg overflow-hidden z-50">
-
-              {/* Header */}
-              <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-semibold text-zinc-900">Notifications</span>
-                  {unreadCount > 0 && (
-                    <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-600 ring-1 ring-rose-200">
-                      {unreadCount} new
-                    </span>
-                  )}
-                </div>
-                {unreadCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={markAllRead}
-                    className="text-[12px] font-medium text-zinc-400 transition-colors hover:text-zinc-600"
-                  >
-                    Mark all read
-                  </button>
-                )}
-              </div>
-
-              {/* List */}
-              <div className="max-h-80 divide-y divide-zinc-50 overflow-y-auto">
-                {notifs.map((n) => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => markRead(n.id)}
-                    className={`flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-zinc-50 ${!n.read ? "bg-indigo-50/30" : ""}`}
-                  >
-                    <NotifIcon type={n.type} />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className={`text-[12.5px] font-semibold leading-snug ${n.read ? "text-zinc-500" : "text-zinc-900"}`}>
-                          {n.title}
-                        </p>
-                        {!n.read && (
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />
-                        )}
-                      </div>
-                      <p className="mt-0.5 line-clamp-2 text-[11.5px] leading-snug text-zinc-400">
-                        {n.body}
-                      </p>
-                      <p className="mt-1 text-[11px] font-medium text-zinc-400">{n.time}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-zinc-100 bg-zinc-50 px-4 py-2.5">
-                <button
-                  type="button"
-                  className="text-[12px] font-medium text-zinc-500 transition-colors hover:text-zinc-700"
-                >
-                  View all notifications →
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        <NotificationsDropdown />
 
         <div className="mx-1 h-6 w-px bg-zinc-200" />
 
@@ -508,14 +628,20 @@ export function Header({ onMenuClick }: HeaderProps) {
             aria-label="User menu"
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-[11px] font-semibold text-white">
-              AK
+              {userInitials}
             </div>
             <span className="hidden text-[13px] font-medium text-zinc-700 sm:inline-block">
-              Adil K.
+              {userShortName}
             </span>
             <svg
-              width="12" height="12" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               className={`hidden text-zinc-400 transition-transform sm:block ${activePanel === "user" ? "rotate-180" : ""}`}
               aria-hidden="true"
             >
@@ -526,20 +652,23 @@ export function Header({ onMenuClick }: HeaderProps) {
           {/* User dropdown */}
           {activePanel === "user" && (
             <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-zinc-200 bg-white shadow-lg overflow-hidden z-50">
-
               {/* Identity */}
               <div className="border-b border-zinc-100 px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-[11px] font-semibold text-white">
-                    AK
+                    {userInitials}
                   </div>
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-semibold text-zinc-900">Adil Kaliyev</p>
-                    <p className="truncate text-[11.5px] text-zinc-400">a.kaliyev@edocsis.com</p>
+                    <p className="truncate text-[13px] font-semibold text-zinc-900">
+                      {userName}
+                    </p>
+                    <p className="truncate text-[11.5px] text-zinc-400">
+                      {userEmail}
+                    </p>
                   </div>
                 </div>
                 <span className="mt-2.5 inline-flex items-center rounded-full bg-zinc-900 px-2 py-0.5 text-[10px] font-semibold text-white">
-                  ADMIN
+                  {userRole}
                 </span>
               </div>
 
@@ -550,7 +679,9 @@ export function Header({ onMenuClick }: HeaderProps) {
                   onClick={() => setActivePanel(null)}
                   className="flex items-center gap-2.5 px-4 py-2 text-[13px] text-zinc-700 transition-colors hover:bg-zinc-50"
                 >
-                  <span className="text-zinc-400"><ProfileMenuIcon /></span>
+                  <span className="text-zinc-400">
+                    <ProfileMenuIcon />
+                  </span>
                   My Profile
                 </Link>
                 <Link
@@ -558,7 +689,9 @@ export function Header({ onMenuClick }: HeaderProps) {
                   onClick={() => setActivePanel(null)}
                   className="flex items-center gap-2.5 px-4 py-2 text-[13px] text-zinc-700 transition-colors hover:bg-zinc-50"
                 >
-                  <span className="text-zinc-400"><GearMenuIcon /></span>
+                  <span className="text-zinc-400">
+                    <GearMenuIcon />
+                  </span>
                   Settings
                 </Link>
               </div>
@@ -566,7 +699,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <div className="border-t border-zinc-100 py-1">
                 <button
                   type="button"
-                  onClick={() => setActivePanel(null)}
+                  onClick={handleLogout}
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-[13px] text-rose-600 transition-colors hover:bg-rose-50"
                 >
                   <LogoutMenuIcon />

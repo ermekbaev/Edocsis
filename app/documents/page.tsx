@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { SearchIcon } from "../components/icons";
 
@@ -10,6 +10,7 @@ type DocStatus = "Draft" | "In Approval" | "Approved" | "Rejected";
 
 interface Document {
   id: string;
+  number: string;
   title: string;
   template: string;
   status: DocStatus;
@@ -17,128 +18,6 @@ interface Document {
   createdDate: string;
   currentApprover: string;
 }
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const DOCUMENTS: Document[] = [
-  {
-    id: "DOC-2024-0891",
-    title: "Procurement Contract — Azure Cloud Services",
-    template: "Service Contract",
-    status: "In Approval",
-    initiator: "Adil Kaliyev",
-    createdDate: "17 Feb 2026",
-    currentApprover: "Elena Volkova",
-  },
-  {
-    id: "DOC-2024-0890",
-    title: "Internal Transfer Order #IT-4412",
-    template: "Transfer Order",
-    status: "Approved",
-    initiator: "Sergey Lebedev",
-    createdDate: "16 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0889",
-    title: "NDA with TechPartners LLC",
-    template: "Non-Disclosure Agreement",
-    status: "In Approval",
-    initiator: "Maria Kuznetsova",
-    createdDate: "16 Feb 2026",
-    currentApprover: "Adil Kaliyev",
-  },
-  {
-    id: "DOC-2024-0888",
-    title: "Q4 Budget Revision — Engineering Dept.",
-    template: "Budget Memo",
-    status: "Rejected",
-    initiator: "Dmitry Ryabov",
-    createdDate: "15 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0887",
-    title: "Vendor Qualification Form — LogiSoft",
-    template: "Vendor Form",
-    status: "Approved",
-    initiator: "Nikita Korobov",
-    createdDate: "14 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0886",
-    title: "Employment Contract — Anna Petrova",
-    template: "HR Contract",
-    status: "In Approval",
-    initiator: "HR Department",
-    createdDate: "14 Feb 2026",
-    currentApprover: "Adil Kaliyev",
-  },
-  {
-    id: "DOC-2024-0885",
-    title: "Software License Agreement — Figma Enterprise",
-    template: "License Agreement",
-    status: "Draft",
-    initiator: "Adil Kaliyev",
-    createdDate: "13 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0884",
-    title: "Office Lease Renewal — Block B",
-    template: "Real Estate Contract",
-    status: "In Approval",
-    initiator: "Sergey Lebedev",
-    createdDate: "12 Feb 2026",
-    currentApprover: "Boris Nikitin",
-  },
-  {
-    id: "DOC-2024-0883",
-    title: "Annual Maintenance Agreement — Cisco",
-    template: "Service Contract",
-    status: "Approved",
-    initiator: "Dmitry Ryabov",
-    createdDate: "11 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0882",
-    title: "Data Processing Agreement — Salesforce",
-    template: "DPA Template",
-    status: "Rejected",
-    initiator: "Maria Kuznetsova",
-    createdDate: "10 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0881",
-    title: "Travel Policy Amendment — Q1 2026",
-    template: "Policy Document",
-    status: "Approved",
-    initiator: "HR Department",
-    createdDate: "09 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0880",
-    title: "Subcontractor Agreement — BuildTech Ltd.",
-    template: "Subcontractor Agreement",
-    status: "Draft",
-    initiator: "Nikita Korobov",
-    createdDate: "07 Feb 2026",
-    currentApprover: "—",
-  },
-  {
-    id: "DOC-2024-0879",
-    title: "GDPR Consent Form — Customer Portal",
-    template: "Compliance Form",
-    status: "Approved",
-    initiator: "Adil Kaliyev",
-    createdDate: "05 Feb 2026",
-    currentApprover: "—",
-  },
-];
 
 const STATUS_OPTIONS: Array<DocStatus | "All"> = [
   "All",
@@ -222,13 +101,108 @@ function ChevronIcon() {
   );
 }
 
+function EditIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DocumentsPage() {
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<DocStatus | "All">("All");
   const [templateFilter, setTemplateFilter] = useState("All Templates");
   const [initiatorFilter, setInitiatorFilter] = useState("All Initiators");
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    async function fetchDocuments() {
+      try {
+        const token = localStorage.getItem("token");
+
+        // Build query params
+        const params = new URLSearchParams();
+        if (debouncedSearch) {
+          params.append("search", debouncedSearch);
+        }
+        if (statusFilter !== "All") {
+          const apiStatus = statusFilter === "Draft" ? "DRAFT" : statusFilter === "In Approval" ? "IN_APPROVAL" : statusFilter === "Approved" ? "APPROVED" : "REJECTED";
+          params.append("status", apiStatus);
+        }
+
+        const url = `/api/documents${params.toString() ? `?${params.toString()}` : ""}`;
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          // Map API response to UI format
+          const mapped = data.map((doc: any) => ({
+            id: doc.id,
+            number: doc.number,
+            title: doc.title,
+            template: doc.template?.name || "—",
+            status: doc.status === "DRAFT" ? "Draft" : doc.status === "IN_APPROVAL" ? "In Approval" : doc.status === "APPROVED" ? "Approved" : "Rejected",
+            initiator: doc.initiator?.name || "—",
+            createdDate: new Date(doc.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+            currentApprover: doc.currentApprover?.name || "—",
+          }));
+          setDocuments(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch documents:", err);
+      }
+    }
+    fetchDocuments();
+  }, [debouncedSearch, statusFilter]);
+
+  async function handleDeleteDocument(documentId: string, documentTitle: string) {
+    if (!window.confirm(`Are you sure you want to delete "${documentTitle}"?`)) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(`/api/documents/${documentId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.error || "Failed to delete document");
+      return;
+    }
+
+    setDocuments(documents.filter((d) => d.id !== documentId));
+  }
 
   return (
     <div className="space-y-6">
@@ -328,7 +302,7 @@ export default function DocumentsPage() {
 
           {/* Results count */}
           <span className="ml-auto text-[12.5px] text-zinc-400">
-            {DOCUMENTS.length} documents
+            {documents.length} documents
           </span>
         </div>
       </div>
@@ -356,23 +330,25 @@ export default function DocumentsPage() {
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
                 Current Approver
               </th>
-              <th className="px-4 py-3 w-[52px]" aria-label="Actions" />
+              <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[200px]">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
-            {DOCUMENTS.map((doc) => (
+            {documents.map((doc) => (
               <tr
                 key={doc.id}
                 className="group transition-colors hover:bg-zinc-50"
               >
-                {/* Title + ID */}
+                {/* Title + Number */}
                 <td className="px-5 py-3.5">
                   <Link href={`/documents/${doc.id}`} className="block">
                     <p className="text-[13px] font-semibold text-zinc-900 leading-snug group-hover:text-zinc-700 transition-colors">
                       {doc.title}
                     </p>
                     <p className="mt-0.5 text-[11.5px] font-mono text-zinc-400">
-                      {doc.id}
+                      {doc.number}
                     </p>
                   </Link>
                 </td>
@@ -416,13 +392,28 @@ export default function DocumentsPage() {
 
                 {/* Actions */}
                 <td className="px-4 py-3.5">
-                  <button
-                    type="button"
-                    aria-label="Document actions"
-                    className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-300 transition-colors hover:bg-zinc-100 hover:text-zinc-600 group-hover:text-zinc-400"
-                  >
-                    <DotsIcon />
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    {/* Edit (only for DRAFT) */}
+                    {doc.status === "Draft" && (
+                      <Link
+                        href={`/documents/${doc.id}/edit`}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
+                      >
+                        <EditIcon />
+                        Edit
+                      </Link>
+                    )}
+
+                    {/* Delete */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteDocument(doc.id, doc.title)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
+                    >
+                      <TrashIcon />
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -432,8 +423,8 @@ export default function DocumentsPage() {
         {/* Table footer */}
         <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50 px-5 py-3">
           <p className="text-[12px] text-zinc-400">
-            Showing <span className="font-medium text-zinc-600">1–{DOCUMENTS.length}</span> of{" "}
-            <span className="font-medium text-zinc-600">{DOCUMENTS.length}</span> documents
+            Showing <span className="font-medium text-zinc-600">1–{documents.length}</span> of{" "}
+            <span className="font-medium text-zinc-600">{documents.length}</span> documents
           </p>
           <div className="flex items-center gap-1">
             <button

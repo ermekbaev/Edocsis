@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -164,7 +165,8 @@ export default function SettingsPage() {
   const [minPwLength,    setMinPwLength]    = useState(8);
 
   return (
-    <div className="mx-auto max-w-260 space-y-6">
+    <RoleGuard allowedRoles={["ADMIN"]}>
+      <div className="mx-auto max-w-260 space-y-6">
 
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <div>
@@ -386,6 +388,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

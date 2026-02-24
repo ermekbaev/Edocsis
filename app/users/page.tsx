@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type UserRole   = "Admin" | "Approver" | "User";
+type UserRole   = "Admin" | "Initiator" | "Approver" | "User";
 type UserStatus = "Active" | "Pending" | "Disabled";
 
 interface SystemUser {
@@ -101,15 +102,16 @@ const USERS: SystemUser[] = [
   },
 ];
 
-const ROLE_OPTIONS: UserRole[] = ["User", "Approver", "Admin"];
+const ROLE_OPTIONS: UserRole[] = ["User", "Initiator", "Approver", "Admin"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function roleBadge(role: UserRole): string {
   const map: Record<UserRole, string> = {
-    Admin:    "bg-zinc-900 text-white",
-    Approver: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
-    User:     "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
+    Admin:     "bg-zinc-900 text-white",
+    Initiator: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+    Approver:  "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
+    User:      "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
   };
   return map[role];
 }
@@ -156,18 +158,51 @@ function XIcon() {
   );
 }
 
-// ─── Invite Modal ─────────────────────────────────────────────────────────────
+// ─── Create User Modal ────────────────────────────────────────────────────────
 
-interface InviteModalProps {
+interface CreateUserModalProps {
   onClose: () => void;
+  onSubmit: (data: { name: string; email: string; role: string; password: string; department?: string }) => Promise<void>;
 }
 
-function InviteModal({ onClose }: InviteModalProps) {
+function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [department, setDepartment] = useState("");
   const [role, setRole]         = useState<UserRole>("User");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const canSubmit = fullName.trim().length > 0 && email.trim().length > 0;
+  const canSubmit = fullName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
+
+  async function handleSubmit() {
+    if (!canSubmit) return;
+
+    setError("");
+    setSubmitting(true);
+
+    try {
+      // Convert UI role to API role
+      const apiRole = role === "Admin" ? "ADMIN" : role === "Initiator" ? "INITIATOR" : role === "Approver" ? "APPROVER" : "USER";
+      await onSubmit({
+        name: fullName.trim(),
+        email: email.trim(),
+        role: apiRole,
+        password,
+        department: department.trim() || undefined
+      });
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || "Failed to create user");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     /* Backdrop */
@@ -182,10 +217,10 @@ function InviteModal({ onClose }: InviteModalProps) {
         <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
           <div>
             <h3 className="text-[15px] font-semibold text-zinc-900">
-              Invite User
+              Create User
             </h3>
             <p className="mt-0.5 text-[12.5px] text-zinc-400">
-              Send an invitation to join Edocsis.
+              Add a new user to the system.
             </p>
           </div>
           <button
@@ -200,6 +235,22 @@ function InviteModal({ onClose }: InviteModalProps) {
 
         {/* Body */}
         <div className="space-y-4 px-6 py-5">
+
+          {/* Success Display */}
+          {success && (
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
+              <p className="text-[12.5px] font-medium text-emerald-900">
+                User created successfully!
+              </p>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="rounded-lg bg-rose-50 px-3 py-2 text-[13px] text-rose-700">
+              {error}
+            </div>
+          )}
 
           {/* Full Name */}
           <div>
@@ -237,6 +288,42 @@ function InviteModal({ onClose }: InviteModalProps) {
             />
           </div>
 
+          {/* Password */}
+          <div>
+            <label
+              htmlFor="invite-password"
+              className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
+            >
+              Password
+            </label>
+            <input
+              id="invite-password"
+              type="password"
+              placeholder="Min. 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
+            />
+          </div>
+
+          {/* Department */}
+          <div>
+            <label
+              htmlFor="invite-department"
+              className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
+            >
+              Department (optional)
+            </label>
+            <input
+              id="invite-department"
+              type="text"
+              placeholder="e.g. IT, HR, Finance"
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
+            />
+          </div>
+
           {/* Role */}
           <div>
             <label
@@ -267,9 +354,11 @@ function InviteModal({ onClose }: InviteModalProps) {
             <p className="mt-1.5 text-[11.5px] text-zinc-400">
               {role === "Admin"
                 ? "Full system access including user management and settings."
+                : role === "Initiator"
+                ? "Can create and submit documents for approval."
                 : role === "Approver"
                 ? "Can review, approve, or reject documents in assigned workflows."
-                : "Can create and submit documents for approval."}
+                : "Can only view documents (no creation or approval rights)."}
             </p>
           </div>
         </div>
@@ -279,17 +368,21 @@ function InviteModal({ onClose }: InviteModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+            disabled={submitting}
+            className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50"
           >
             Cancel
           </button>
-          <button
-            type="button"
-            disabled={!canSubmit}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            Send Invitation
-          </button>
+          {!success && (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={!canSubmit || submitting}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {submitting ? "Creating..." : "Create User"}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -299,14 +392,159 @@ function InviteModal({ onClose }: InviteModalProps) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UsersPage() {
+  const [users, setUsers] = useState<SystemUser[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingRole, setEditingRole] = useState<string | null>(null);
 
-  const activeCount  = USERS.filter((u) => u.status === "Active").length;
-  const pendingCount = USERS.filter((u) => u.status === "Pending").length;
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("/api/users", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const mapped: SystemUser[] = data.map((user: any) => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role === "ADMIN" ? "Admin" : user.role === "INITIATOR" ? "Initiator" : user.role === "APPROVER" ? "Approver" : "User",
+            status: "Active" as UserStatus, // TODO: implement status in DB
+            createdDate: new Date(user.createdAt).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            }),
+          }));
+          setUsers(mapped);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUsers();
+  }, []);
+
+  async function handleCreateUser(data: { name: string; email: string; role: string; password: string; department?: string }) {
+    const token = localStorage.getItem("token");
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to create user");
+    }
+
+    const result = await res.json();
+    const newUser: SystemUser = {
+      id: result.id,
+      name: result.name,
+      email: result.email,
+      role: result.role === "ADMIN" ? "Admin" : result.role === "INITIATOR" ? "Initiator" : result.role === "APPROVER" ? "Approver" : "User",
+      status: "Active",
+      createdDate: new Date(result.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+    };
+
+    setUsers([newUser, ...users]);
+  }
+
+  async function handleUpdateRole(userId: string, newRole: UserRole) {
+    const token = localStorage.getItem("token");
+    const apiRole = newRole === "Admin" ? "ADMIN" : newRole === "Initiator" ? "INITIATOR" : newRole === "Approver" ? "APPROVER" : "USER";
+
+    const res = await fetch(`/api/users/${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ role: apiRole }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.error || "Failed to update role");
+      return;
+    }
+
+    const updatedUser = await res.json();
+    setUsers(users.map((u) =>
+      u.id === userId
+        ? {
+            ...u,
+            role: updatedUser.role === "ADMIN" ? "Admin" : updatedUser.role === "INITIATOR" ? "Initiator" : updatedUser.role === "APPROVER" ? "Approver" : "User",
+          }
+        : u
+    ));
+    setEditingRole(null);
+  }
+
+  async function handleDeleteUser(userId: string, userName: string) {
+    if (!window.confirm(`Are you sure you want to delete "${userName}"?`)) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(`/api/users/${userId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.error || "Failed to delete user");
+      return;
+    }
+
+    setUsers(users.filter((u) => u.id !== userId));
+  }
+
+  const activeCount  = users.filter((u) => u.status === "Active").length;
+  const pendingCount = users.filter((u) => u.status === "Pending").length;
+
+  if (loading) {
+    return (
+      <RoleGuard allowedRoles={["ADMIN"]}>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Users
+            </h2>
+            <p className="mt-1 text-[14px] text-zinc-500">
+              Loading...
+            </p>
+          </div>
+        </div>
+      </RoleGuard>
+    );
+  }
 
   return (
-    <>
-      {modalOpen && <InviteModal onClose={() => setModalOpen(false)} />}
+    <RoleGuard allowedRoles={["ADMIN"]}>
+      {modalOpen && (
+        <CreateUserModal
+          onClose={() => setModalOpen(false)}
+          onSubmit={handleCreateUser}
+        />
+      )}
 
       <div className="space-y-6">
 
@@ -326,17 +564,17 @@ export default function UsersPage() {
             className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
           >
             <span className="text-[16px] leading-none font-light">+</span>
-            Invite User
+            Create User
           </button>
         </div>
 
         {/* ── Summary strip ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { label: "Total Users",  value: USERS.length },
+            { label: "Total Users",  value: users.length },
             { label: "Active",       value: activeCount },
             { label: "Pending",      value: pendingCount },
-            { label: "Disabled",     value: USERS.length - activeCount - pendingCount },
+            { label: "Disabled",     value: users.length - activeCount - pendingCount },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -383,7 +621,7 @@ export default function UsersPage() {
 
               {/* Body */}
               <tbody className="divide-y divide-zinc-100">
-                {USERS.map((user) => (
+                {users.map((user) => (
                   <tr
                     key={user.id}
                     className="group transition-colors hover:bg-zinc-50"
@@ -416,11 +654,29 @@ export default function UsersPage() {
 
                     {/* Role badge */}
                     <td className="px-4 py-3.5">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${roleBadge(user.role)}`}
-                      >
-                        {user.role.toUpperCase()}
-                      </span>
+                      {editingRole === user.id ? (
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleUpdateRole(user.id, e.target.value as UserRole)}
+                          onBlur={() => setEditingRole(null)}
+                          autoFocus
+                          className="h-7 appearance-none rounded-lg border border-zinc-300 bg-white pl-2 pr-6 text-[11px] font-semibold focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                        >
+                          {ROLE_OPTIONS.map((r) => (
+                            <option key={r} value={r}>
+                              {r.toUpperCase()}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingRole(user.id)}
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap transition-opacity hover:opacity-75 ${roleBadge(user.role)}`}
+                        >
+                          {user.role.toUpperCase()}
+                        </button>
+                      )}
                     </td>
 
                     {/* Status badge */}
@@ -444,16 +700,10 @@ export default function UsersPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
+                          onClick={() => handleDeleteUser(user.id, user.name)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
                         >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          disabled={user.status === "Disabled"}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200 disabled:opacity-35 disabled:cursor-not-allowed"
-                        >
-                          Disable
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -466,13 +716,13 @@ export default function UsersPage() {
           {/* Footer */}
           <div className="border-t border-zinc-100 bg-zinc-50 px-5 py-3">
             <p className="text-[12px] text-zinc-400">
-              <span className="font-medium text-zinc-600">{USERS.length}</span>{" "}
+              <span className="font-medium text-zinc-600">{users.length}</span>{" "}
               users total —{" "}
               <span className="font-medium text-zinc-600">{activeCount}</span> active
             </p>
           </div>
         </div>
       </div>
-    </>
+    </RoleGuard>
   );
 }

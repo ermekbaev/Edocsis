@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -6,6 +10,7 @@ type Priority = "Urgent" | "Normal";
 
 interface PendingDocument {
   id: string;
+  approvalId: string;
   title: string;
   template: string;
   initiator: string;
@@ -13,74 +18,6 @@ interface PendingDocument {
   daysWaiting: number;
   priority: Priority;
 }
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const PENDING_DOCUMENTS: PendingDocument[] = [
-  {
-    id: "DOC-2024-0889",
-    title: "NDA with TechPartners LLC",
-    template: "Non-Disclosure Agreement",
-    initiator: "Maria Kuznetsova",
-    submittedDate: "18 Feb 2026",
-    daysWaiting: 0,
-    priority: "Urgent",
-  },
-  {
-    id: "DOC-2024-0886",
-    title: "Employment Contract — Anna Petrova",
-    template: "HR Contract",
-    initiator: "HR Department",
-    submittedDate: "18 Feb 2026",
-    daysWaiting: 0,
-    priority: "Normal",
-  },
-  {
-    id: "DOC-2024-0883",
-    title: "Office Lease Renewal — Block B",
-    template: "Real Estate Contract",
-    initiator: "Sergey Lebedev",
-    submittedDate: "17 Feb 2026",
-    daysWaiting: 1,
-    priority: "Urgent",
-  },
-  {
-    id: "DOC-2024-0879",
-    title: "Annual Maintenance Agreement — Cisco",
-    template: "Service Contract",
-    initiator: "Dmitry Ryabov",
-    submittedDate: "14 Feb 2026",
-    daysWaiting: 4,
-    priority: "Normal",
-  },
-  {
-    id: "DOC-2024-0876",
-    title: "Partnership Agreement — Almatech Group",
-    template: "Partnership Agreement",
-    initiator: "Nikita Korobov",
-    submittedDate: "12 Feb 2026",
-    daysWaiting: 6,
-    priority: "Normal",
-  },
-  {
-    id: "DOC-2024-0872",
-    title: "Data Processing Agreement — Salesforce",
-    template: "DPA Template",
-    initiator: "Maria Kuznetsova",
-    submittedDate: "10 Feb 2026",
-    daysWaiting: 8,
-    priority: "Urgent",
-  },
-  {
-    id: "DOC-2024-0869",
-    title: "Software Escrow Agreement — Accenture",
-    template: "Escrow Agreement",
-    initiator: "Adil Kaliyev",
-    submittedDate: "07 Feb 2026",
-    daysWaiting: 11,
-    priority: "Normal",
-  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -113,12 +50,77 @@ function ViewIcon() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
-  const urgentCount = PENDING_DOCUMENTS.filter(
+  const [documents, setDocuments] = useState<PendingDocument[]>([]);
+  const [processing, setProcessing] = useState<Set<string>>(new Set());
+
+  async function fetchApprovals() {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/approvals/my", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const mapped: PendingDocument[] = data.map((approval: any) => ({
+          id: approval.documentNumber,
+          approvalId: approval.id,
+          title: approval.documentTitle,
+          template: "—",
+          initiator: approval.initiatorName,
+          submittedDate: "—",
+          daysWaiting: 0,
+          priority: "Normal" as Priority,
+        }));
+        setDocuments(mapped);
+      }
+    } catch (err) {
+      console.error("Failed to fetch approvals:", err);
+    }
+  }
+
+  async function handleDecision(approvalId: string, action: "approve" | "reject") {
+    setProcessing((prev) => new Set(prev).add(approvalId));
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/approvals/${approvalId}/decision`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      if (res.ok) {
+        await fetchApprovals();
+      } else {
+        const error = await res.json();
+        console.error("Decision failed:", error);
+      }
+    } catch (err) {
+      console.error("Failed to submit decision:", err);
+    } finally {
+      setProcessing((prev) => {
+        const next = new Set(prev);
+        next.delete(approvalId);
+        return next;
+      });
+    }
+  }
+
+  useEffect(() => {
+    fetchApprovals();
+  }, []);
+
+  const urgentCount = documents.filter(
     (d) => d.priority === "Urgent",
   ).length;
 
   return (
-    <div className="space-y-6">
+    <RoleGuard allowedRoles={["ADMIN", "APPROVER"]}>
+      <div className="space-y-6">
 
       {/* ── Page Header ───────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
@@ -135,7 +137,7 @@ export default function ApprovalsPage() {
         <div className="shrink-0 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2">
           <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" />
           <span className="text-[13px] font-semibold text-amber-800">
-            {PENDING_DOCUMENTS.length} pending
+            {documents.length} pending
           </span>
           {urgentCount > 0 && (
             <>
@@ -181,7 +183,7 @@ export default function ApprovalsPage() {
 
             {/* Table body */}
             <tbody className="divide-y divide-zinc-100">
-              {PENDING_DOCUMENTS.map((doc) => (
+              {documents.map((doc) => (
                 <tr
                   key={doc.id}
                   className="group transition-colors hover:bg-zinc-50"
@@ -248,7 +250,9 @@ export default function ApprovalsPage() {
                       {/* Approve */}
                       <button
                         type="button"
-                        className="rounded-lg bg-zinc-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-zinc-700 whitespace-nowrap"
+                        onClick={() => handleDecision(doc.approvalId, "approve")}
+                        disabled={processing.has(doc.approvalId)}
+                        className="rounded-lg bg-zinc-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-zinc-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Approve
                       </button>
@@ -256,7 +260,9 @@ export default function ApprovalsPage() {
                       {/* Reject */}
                       <button
                         type="button"
-                        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200 whitespace-nowrap"
+                        onClick={() => handleDecision(doc.approvalId, "reject")}
+                        disabled={processing.has(doc.approvalId)}
+                        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Reject
                       </button>
@@ -282,12 +288,13 @@ export default function ApprovalsPage() {
           <p className="text-[12px] text-zinc-400">
             Showing{" "}
             <span className="font-medium text-zinc-600">
-              {PENDING_DOCUMENTS.length}
+              {documents.length}
             </span>{" "}
             documents awaiting your approval
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

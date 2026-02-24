@@ -313,6 +313,29 @@ export function XIcon(props: IconProps) {
   );
 }
 
+export function RoutesIcon(props: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.59 13.51l6.83 3.98" />
+      <path d="M15.41 6.51l-6.82 3.98" />
+    </svg>
+  );
+}
+
 export function LogoIcon(props: IconProps) {
   return (
     <svg
