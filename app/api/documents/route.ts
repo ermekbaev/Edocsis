@@ -22,11 +22,10 @@ export async function GET(req: NextRequest) {
 
   // Role-based filtering:
   // - ADMIN: see all documents
-  // - APPROVER: see documents they created OR documents waiting for their approval
-  // - INITIATOR: see only their own documents
+  // - APPROVER: see their own documents OR documents waiting for their approval
   // - USER: see only their own documents
   if (user?.role === "ADMIN") {
-    // Admin sees all documents - no initiator filter
+    // Admin sees all documents - no filter
   } else if (user?.role === "APPROVER") {
     // Approver sees their own documents OR documents they need to approve
     where.OR = [
@@ -34,7 +33,7 @@ export async function GET(req: NextRequest) {
       { currentApproverId: auth.userId },
     ];
   } else {
-    // INITIATOR and USER see only their own documents
+    // USER sees only their own documents
     where.initiatorId = auth.userId;
   }
 
@@ -95,10 +94,10 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  // Only INITIATOR and ADMIN can create documents
-  if (auth.role !== "INITIATOR" && auth.role !== "ADMIN") {
+  // APPROVER cannot create documents
+  if (auth.role === "APPROVER") {
     return NextResponse.json(
-      { error: "Only INITIATOR and ADMIN roles can create documents" },
+      { error: "Approvers cannot create documents" },
       { status: 403 }
     );
   }

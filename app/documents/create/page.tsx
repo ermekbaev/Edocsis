@@ -20,15 +20,16 @@ interface FieldDef {
 interface ApprovalStep {
   id: string;
   stepNumber: number;
-  approverRole: string;
-  approverId?: string;
-  approver?: { name: string };
-  approvalType: "SEQUENTIAL" | "PARALLEL";
+  name: string;
+  description?: string;
+  approverIds: string[];
+  requireAll: boolean;
 }
 
 interface ApprovalRoute {
   id: string;
   name: string;
+  description?: string;
   steps: ApprovalStep[];
 }
 
@@ -117,18 +118,15 @@ export default function CreateDocumentPage() {
         console.log("Loaded templates:", data);
         setTemplates(data);
 
-        // Load approvers (users with APPROVER or ADMIN role)
-        const usersRes = await fetch("/api/users", {
+        // Load approvers
+        const approversRes = await fetch("/api/approvers", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (usersRes.ok) {
-          const users = await usersRes.json();
-          const approverUsers = users.filter(
-            (u: User) => u.role === "APPROVER" || u.role === "ADMIN"
-          );
+        if (approversRes.ok) {
+          const approverUsers = await approversRes.json();
           setApprovers(approverUsers);
         }
 
@@ -579,11 +577,18 @@ export default function CreateDocumentPage() {
                           {/* Content */}
                           <div className={`${isLast ? "" : "pb-4"}`}>
                             <p className="text-[13px] font-medium text-zinc-800">
-                              {step.approver?.name || step.approverRole}
+                              {step.name}
                             </p>
-                            <p className="text-[11.5px] text-zinc-400">
-                              {step.approverRole}
-                            </p>
+                            {step.description && (
+                              <p className="text-[11.5px] text-zinc-400">
+                                {step.description}
+                              </p>
+                            )}
+                            {step.requireAll && (
+                              <span className="mt-1 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
+                                All must approve
+                              </span>
+                            )}
                           </div>
                         </li>
                       );

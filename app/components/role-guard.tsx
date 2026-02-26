@@ -6,7 +6,7 @@ import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: ("ADMIN" | "INITIATOR" | "APPROVER" | "USER")[];
+  allowedRoles: ("ADMIN" | "APPROVER" | "USER")[];
 }
 
 export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {

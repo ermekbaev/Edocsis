@@ -5,7 +5,7 @@ import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type UserRole   = "Admin" | "Initiator" | "Approver" | "User";
+type UserRole   = "Admin" | "Approver" | "User";
 type UserStatus = "Active" | "Pending" | "Disabled";
 
 interface SystemUser {
@@ -102,16 +102,15 @@ const USERS: SystemUser[] = [
   },
 ];
 
-const ROLE_OPTIONS: UserRole[] = ["User", "Initiator", "Approver", "Admin"];
+const ROLE_OPTIONS: UserRole[] = ["User", "Approver", "Admin"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function roleBadge(role: UserRole): string {
   const map: Record<UserRole, string> = {
-    Admin:     "bg-zinc-900 text-white",
-    Initiator: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-    Approver:  "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
-    User:      "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
+    Admin:    "bg-zinc-900 text-white",
+    Approver: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
+    User:     "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
   };
   return map[role];
 }
@@ -185,7 +184,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
 
     try {
       // Convert UI role to API role
-      const apiRole = role === "Admin" ? "ADMIN" : role === "Initiator" ? "INITIATOR" : role === "Approver" ? "APPROVER" : "USER";
+      const apiRole = role === "Admin" ? "ADMIN" : role === "Approver" ? "APPROVER" : "USER";
       await onSubmit({
         name: fullName.trim(),
         email: email.trim(),
@@ -354,11 +353,9 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
             <p className="mt-1.5 text-[11.5px] text-zinc-400">
               {role === "Admin"
                 ? "Full system access including user management and settings."
-                : role === "Initiator"
-                ? "Can create and submit documents for approval."
                 : role === "Approver"
                 ? "Can review, approve, or reject documents in assigned workflows."
-                : "Can only view documents (no creation or approval rights)."}
+                : "Can create documents and submit them for approval."}
             </p>
           </div>
         </div>
@@ -411,7 +408,7 @@ export default function UsersPage() {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role === "ADMIN" ? "Admin" : user.role === "INITIATOR" ? "Initiator" : user.role === "APPROVER" ? "Approver" : "User",
+            role: user.role === "ADMIN" ? "Admin" : user.role === "APPROVER" ? "Approver" : "User",
             status: "Active" as UserStatus, // TODO: implement status in DB
             createdDate: new Date(user.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
@@ -452,7 +449,7 @@ export default function UsersPage() {
       id: result.id,
       name: result.name,
       email: result.email,
-      role: result.role === "ADMIN" ? "Admin" : result.role === "INITIATOR" ? "Initiator" : result.role === "APPROVER" ? "Approver" : "User",
+      role: result.role === "ADMIN" ? "Admin" : result.role === "APPROVER" ? "Approver" : "User",
       status: "Active",
       createdDate: new Date(result.createdAt).toLocaleDateString("en-US", {
         year: "numeric",
@@ -466,7 +463,7 @@ export default function UsersPage() {
 
   async function handleUpdateRole(userId: string, newRole: UserRole) {
     const token = localStorage.getItem("token");
-    const apiRole = newRole === "Admin" ? "ADMIN" : newRole === "Initiator" ? "INITIATOR" : newRole === "Approver" ? "APPROVER" : "USER";
+    const apiRole = newRole === "Admin" ? "ADMIN" : newRole === "Approver" ? "APPROVER" : "USER";
 
     const res = await fetch(`/api/users/${userId}`, {
       method: "PUT",
@@ -488,7 +485,7 @@ export default function UsersPage() {
       u.id === userId
         ? {
             ...u,
-            role: updatedUser.role === "ADMIN" ? "Admin" : updatedUser.role === "INITIATOR" ? "Initiator" : updatedUser.role === "APPROVER" ? "Approver" : "User",
+            role: updatedUser.role === "ADMIN" ? "Admin" : updatedUser.role === "APPROVER" ? "Approver" : "User",
           }
         : u
     ));

@@ -30,7 +30,6 @@ function statusLabel(status: DocStatus): string {
   return map[status];
 }
 
-
 function BackIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -54,22 +53,17 @@ export default function DocumentPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [comment, setComment] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadDocument() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(`/api/documents/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        if (!res.ok) {
-          setError(true);
-          return;
-        }
-
+        if (!res.ok) { setError(true); return; }
         const data = await res.json();
         setDocument(data);
       } catch (err) {
@@ -79,9 +73,66 @@ export default function DocumentPage({
         setLoading(false);
       }
     }
-
     loadDocument();
   }, [id]);
+
+  async function handleApprove() {
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/documents/${id}/approve`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ comment }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setActionError(data.error || "Failed to approve");
+        return;
+      }
+      setDocument(data);
+      setComment("");
+    } catch {
+      setActionError("Failed to approve document");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleReject() {
+    if (!comment.trim()) {
+      setActionError("A comment is required when rejecting");
+      return;
+    }
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/documents/${id}/reject`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ comment }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setActionError(data.error || "Failed to reject");
+        return;
+      }
+      setDocument(data);
+      setComment("");
+    } catch {
+      setActionError("Failed to reject document");
+    } finally {
+      setActionLoading(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -110,7 +161,27 @@ export default function DocumentPage({
     );
   }
 
-  const isCurrentApprover = document.currentApproverId === currentUser?.id;
+  // Check if current user has a pending approval for the current step
+  const myPendingApproval = document.approvals?.find(
+    (a: any) =>
+      a.approverId === currentUser?.id &&
+      a.status === "PENDING" &&
+      (document.currentStepNumber !== null
+        ? a.stepNumber === document.currentStepNumber
+        : a.stepNumber === null)
+  );
+  const isCurrentApprover = Boolean(myPendingApproval) && document.status === "IN_APPROVAL";
+
+  // For multi-step: find the current step config
+  const approvalRoute = document.template?.approvalRoute;
+  const currentStep = approvalRoute?.steps?.find(
+    (s: any) => s.stepNumber === document.currentStepNumber
+  );
+
+  // Approvals for the current step (for "X of Y approved" display)
+  const currentStepApprovals = document.approvals?.filter(
+    (a: any) => a.stepNumber === document.currentStepNumber
+  ) ?? [];
 
   return (
     <div className="space-y-6">
@@ -129,7 +200,6 @@ export default function DocumentPage({
       {/* ── Document Header ───────────────────────────────────────────────── */}
       <div className="rounded-xl border border-zinc-200 bg-white px-6 py-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          {/* Title block */}
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="font-mono text-[12px] text-zinc-400">{document.number || document.id}</span>
@@ -152,7 +222,9 @@ export default function DocumentPage({
             { label: "Initiator", value: document.initiator?.name || "—" },
             { label: "Created",   value: new Date(document.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) },
             {
-              label: "Current Approver",
+              label: document.currentStepNumber
+                ? `Approver (Step ${document.currentStepNumber})`
+                : "Current Approver",
               value: document.currentApprover?.name || "—",
               highlight: document.status === "IN_APPROVAL",
             },
@@ -212,7 +284,6 @@ export default function DocumentPage({
               </div>
               <div className="px-6 py-5">
                 {document.template.content.split("\n\n").map((paragraph: string, idx: number) => {
-                  // Replace template variables with actual values
                   let processedParagraph = paragraph;
                   if (document.fieldValues) {
                     Object.keys(document.fieldValues).forEach((key) => {
@@ -234,7 +305,7 @@ export default function DocumentPage({
           )}
         </div>
 
-        {/* Right column — approval panel + timeline */}
+        {/* Right column — approval panel + details */}
         <div className="space-y-6">
 
           {/* Approval Panel */}
@@ -247,23 +318,43 @@ export default function DocumentPage({
 
             <div className="px-5 py-4">
               {isCurrentApprover ? (
-                /* ── Current user is the approver ── */
+                /* ── Current user must approve ── */
                 <div className="space-y-4">
                   <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                     <p className="text-[12.5px] font-semibold text-amber-800">
                       Your approval is required
                     </p>
-                    <p className="mt-0.5 text-[12px] text-amber-700">
-                      You are the designated approver for this document. Please review the content and take action.
-                    </p>
+                    {currentStep && (
+                      <p className="mt-0.5 text-[12px] text-amber-700">
+                        Step {currentStep.stepNumber}: {currentStep.name}
+                        {currentStep.requireAll && (
+                          <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                            All must approve
+                          </span>
+                        )}
+                      </p>
+                    )}
+                    {!currentStep && (
+                      <p className="mt-0.5 text-[12px] text-amber-700">
+                        Please review and take action.
+                      </p>
+                    )}
                   </div>
+
+                  {/* Progress within step (for requireAll steps) */}
+                  {currentStep?.requireAll && currentStepApprovals.length > 1 && (
+                    <div className="text-[12px] text-zinc-500">
+                      {currentStepApprovals.filter((a: any) => a.status === "APPROVED").length} of {currentStepApprovals.length} approvers have approved
+                    </div>
+                  )}
 
                   <div>
                     <label
                       htmlFor="approval-comment"
                       className="mb-1.5 block text-[12px] font-medium text-zinc-600"
                     >
-                      Comment <span className="text-zinc-400">(optional)</span>
+                      Comment{" "}
+                      <span className="text-zinc-400">(required for rejection)</span>
                     </label>
                     <textarea
                       id="approval-comment"
@@ -275,18 +366,26 @@ export default function DocumentPage({
                     />
                   </div>
 
+                  {actionError && (
+                    <p className="text-[12px] text-rose-600">{actionError}</p>
+                  )}
+
                   <div className="flex gap-2.5">
                     <button
                       type="button"
-                      className="flex-1 rounded-lg bg-zinc-900 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
+                      onClick={handleApprove}
+                      disabled={actionLoading}
+                      className="flex-1 rounded-lg bg-zinc-900 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Approve
+                      {actionLoading ? "Processing…" : "Approve"}
                     </button>
                     <button
                       type="button"
-                      className="flex-1 rounded-lg border border-zinc-200 bg-white py-2 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200"
+                      onClick={handleReject}
+                      disabled={actionLoading}
+                      className="flex-1 rounded-lg border border-zinc-200 bg-white py-2 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Reject
+                      {actionLoading ? "Processing…" : "Reject"}
                     </button>
                   </div>
 
@@ -305,6 +404,11 @@ export default function DocumentPage({
                       <p className="mt-0.5 text-[13.5px] font-semibold text-zinc-900">
                         {document.currentApprover?.name || "—"}
                       </p>
+                      {currentStep && (
+                        <p className="mt-1 text-[11.5px] text-zinc-400">
+                          Step {currentStep.stepNumber}: {currentStep.name}
+                        </p>
+                      )}
                     </div>
                   )}
                   {document.status === "APPROVED" && (
@@ -322,19 +426,59 @@ export default function DocumentPage({
                       <p className="text-[12.5px] font-semibold text-rose-800">
                         Document rejected
                       </p>
-                      <p className="mt-0.5 text-[12px] text-rose-700">
-                        This document was rejected. See the timeline for the reason.
-                      </p>
+                      {(() => {
+                        const rejectedApproval = document.approvals?.find(
+                          (a: any) => a.status === "REJECTED"
+                        );
+                        return rejectedApproval?.comment ? (
+                          <p className="mt-0.5 text-[12px] text-rose-700">
+                            Reason: {rejectedApproval.comment}
+                          </p>
+                        ) : (
+                          <p className="mt-0.5 text-[12px] text-rose-700">
+                            This document was rejected.
+                          </p>
+                        );
+                      })()}
                     </div>
                   )}
                   {document.status === "DRAFT" && (
                     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
-                      <p className="text-[12.5px] font-semibold text-zinc-700">
-                        Draft
-                      </p>
+                      <p className="text-[12.5px] font-semibold text-zinc-700">Draft</p>
                       <p className="mt-0.5 text-[12px] text-zinc-500">
                         This document has not been submitted for approval yet.
                       </p>
+                    </div>
+                  )}
+
+                  {/* Approval history for multi-step */}
+                  {approvalRoute && document.approvals?.length > 0 && (
+                    <div className="mt-2 space-y-1.5">
+                      {approvalRoute.steps.map((step: any) => {
+                        const stepApprovals = document.approvals.filter(
+                          (a: any) => a.stepNumber === step.stepNumber
+                        );
+                        const anyDone = stepApprovals.some(
+                          (a: any) => a.status !== "PENDING"
+                        );
+                        if (!anyDone) return null;
+                        return (
+                          <div key={step.stepNumber} className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2.5">
+                            <p className="text-[11.5px] font-semibold text-zinc-700">
+                              Step {step.stepNumber}: {step.name}
+                            </p>
+                            {stepApprovals.map((a: any) => (
+                              <div key={a.approverId} className="mt-1 flex items-center gap-1.5">
+                                <span className={`inline-block h-1.5 w-1.5 rounded-full ${a.status === "APPROVED" ? "bg-emerald-500" : "bg-rose-500"}`} />
+                                <span className="text-[11.5px] text-zinc-600">
+                                  {a.approver?.name} — {a.status === "APPROVED" ? "Approved" : "Rejected"}
+                                  {a.comment && <span className="text-zinc-400"> ({a.comment})</span>}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -342,14 +486,13 @@ export default function DocumentPage({
             </div>
           </div>
 
-          {/* Document Info */}
+          {/* Document Details */}
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <div className="border-b border-zinc-100 px-5 py-4">
               <h3 className="text-[14px] font-semibold text-zinc-900">
                 Document Details
               </h3>
             </div>
-
             <div className="px-5 py-4 space-y-3">
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">

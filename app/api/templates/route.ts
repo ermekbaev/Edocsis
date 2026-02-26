@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireRole } from "@/lib/auth";
+import { requireAuth, requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const auth = await requireRole(req, "ADMIN");
+  const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
   const templates = await prisma.template.findMany({

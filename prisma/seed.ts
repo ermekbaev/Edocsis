@@ -51,27 +51,27 @@ async function main() {
     },
   });
 
-  const initiator1 = await prisma.user.create({
+  const user1 = await prisma.user.create({
     data: {
       name: "Maria Kuznetsova",
       email: "maria@edocsis.com",
       password: hashedPassword,
-      role: "INITIATOR",
+      role: "USER",
       department: "HR",
     },
   });
 
-  const initiator2 = await prisma.user.create({
+  const user2 = await prisma.user.create({
     data: {
       name: "Sergey Lebedev",
       email: "sergey@edocsis.com",
       password: hashedPassword,
-      role: "INITIATOR",
+      role: "USER",
       department: "Operations",
     },
   });
 
-  const user1 = await prisma.user.create({
+  const user3 = await prisma.user.create({
     data: {
       name: "Dmitry Romanov",
       email: "dmitry@edocsis.com",
@@ -263,8 +263,8 @@ async function main() {
   console.log(`   - admin@edocsis.com (ADMIN)`);
   console.log(`   - elena@edocsis.com (APPROVER)`);
   console.log(`   - boris@edocsis.com (APPROVER)`);
-  console.log(`   - maria@edocsis.com (INITIATOR)`);
-  console.log(`   - sergey@edocsis.com (INITIATOR)`);
+  console.log(`   - maria@edocsis.com (USER)`);
+  console.log(`   - sergey@edocsis.com (USER)`);
   console.log(`   - dmitry@edocsis.com (USER)`);
   console.log("\n📋 Templates created:");
   console.log(`   - Service Contract (10 fields) - 3-step approval`);

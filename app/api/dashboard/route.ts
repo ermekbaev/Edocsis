@@ -31,54 +31,57 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  // Get pending approvals (only for approvers)
+  // Get pending approvals — find documents where user has a PENDING approval record
+  // (covers requireAll steps where multiple approvers act independently)
   const pendingApprovals = auth.role === "APPROVER" || auth.role === "ADMIN"
     ? await prisma.document.findMany({
         where: {
           status: "IN_APPROVAL",
-          currentApproverId: auth.userId,
+          approvals: {
+            some: {
+              approverId: auth.userId,
+              status: "PENDING",
+            },
+          },
         },
         include: {
           template: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
           initiator: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: { createdAt: "desc" },
         take: 4,
       })
     : [];
 
-  // Get recent documents (last 7 for table)
+  // Get recent documents filtered by role:
+  // - ADMIN: all documents
+  // - APPROVER: documents where they have any approval record
+  // - USER: only their own documents
+  const recentDocumentsWhere =
+    auth.role === "ADMIN"
+      ? {}
+      : auth.role === "APPROVER"
+      ? { approvals: { some: { approverId: auth.userId } } }
+      : { initiatorId: auth.userId };
+
   const recentDocuments = await prisma.document.findMany({
+    where: recentDocumentsWhere,
     include: {
       template: {
-        select: {
-          name: true,
-        },
+        select: { name: true },
       },
       initiator: {
-        select: {
-          name: true,
-        },
+        select: { name: true },
       },
       currentApprover: {
-        select: {
-          name: true,
-        },
+        select: { name: true },
       },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
     take: 7,
   });
 

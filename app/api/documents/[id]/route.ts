@@ -14,7 +14,15 @@ export async function GET(
   const document = await prisma.document.findUnique({
     where: { id },
     include: {
-      template: true, // Include full template with content and fields
+      template: {
+        include: {
+          approvalRoute: {
+            include: {
+              steps: { orderBy: { stepNumber: "asc" } },
+            },
+          },
+        },
+      },
       initiator: {
         select: {
           name: true,
@@ -23,6 +31,16 @@ export async function GET(
       currentApprover: {
         select: {
           name: true,
+        },
+      },
+      approvals: {
+        select: {
+          approverId: true,
+          status: true,
+          stepNumber: true,
+          comment: true,
+          decidedAt: true,
+          approver: { select: { name: true } },
         },
       },
     },
