@@ -58,7 +58,7 @@ export async function POST(
   }
 
   // Check if template has approval route
-  const approvalRoute = document.template.approvalRoute;
+  const approvalRoute = document.template?.approvalRoute ?? null;
   if (!approvalRoute || approvalRoute.steps.length === 0) {
     // Use manually selected approver if provided
     let approver;
@@ -136,21 +136,36 @@ export async function POST(
   // Multi-step approval route exists
   const firstStep = approvalRoute.steps[0];
   const approverIds = firstStep.approverIds as string[];
+  const approverRole = firstStep.approverRole as string | null;
 
-  if (!approverIds || approverIds.length === 0) {
-    return NextResponse.json(
-      { error: "No approvers configured for first step" },
-      { status: 400 }
-    );
+  // Get all approvers for the first step:
+  // - If approverRole is set → find all users with that role
+  // - Otherwise → find specific users by approverIds
+  let approvers;
+  if (approverRole) {
+    approvers = await prisma.user.findMany({
+      where: { role: approverRole as any },
+    });
+    if (approvers.length === 0) {
+      return NextResponse.json(
+        { error: `No users found with role ${approverRole} for first step` },
+        { status: 400 }
+      );
+    }
+  } else {
+    if (!approverIds || approverIds.length === 0) {
+      return NextResponse.json(
+        { error: "No approvers configured for first step" },
+        { status: 400 }
+      );
+    }
+    approvers = await prisma.user.findMany({
+      where: {
+        id: { in: approverIds },
+        role: { in: ["APPROVER", "ADMIN"] },
+      },
+    });
   }
-
-  // Get all approvers for the first step
-  const approvers = await prisma.user.findMany({
-    where: {
-      id: { in: approverIds },
-      role: { in: ["APPROVER", "ADMIN"] },
-    },
-  });
 
   if (approvers.length === 0) {
     return NextResponse.json(

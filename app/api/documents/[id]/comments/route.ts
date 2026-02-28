@@ -53,7 +53,7 @@ export async function POST(
     );
   }
 
-  // Check if document exists
+  // Check if document exists and load approvals to verify commenter's access
   const document = await prisma.document.findUnique({
     where: { id },
     select: {
@@ -61,11 +61,29 @@ export async function POST(
       title: true,
       number: true,
       initiatorId: true,
+      approvals: {
+        select: { approverId: true },
+      },
     },
   });
 
   if (!document) {
     return NextResponse.json({ error: "Document not found" }, { status: 404 });
+  }
+
+  // Role-based comment access:
+  // - ADMIN: always allowed
+  // - INITIATOR / USER: only their own documents
+  // - APPROVER: only documents they are/were assigned to approve
+  const isAdmin     = auth.role === "ADMIN";
+  const isInitiator = document.initiatorId === auth.userId;
+  const isApprover  = document.approvals.some((a) => a.approverId === auth.userId);
+
+  if (!isAdmin && !isInitiator && !isApprover) {
+    return NextResponse.json(
+      { error: "You do not have permission to comment on this document" },
+      { status: 403 }
+    );
   }
 
   // Create comment

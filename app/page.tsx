@@ -325,7 +325,7 @@ export default function DashboardPage() {
 
                   {/* Template */}
                   <p className="truncate text-[12.5px] text-zinc-500">
-                    {doc.template.name}
+                    {doc.template?.name ?? "No template"}
                   </p>
 
                   {/* Status */}
@@ -379,7 +379,7 @@ export default function DashboardPage() {
                       {doc.title}
                     </p>
                     <p className="mt-1 text-[11.5px] text-zinc-400">
-                      {doc.template.name}
+                      {doc.template?.name ?? "No template"}
                     </p>
                     <div className="mt-1.5 flex items-center gap-3 text-[11.5px] text-zinc-400">
                       <span>

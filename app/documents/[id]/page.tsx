@@ -55,6 +55,8 @@ export default function DocumentPage({
   const [comment, setComment] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [statusChanging, setStatusChanging] = useState(false);
+  const [newStatus, setNewStatus] = useState<DocStatus | "">("");
 
   useEffect(() => {
     async function loadDocument() {
@@ -131,6 +133,33 @@ export default function DocumentPage({
       setActionError("Failed to reject document");
     } finally {
       setActionLoading(false);
+    }
+  }
+
+  async function handleStatusChange() {
+    if (!newStatus || newStatus === document.status) return;
+    setStatusChanging(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/documents/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setActionError(data.error || "Failed to change status");
+        return;
+      }
+      setDocument({ ...document, status: data.status });
+      setNewStatus("");
+    } catch {
+      setActionError("Failed to change status");
+    } finally {
+      setStatusChanging(false);
     }
   }
 
@@ -274,6 +303,52 @@ export default function DocumentPage({
             </div>
           )}
 
+          {/* Attached Files */}
+          {document.files && document.files.length > 0 && (
+            <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              <div className="border-b border-zinc-100 px-6 py-4">
+                <h3 className="text-[14px] font-semibold text-zinc-900">
+                  Attached Files
+                </h3>
+              </div>
+              <ul className="divide-y divide-zinc-100">
+                {document.files.map((file: any) => {
+                  const sizeKb = (file.size / 1024).toFixed(1);
+                  return (
+                    <li key={file.id} className="flex items-center gap-3 px-6 py-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <a
+                          href={file.path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block truncate text-[13px] font-medium text-zinc-900 hover:text-zinc-600 transition-colors"
+                        >
+                          {file.name}
+                        </a>
+                        <p className="text-[11.5px] text-zinc-400">
+                          {sizeKb} KB · {file.user?.name}
+                        </p>
+                      </div>
+                      <a
+                        href={file.path}
+                        download={file.name}
+                        className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
+                      >
+                        Download
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
           {/* Document Content */}
           {document.template?.content && (
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
@@ -283,23 +358,24 @@ export default function DocumentPage({
                 </h3>
               </div>
               <div className="px-6 py-5">
-                {document.template.content.split("\n\n").map((paragraph: string, idx: number) => {
-                  let processedParagraph = paragraph;
+                {(() => {
+                  // Replace literal \n with real newlines
+                  let text = document.template.content.replace(/\\n/g, "\n");
+                  // Fill in field values
                   if (document.fieldValues) {
                     Object.keys(document.fieldValues).forEach((key) => {
-                      const regex = new RegExp(`{{${key}}}`, "g");
-                      processedParagraph = processedParagraph.replace(regex, document.fieldValues[key]);
+                      const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+                      text = text.replace(regex, document.fieldValues[key] ?? "");
                     });
                   }
+                  // Remove any remaining unfilled {{variables}}
+                  text = text.replace(/\{\{[^}]+\}\}/g, "");
                   return (
-                    <p
-                      key={idx}
-                      className="mb-4 text-[13.5px] leading-relaxed text-zinc-600 last:mb-0"
-                    >
-                      {processedParagraph}
-                    </p>
+                    <pre className="whitespace-pre-wrap font-sans text-[13.5px] leading-relaxed text-zinc-600">
+                      {text}
+                    </pre>
                   );
-                })}
+                })()}
               </div>
             </div>
           )}
@@ -518,6 +594,50 @@ export default function DocumentPage({
               </div>
             </div>
           </div>
+
+          {/* Admin: Manual Status Change */}
+          {currentUser?.role === "ADMIN" && (
+            <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              <div className="border-b border-zinc-100 px-5 py-4">
+                <h3 className="text-[14px] font-semibold text-zinc-900">
+                  Admin Override
+                </h3>
+                <p className="mt-0.5 text-[12px] text-zinc-400">
+                  Manually change document status.
+                </p>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div className="relative">
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as DocStatus | "")}
+                    className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer"
+                  >
+                    <option value="">Select new status…</option>
+                    {(["DRAFT", "IN_APPROVAL", "APPROVED", "REJECTED"] as DocStatus[])
+                      .filter((s) => s !== document.status)
+                      .map((s) => (
+                        <option key={s} value={s}>{statusLabel(s)}</option>
+                      ))}
+                  </select>
+                  <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                  </span>
+                </div>
+                {actionError && (
+                  <p className="text-[12px] text-rose-600">{actionError}</p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleStatusChange}
+                  disabled={!newStatus || statusChanging}
+                  className="w-full rounded-lg border border-zinc-200 bg-white py-2 text-[13px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {statusChanging ? "Changing…" : "Change Status"}
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>

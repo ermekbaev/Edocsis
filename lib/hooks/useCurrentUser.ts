@@ -6,7 +6,7 @@ export interface CurrentUser {
   id: string;
   name: string;
   email: string;
-  role: "ADMIN" | "USER" | "APPROVER";
+  role: "ADMIN" | "USER" | "APPROVER" | "INITIATOR";
 }
 
 export function useCurrentUser(): CurrentUser | null {

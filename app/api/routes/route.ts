@@ -63,11 +63,20 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Validate steps
+  // Validate steps — each must have either approverRole OR at least one approverIds entry
+  const VALID_APPROVER_ROLES = ["APPROVER", "ADMIN"];
   for (const step of steps) {
-    if (!step.stepNumber || !step.name || !step.approverIds || !Array.isArray(step.approverIds)) {
+    if (!step.stepNumber || !step.name) {
       return NextResponse.json(
-        { error: "Each step must have stepNumber, name, and approverIds array" },
+        { error: "Each step must have stepNumber and name" },
+        { status: 400 }
+      );
+    }
+    const hasRole  = step.approverRole && VALID_APPROVER_ROLES.includes(step.approverRole);
+    const hasUsers = Array.isArray(step.approverIds) && step.approverIds.length > 0;
+    if (!hasRole && !hasUsers) {
+      return NextResponse.json(
+        { error: `Step "${step.name}": must have either a role or at least one approver selected` },
         { status: 400 }
       );
     }
@@ -84,7 +93,8 @@ export async function POST(req: NextRequest) {
           stepNumber: step.stepNumber,
           name: step.name,
           description: step.description,
-          approverIds: step.approverIds,
+          approverIds: step.approverIds ?? [],
+          approverRole: step.approverRole ?? null,
           requireAll: step.requireAll ?? false,
         })),
       },

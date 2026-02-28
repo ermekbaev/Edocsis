@@ -43,6 +43,18 @@ export async function GET(
           approver: { select: { name: true } },
         },
       },
+      files: {
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          path: true,
+          size: true,
+          mimeType: true,
+          createdAt: true,
+          user: { select: { name: true } },
+        },
+      },
     },
   });
 

@@ -16,6 +16,10 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get("search");
   const status = searchParams.get("status");
   const templateId = searchParams.get("templateId");
+  const initiatorId   = searchParams.get("initiatorId");
+  const initiatorRole = searchParams.get("initiatorRole");
+  const sortBy        = searchParams.get("sortBy") ?? "createdAt";
+  const sortOrder     = (searchParams.get("sortOrder") ?? "desc") as "asc" | "desc";
 
   // Build where conditions based on role
   const where: any = {};
@@ -33,7 +37,7 @@ export async function GET(req: NextRequest) {
       { currentApproverId: auth.userId },
     ];
   } else {
-    // USER sees only their own documents
+    // INITIATOR and USER see only their own documents
     where.initiatorId = auth.userId;
   }
 
@@ -63,6 +67,16 @@ export async function GET(req: NextRequest) {
     where.templateId = templateId;
   }
 
+  // Only ADMIN can filter by initiatorId or initiatorRole
+  if (user?.role === "ADMIN") {
+    if (initiatorId) {
+      where.initiatorId = initiatorId;
+    }
+    if (initiatorRole && ["USER", "INITIATOR", "APPROVER", "ADMIN"].includes(initiatorRole)) {
+      where.initiator = { role: initiatorRole };
+    }
+  }
+
   const documents = await prisma.document.findMany({
     where,
     include: {
@@ -83,7 +97,7 @@ export async function GET(req: NextRequest) {
       },
     },
     orderBy: {
-      createdAt: "desc",
+      [sortBy === "updatedAt" ? "updatedAt" : "createdAt"]: sortOrder,
     },
   });
 
@@ -94,24 +108,24 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  // APPROVER cannot create documents
-  if (auth.role === "APPROVER") {
+  // Only INITIATOR and ADMIN can create documents
+  if (auth.role !== "INITIATOR" && auth.role !== "ADMIN") {
     return NextResponse.json(
-      { error: "Approvers cannot create documents" },
+      { error: "Only initiators and admins can create documents" },
       { status: 403 }
     );
   }
 
-  let title: string, templateId: string, fieldValues: any;
+  let title: string, templateId: string | undefined, fieldValues: any;
   try {
     ({ title, templateId, fieldValues } = await req.json());
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
-  if (!title || !templateId) {
+  if (!title) {
     return NextResponse.json(
-      { error: "title and templateId are required" },
+      { error: "title is required" },
       { status: 400 },
     );
   }
@@ -127,7 +141,7 @@ export async function POST(req: NextRequest) {
         number,
         title,
         status:      "DRAFT",
-        templateId,
+        templateId:  templateId || null,
         initiatorId: auth.userId,
         fieldValues: fieldValues || null,
       },

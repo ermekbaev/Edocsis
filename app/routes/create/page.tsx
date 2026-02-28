@@ -19,10 +19,14 @@ interface User {
   role: string;
 }
 
+type ApproverMode = "users" | "role";
+
 interface StepForm {
   stepNumber: number;
   name: string;
   description: string;
+  approverMode: ApproverMode;
+  approverRole: string;
   approverIds: string[];
   requireAll: boolean;
 }
@@ -34,7 +38,7 @@ export default function CreateRoutePage() {
   const [description, setDescription] = useState("");
   const [templateId, setTemplateId] = useState("");
   const [steps, setSteps] = useState<StepForm[]>([
-    { stepNumber: 1, name: "", description: "", approverIds: [], requireAll: false },
+    { stepNumber: 1, name: "", description: "", approverMode: "users", approverRole: "", approverIds: [], requireAll: false },
   ]);
 
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -87,7 +91,7 @@ export default function CreateRoutePage() {
     const nextStepNumber = steps.length + 1;
     setSteps([
       ...steps,
-      { stepNumber: nextStepNumber, name: "", description: "", approverIds: [], requireAll: false },
+      { stepNumber: nextStepNumber, name: "", description: "", approverMode: "users", approverRole: "", approverIds: [], requireAll: false },
     ]);
   }
 
@@ -134,8 +138,11 @@ export default function CreateRoutePage() {
       if (steps.some(s => !s.name.trim())) {
         throw new Error("All steps must have a name");
       }
-      if (steps.some(s => s.approverIds.length === 0)) {
-        throw new Error("All steps must have at least one approver");
+      if (steps.some(s => s.approverMode === "users" && s.approverIds.length === 0)) {
+        throw new Error("All steps in 'users' mode must have at least one approver selected");
+      }
+      if (steps.some(s => s.approverMode === "role" && !s.approverRole)) {
+        throw new Error("All steps in 'role' mode must have a role selected");
       }
 
       const token = localStorage.getItem("token");
@@ -153,7 +160,8 @@ export default function CreateRoutePage() {
             stepNumber: s.stepNumber,
             name: s.name.trim(),
             description: s.description.trim() || undefined,
-            approverIds: s.approverIds,
+            approverIds: s.approverMode === "users" ? s.approverIds : [],
+            approverRole: s.approverMode === "role" ? s.approverRole : null,
             requireAll: s.requireAll,
           })),
         }),
@@ -360,44 +368,96 @@ export default function CreateRoutePage() {
                         />
                       </div>
 
-                      {/* Approvers */}
+                      {/* Approver assignment — mode toggle */}
                       <div>
                         <label className="block text-[12px] font-medium text-zinc-700 mb-2">
                           Approvers <span className="text-rose-500">*</span>
                         </label>
-                        <div className="max-h-48 overflow-y-auto rounded-lg border border-zinc-200 bg-white">
-                          {approvers.length === 0 ? (
-                            <p className="p-3 text-[12px] text-zinc-400">
-                              No approvers available. Create users with APPROVER or ADMIN role.
-                            </p>
-                          ) : (
-                            approvers.map((approver) => (
-                              <label
-                                key={approver.id}
-                                className="flex items-center gap-3 px-3 py-2 border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 cursor-pointer"
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={step.approverIds.includes(approver.id)}
-                                  onChange={() => toggleApprover(index, approver.id)}
-                                  className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[13px] font-medium text-zinc-900">
-                                    {approver.name}
-                                  </p>
-                                  <p className="text-[11.5px] text-zinc-500">
-                                    {approver.email} • {approver.role}
-                                  </p>
-                                </div>
-                              </label>
-                            ))
-                          )}
+
+                        {/* Mode toggle */}
+                        <div className="mb-3 flex rounded-lg border border-zinc-200 bg-zinc-50 p-0.5 w-fit gap-0.5">
+                          {([
+                            { value: "users", label: "Specific users" },
+                            { value: "role",  label: "By role"         },
+                          ] as { value: ApproverMode; label: string }[]).map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={() => updateStep(index, "approverMode", opt.value)}
+                              className={`rounded-md px-3 py-1.5 text-[12px] font-medium transition-colors ${
+                                step.approverMode === opt.value
+                                  ? "bg-white text-zinc-900 shadow-sm"
+                                  : "text-zinc-500 hover:text-zinc-700"
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
                         </div>
-                        {step.approverIds.length > 0 && (
-                          <p className="mt-1.5 text-[11.5px] text-zinc-500">
-                            {step.approverIds.length} approver{step.approverIds.length !== 1 ? 's' : ''} selected
-                          </p>
+
+                        {/* By role */}
+                        {step.approverMode === "role" && (
+                          <div className="space-y-1.5">
+                            <div className="relative">
+                              <select
+                                value={step.approverRole}
+                                onChange={(e) => updateStep(index, "approverRole", e.target.value)}
+                                className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-white pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-900 focus:outline-none cursor-pointer"
+                              >
+                                <option value="">Select a role…</option>
+                                <option value="APPROVER">Approver — all users with Approver role</option>
+                                <option value="ADMIN">Admin — all users with Admin role</option>
+                              </select>
+                              <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                              </span>
+                            </div>
+                            {step.approverRole && (
+                              <p className="text-[11.5px] text-zinc-500">
+                                All current and future users with role <strong>{step.approverRole}</strong> will be notified and can approve.
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* By specific users */}
+                        {step.approverMode === "users" && (
+                          <div>
+                            <div className="max-h-48 overflow-y-auto rounded-lg border border-zinc-200 bg-white">
+                              {approvers.length === 0 ? (
+                                <p className="p-3 text-[12px] text-zinc-400">
+                                  No approvers available. Create users with APPROVER or ADMIN role.
+                                </p>
+                              ) : (
+                                approvers.map((approver) => (
+                                  <label
+                                    key={approver.id}
+                                    className="flex items-center gap-3 px-3 py-2 border-b border-zinc-100 last:border-b-0 hover:bg-zinc-50 cursor-pointer"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={step.approverIds.includes(approver.id)}
+                                      onChange={() => toggleApprover(index, approver.id)}
+                                      className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[13px] font-medium text-zinc-900">
+                                        {approver.name}
+                                      </p>
+                                      <p className="text-[11.5px] text-zinc-500">
+                                        {approver.email} · {approver.role}
+                                      </p>
+                                    </div>
+                                  </label>
+                                ))
+                              )}
+                            </div>
+                            {step.approverIds.length > 0 && (
+                              <p className="mt-1.5 text-[11.5px] text-zinc-500">
+                                {step.approverIds.length} approver{step.approverIds.length !== 1 ? 's' : ''} selected
+                              </p>
+                            )}
+                          </div>
                         )}
                       </div>
 

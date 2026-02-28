@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Validate role
-  if (!["USER", "APPROVER", "ADMIN"].includes(role)) {
+  if (!["USER", "INITIATOR", "APPROVER", "ADMIN"].includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     data: {
       email,
       name,
-      role: role as "USER" | "APPROVER" | "ADMIN",
+      role: role as "USER" | "INITIATOR" | "APPROVER" | "ADMIN",
       password: hashedPassword,
       department: department || null,
     },

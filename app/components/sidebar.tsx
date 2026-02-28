@@ -61,8 +61,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       return item.href !== "/templates";
     }
 
+    if (user.role === "INITIATOR") {
+      // Initiator can create docs from templates but cannot approve
+      return item.href !== "/approvals";
+    }
+
     if (user.role === "USER") {
-      // Hide Templates and My Approvals
+      // User can only view their own documents
       return item.href !== "/templates" && item.href !== "/approvals";
     }
 

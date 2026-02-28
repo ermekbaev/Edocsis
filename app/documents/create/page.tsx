@@ -88,6 +88,8 @@ export default function CreateDocumentPage() {
   const [selectedApproverId, setSelectedApproverId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [title, setTitle] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
 
   // Load templates from API
   useEffect(() => {
@@ -156,8 +158,12 @@ export default function CreateDocumentPage() {
   }
 
   async function handleSubmit(asDraft: boolean) {
-    if (!template || !title.trim()) {
-      alert("Please select a template and enter a title");
+    if (!title.trim()) {
+      alert("Please enter a document title");
+      return;
+    }
+    if (!template && attachedFiles.length === 0) {
+      alert("Please select a template or attach at least one file");
       return;
     }
 
@@ -177,8 +183,8 @@ export default function CreateDocumentPage() {
         },
         body: JSON.stringify({
           title: title.trim(),
-          templateId: template.id,
-          fieldValues: formValues,
+          templateId: template?.id ?? undefined,
+          fieldValues: template ? formValues : undefined,
         }),
       });
 
@@ -189,7 +195,18 @@ export default function CreateDocumentPage() {
 
       const newDocument = await createRes.json();
 
-      // Step 2: If not draft, submit for approval
+      // Step 2: Upload attached files
+      for (const file of attachedFiles) {
+        const formData = new FormData();
+        formData.append("file", file);
+        await fetch(`/api/documents/${newDocument.id}/files`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+      }
+
+      // Step 3: If not draft, submit for approval
       if (!asDraft) {
         const submitRes = await fetch(`/api/documents/${newDocument.id}/submit`, {
           method: "POST",
@@ -425,6 +442,78 @@ export default function CreateDocumentPage() {
               </div>
             </div>
           )}
+          {/* File Attachments */}
+          <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+            <div className="border-b border-zinc-100 px-5 py-4">
+              <h3 className="text-[14px] font-semibold text-zinc-900">Attachments</h3>
+              <p className="mt-0.5 text-[12.5px] text-zinc-400">
+                Optional. PDF, DOCX, XLSX, JPG, PNG — max 10 MB each.
+              </p>
+            </div>
+            <div className="px-5 py-5 space-y-3">
+              {/* Drop zone */}
+              <label
+                className={`flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 cursor-pointer transition-colors ${
+                  dragOver ? "border-zinc-400 bg-zinc-50" : "border-zinc-200 hover:border-zinc-300"
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  const dropped = Array.from(e.dataTransfer.files);
+                  setAttachedFiles((prev) => [...prev, ...dropped]);
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-300">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span className="text-[12.5px] text-zinc-400">
+                  Drag & drop files here or{" "}
+                  <span className="font-medium text-zinc-600">browse</span>
+                </span>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const selected = Array.from(e.target.files ?? []);
+                    setAttachedFiles((prev) => [...prev, ...selected]);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+
+              {/* File list */}
+              {attachedFiles.length > 0 && (
+                <ul className="space-y-1.5">
+                  {attachedFiles.map((file, idx) => (
+                    <li key={idx} className="flex items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-zinc-400">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <span className="truncate text-[12.5px] text-zinc-700">{file.name}</span>
+                        <span className="shrink-0 text-[11px] text-zinc-400">
+                          {(file.size / 1024).toFixed(0)} KB
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setAttachedFiles((prev) => prev.filter((_, i) => i !== idx))}
+                        className="ml-2 shrink-0 text-zinc-300 hover:text-zinc-500 transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ── Right column: details + approval route + actions ── */}
@@ -505,15 +594,15 @@ export default function CreateDocumentPage() {
             </div>
           </div>
 
-          {/* Approver Selection — only when template has NO approval route */}
-          {template && !template.approvalRoute && (
+          {/* Approver Selection — when no template, or template has no approval route */}
+          {(!template || !template.approvalRoute) && (
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-5 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
                   Select Approver
                 </h3>
                 <p className="mt-0.5 text-[12px] text-zinc-400">
-                  This template has no approval route
+                  {template ? "This template has no approval route" : "Choose who will approve this document"}
                 </p>
               </div>
 
@@ -609,7 +698,7 @@ export default function CreateDocumentPage() {
               type="button"
               onClick={() => handleSubmit(false)}
               className="flex w-full items-center justify-center rounded-lg bg-zinc-900 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
-              disabled={!template || !title.trim()}
+              disabled={!title.trim() || (!template && attachedFiles.length === 0)}
             >
               Submit for Approval
             </button>
@@ -617,7 +706,7 @@ export default function CreateDocumentPage() {
               type="button"
               onClick={() => handleSubmit(true)}
               className="flex w-full items-center justify-center rounded-lg border border-zinc-200 bg-white py-2.5 text-[13px] font-semibold text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed"
-              disabled={!template || !title.trim()}
+              disabled={!title.trim() || (!template && attachedFiles.length === 0)}
             >
               Save as Draft
             </button>

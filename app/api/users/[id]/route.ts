@@ -38,12 +38,12 @@ export async function PUT(
   }
 
   // Validate role if provided
-  if (role !== undefined && !["USER", "APPROVER", "ADMIN"].includes(role)) {
+  if (role !== undefined && !["USER", "INITIATOR", "APPROVER", "ADMIN"].includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
   // Build update data
-  const data: { name?: string; role?: "USER" | "APPROVER" | "ADMIN"; department?: string | null } = {};
+  const data: { name?: string; role?: "USER" | "INITIATOR" | "APPROVER" | "ADMIN"; department?: string | null } = {};
   if (name !== undefined) {
     if (name.trim().length === 0) {
       return NextResponse.json(
@@ -54,7 +54,7 @@ export async function PUT(
     data.name = name.trim();
   }
   if (role !== undefined) {
-    data.role = role as "USER" | "APPROVER" | "ADMIN";
+    data.role = role as "USER" | "INITIATOR" | "APPROVER" | "ADMIN";
   }
   if (department !== undefined) {
     data.department = department.trim() || null;

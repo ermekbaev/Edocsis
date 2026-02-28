@@ -16,6 +16,7 @@ datasource db {
 enum Role {
   ADMIN
   APPROVER
+  INITIATOR
   USER
 }
 
@@ -77,10 +78,11 @@ model Document {
   fieldValues      Json?          // Filled field values: { fieldKey: value }
   currentStepNumber Int?          // Current approval step number (1, 2, 3, etc.)
   createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   // Relations
-  template          Template   @relation(fields: [templateId], references: [id])
-  templateId        String
+  template          Template?  @relation(fields: [templateId], references: [id])
+  templateId        String?
   initiator         User       @relation("DocumentInitiator", fields: [initiatorId], references: [id])
   initiatorId       String
   currentApprover   User?      @relation("DocumentApprover", fields: [currentApproverId], references: [id])
@@ -176,7 +178,8 @@ model ApprovalRouteStep {
   stepNumber  Int      // 1, 2, 3, etc. (order of steps)
   name        String   // e.g. "Department Head Approval"
   description String?
-  approverIds Json     // Array of user IDs who can approve at this step: ["userId1", "userId2"]
+  approverIds  Json     // Array of user IDs who can approve at this step (empty if approverRole is set)
+  approverRole String?  // Optional: assign all users of a role ("APPROVER" or "ADMIN")
   requireAll  Boolean  @default(false) // If true, ALL approvers must approve; if false, ANY approver can approve
 
   // Relations

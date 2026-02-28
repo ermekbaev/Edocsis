@@ -85,13 +85,23 @@ export async function GET(req: NextRequest) {
     take: 7,
   });
 
-  // Get recent activity (audit logs for user's documents)
+  // Get recent activity (audit logs) filtered by role
+  const recentActivityWhere =
+    auth.role === "ADMIN"
+      ? {}
+      : auth.role === "APPROVER"
+      ? {
+          document: {
+            OR: [
+              { initiatorId: auth.userId },
+              { approvals: { some: { approverId: auth.userId } } },
+            ],
+          },
+        }
+      : { document: { initiatorId: auth.userId } };
+
   const recentActivity = await prisma.auditLog.findMany({
-    where: {
-      document: {
-        initiatorId: auth.userId,
-      },
-    },
+    where: recentActivityWhere,
     include: {
       document: {
         select: {
