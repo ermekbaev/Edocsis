@@ -6,29 +6,34 @@ export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
-  const templates = await prisma.template.findMany({
-    include: {
-      createdBy: {
-        select: {
-          name: true,
+  try {
+    const templates = await prisma.template.findMany({
+      include: {
+        createdBy: {
+          select: {
+            name: true,
+          },
         },
-      },
-      approvalRoute: {
-        include: {
-          steps: {
-            orderBy: {
-              stepNumber: "asc",
+        approvalRoute: {
+          include: {
+            steps: {
+              orderBy: {
+                stepNumber: "asc",
+              },
             },
           },
         },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-  return NextResponse.json(templates);
+    return NextResponse.json(templates);
+  } catch (error: any) {
+    console.error("Templates GET error:", error);
+    return NextResponse.json({ error: "Failed to load templates", detail: error?.message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
