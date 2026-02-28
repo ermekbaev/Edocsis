@@ -20,6 +20,8 @@ export async function POST(
     // No body or invalid JSON - that's fine, approverId is optional
   }
 
+  try {
+
   // Find document with template and approval route
   const document = await prisma.document.findUnique({
     where: { id },
@@ -219,4 +221,9 @@ export async function POST(
   ]);
 
   return NextResponse.json(updatedDocument);
+
+  } catch (error: any) {
+    console.error("Submit route error:", error);
+    return NextResponse.json({ error: "Failed to submit document", detail: error?.message }, { status: 500 });
+  }
 }
