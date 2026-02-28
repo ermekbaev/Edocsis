@@ -87,7 +87,7 @@ export async function POST(
   const isMultiStep = document.currentStepNumber !== null;
 
   if (isMultiStep) {
-    const approvalRoute = document.template.approvalRoute;
+    const approvalRoute = document.template?.approvalRoute ?? null;
     const currentStep = approvalRoute?.steps.find(
       (s) => s.stepNumber === document.currentStepNumber
     );

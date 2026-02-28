@@ -74,7 +74,7 @@ export async function POST(
   }
 
   const document = approval.document;
-  const approvalRoute = document.template.approvalRoute;
+  const approvalRoute = document.template?.approvalRoute ?? null;
 
   // If rejection, set document to REJECTED immediately
   if (action === "reject") {
