@@ -23,7 +23,7 @@ async function main() {
 
   const admin = await prisma.user.create({
     data: {
-      name: "Adil Kaliyev",
+      name: "ADMINISTRATOR",
       email: "admin@edocsis.com",
       password: hashedPassword,
       role: "ADMIN",
@@ -88,19 +88,72 @@ async function main() {
     data: {
       name: "Service Contract",
       description: "Standard service contract template for vendor agreements",
-      content: "SERVICE AGREEMENT\\n\\nDate: {{contractDate}}\\nClient: {{clientName}}\\nAddress: {{clientAddress}}\\n\\nServices: {{servicesDescription}}\\nAmount: ${{contractAmount}} USD\\nStart: {{startDate}}\\nEnd: {{endDate}}",
-      fields: JSON.parse(JSON.stringify([
-        { key: "contractDate", label: "Contract Date", type: "date", required: true },
-        { key: "clientName", label: "Client Name", type: "text", required: true },
-        { key: "clientAddress", label: "Client Address", type: "textarea", required: true },
-        { key: "clientRegNumber", label: "Client Registration Number", type: "text", required: false },
-        { key: "servicesDescription", label: "Services Description", type: "textarea", required: true },
-        { key: "contractAmount", label: "Contract Amount (USD)", type: "number", required: true },
-        { key: "paymentSchedule", label: "Payment Schedule", type: "text", required: false },
-        { key: "paymentDueDate", label: "Payment Due Date", type: "date", required: true },
-        { key: "startDate", label: "Contract Start Date", type: "date", required: true },
-        { key: "endDate", label: "Contract End Date", type: "date", required: true },
-      ])),
+      content:
+        "SERVICE AGREEMENT\\n\\nDate: {{contractDate}}\\nClient: {{clientName}}\\nAddress: {{clientAddress}}\\n\\nServices: {{servicesDescription}}\\nAmount: ${{contractAmount}} USD\\nStart: {{startDate}}\\nEnd: {{endDate}}",
+      fields: JSON.parse(
+        JSON.stringify([
+          {
+            key: "contractDate",
+            label: "Contract Date",
+            type: "date",
+            required: true,
+          },
+          {
+            key: "clientName",
+            label: "Client Name",
+            type: "text",
+            required: true,
+          },
+          {
+            key: "clientAddress",
+            label: "Client Address",
+            type: "textarea",
+            required: true,
+          },
+          {
+            key: "clientRegNumber",
+            label: "Client Registration Number",
+            type: "text",
+            required: false,
+          },
+          {
+            key: "servicesDescription",
+            label: "Services Description",
+            type: "textarea",
+            required: true,
+          },
+          {
+            key: "contractAmount",
+            label: "Contract Amount (USD)",
+            type: "number",
+            required: true,
+          },
+          {
+            key: "paymentSchedule",
+            label: "Payment Schedule",
+            type: "text",
+            required: false,
+          },
+          {
+            key: "paymentDueDate",
+            label: "Payment Due Date",
+            type: "date",
+            required: true,
+          },
+          {
+            key: "startDate",
+            label: "Contract Start Date",
+            type: "date",
+            required: true,
+          },
+          {
+            key: "endDate",
+            label: "Contract End Date",
+            type: "date",
+            required: true,
+          },
+        ]),
+      ),
       createdById: admin.id,
     },
   });
@@ -109,17 +162,60 @@ async function main() {
     data: {
       name: "Non-Disclosure Agreement",
       description: "Confidentiality agreement for business partnerships",
-      content: "NON-DISCLOSURE AGREEMENT\\n\\nThis Non-Disclosure Agreement (\"Agreement\") is made on {{agreementDate}} between:\\n\\nDISCLOSING PARTY:\\nName: {{disclosingPartyName}}\\nAddress: {{disclosingPartyAddress}}\\n\\nRECEIVING PARTY:\\nName: {{receivingPartyName}}\\nAddress: {{receivingPartyAddress}}\\n\\nPURPOSE:\\n{{purposeDescription}}\\n\\n1. CONFIDENTIAL INFORMATION\\nThe parties agree to keep confidential all information shared during the collaboration period.\\n\\n2. OBLIGATIONS\\nDuration of confidentiality: {{confidentialityYears}} years\\nNon-disclosure obligations apply from: {{effectiveDate}}\\n\\n3. EXCLUSIONS\\nInformation that is publicly available is not considered confidential.\\n\\nSigned on: {{agreementDate}}",
-      fields: JSON.parse(JSON.stringify([
-        { key: "agreementDate", label: "Agreement Date", type: "date", required: true },
-        { key: "disclosingPartyName", label: "Disclosing Party Name", type: "text", required: true },
-        { key: "disclosingPartyAddress", label: "Disclosing Party Address", type: "textarea", required: true },
-        { key: "receivingPartyName", label: "Receiving Party Name", type: "text", required: true },
-        { key: "receivingPartyAddress", label: "Receiving Party Address", type: "textarea", required: true },
-        { key: "purposeDescription", label: "Purpose of NDA", type: "textarea", required: true },
-        { key: "confidentialityYears", label: "Confidentiality Period (years)", type: "number", required: true },
-        { key: "effectiveDate", label: "Effective Date", type: "date", required: true },
-      ])),
+      content:
+        'NON-DISCLOSURE AGREEMENT\\n\\nThis Non-Disclosure Agreement ("Agreement") is made on {{agreementDate}} between:\\n\\nDISCLOSING PARTY:\\nName: {{disclosingPartyName}}\\nAddress: {{disclosingPartyAddress}}\\n\\nRECEIVING PARTY:\\nName: {{receivingPartyName}}\\nAddress: {{receivingPartyAddress}}\\n\\nPURPOSE:\\n{{purposeDescription}}\\n\\n1. CONFIDENTIAL INFORMATION\\nThe parties agree to keep confidential all information shared during the collaboration period.\\n\\n2. OBLIGATIONS\\nDuration of confidentiality: {{confidentialityYears}} years\\nNon-disclosure obligations apply from: {{effectiveDate}}\\n\\n3. EXCLUSIONS\\nInformation that is publicly available is not considered confidential.\\n\\nSigned on: {{agreementDate}}',
+      fields: JSON.parse(
+        JSON.stringify([
+          {
+            key: "agreementDate",
+            label: "Agreement Date",
+            type: "date",
+            required: true,
+          },
+          {
+            key: "disclosingPartyName",
+            label: "Disclosing Party Name",
+            type: "text",
+            required: true,
+          },
+          {
+            key: "disclosingPartyAddress",
+            label: "Disclosing Party Address",
+            type: "textarea",
+            required: true,
+          },
+          {
+            key: "receivingPartyName",
+            label: "Receiving Party Name",
+            type: "text",
+            required: true,
+          },
+          {
+            key: "receivingPartyAddress",
+            label: "Receiving Party Address",
+            type: "textarea",
+            required: true,
+          },
+          {
+            key: "purposeDescription",
+            label: "Purpose of NDA",
+            type: "textarea",
+            required: true,
+          },
+          {
+            key: "confidentialityYears",
+            label: "Confidentiality Period (years)",
+            type: "number",
+            required: true,
+          },
+          {
+            key: "effectiveDate",
+            label: "Effective Date",
+            type: "date",
+            required: true,
+          },
+        ]),
+      ),
       createdById: admin.id,
     },
   });
@@ -128,17 +224,60 @@ async function main() {
     data: {
       name: "Employment Contract",
       description: "Standard employment contract for new hires",
-      content: "EMPLOYMENT CONTRACT\\n\\nEmployee Name: {{employeeName}}\\nPosition: {{position}}\\nDepartment: {{department}}\\n\\nStart Date: {{startDate}}\\nSalary: ${{salary}} USD per month\\n\\nWork Schedule: {{workSchedule}}\\nProbation Period: {{probationMonths}} months\\n\\nThis employment contract is subject to company policies and labor laws.\\n\\nSigned on: {{contractDate}}",
-      fields: JSON.parse(JSON.stringify([
-        { key: "employeeName", label: "Employee Full Name", type: "text", required: true },
-        { key: "position", label: "Job Position", type: "text", required: true },
-        { key: "department", label: "Department", type: "text", required: true },
-        { key: "startDate", label: "Start Date", type: "date", required: true },
-        { key: "salary", label: "Monthly Salary (USD)", type: "number", required: true },
-        { key: "workSchedule", label: "Work Schedule", type: "text", required: false },
-        { key: "probationMonths", label: "Probation Period (months)", type: "number", required: false },
-        { key: "contractDate", label: "Contract Date", type: "date", required: true },
-      ])),
+      content:
+        "EMPLOYMENT CONTRACT\\n\\nEmployee Name: {{employeeName}}\\nPosition: {{position}}\\nDepartment: {{department}}\\n\\nStart Date: {{startDate}}\\nSalary: ${{salary}} USD per month\\n\\nWork Schedule: {{workSchedule}}\\nProbation Period: {{probationMonths}} months\\n\\nThis employment contract is subject to company policies and labor laws.\\n\\nSigned on: {{contractDate}}",
+      fields: JSON.parse(
+        JSON.stringify([
+          {
+            key: "employeeName",
+            label: "Employee Full Name",
+            type: "text",
+            required: true,
+          },
+          {
+            key: "position",
+            label: "Job Position",
+            type: "text",
+            required: true,
+          },
+          {
+            key: "department",
+            label: "Department",
+            type: "text",
+            required: true,
+          },
+          {
+            key: "startDate",
+            label: "Start Date",
+            type: "date",
+            required: true,
+          },
+          {
+            key: "salary",
+            label: "Monthly Salary (USD)",
+            type: "number",
+            required: true,
+          },
+          {
+            key: "workSchedule",
+            label: "Work Schedule",
+            type: "text",
+            required: false,
+          },
+          {
+            key: "probationMonths",
+            label: "Probation Period (months)",
+            type: "number",
+            required: false,
+          },
+          {
+            key: "contractDate",
+            label: "Contract Date",
+            type: "date",
+            required: true,
+          },
+        ]),
+      ),
       createdById: admin.id,
     },
   });
@@ -236,7 +375,9 @@ async function main() {
             stepNumber: 1,
             name: "HR & Finance Review",
             description: "Both HR and Finance must approve",
-            approverIds: JSON.parse(JSON.stringify([approver1.id, approver2.id])),
+            approverIds: JSON.parse(
+              JSON.stringify([approver1.id, approver2.id]),
+            ),
             requireAll: true, // Both must approve
           },
           {
@@ -257,7 +398,9 @@ async function main() {
   console.log("\n📊 Summary:");
   console.log(`   - Created ${await prisma.user.count()} users`);
   console.log(`   - Created ${await prisma.template.count()} templates`);
-  console.log(`   - Created ${await prisma.approvalRoute.count()} approval routes`);
+  console.log(
+    `   - Created ${await prisma.approvalRoute.count()} approval routes`,
+  );
   console.log("\n🔐 Default password for all users: password123");
   console.log("\n👤 Users created:");
   console.log(`   - admin@edocsis.com (ADMIN)`);
@@ -269,7 +412,9 @@ async function main() {
   console.log("\n📋 Templates created:");
   console.log(`   - Service Contract (10 fields) - 3-step approval`);
   console.log(`   - Non-Disclosure Agreement (8 fields) - 2-step approval`);
-  console.log(`   - Employment Contract (8 fields) - 2-step approval (parallel)`);
+  console.log(
+    `   - Employment Contract (8 fields) - 2-step approval (parallel)`,
+  );
   console.log(`   - Budget Request`);
   console.log(`   - Software License Agreement`);
 }

@@ -5,20 +5,28 @@ import { useState } from "react";
 // ─── Mock user ────────────────────────────────────────────────────────────────
 
 const MOCK_USER = {
-  fullName:   "Adil Kaliyev",
-  email:      "a.kaliyev@edocsis.com",
-  role:       "ADMIN",
+  fullName: "ADMINISTRATOR",
+  email: "a.kaliyev@edocsis.com",
+  role: "ADMIN",
   department: "Product",
-  phone:      "+7 701 234 5678",
+  phone: "+7 701 234 5678",
 };
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 function CameraIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"
-      strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
       <circle cx="12" cy="13" r="4" />
     </svg>
@@ -27,17 +35,33 @@ function CameraIcon() {
 
 function EyeIcon({ off }: { off?: boolean }) {
   return off ? (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"
-      strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
       <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
       <line x1="1" y1="1" x2="23" y2="23" />
     </svg>
   ) : (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"
-      strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
@@ -46,16 +70,31 @@ function EyeIcon({ off }: { off?: boolean }) {
 
 // ─── Small helpers ────────────────────────────────────────────────────────────
 
-function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
+function Label({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
   return (
-    <label htmlFor={htmlFor} className="block text-[12.5px] font-medium text-zinc-700 mb-1.5">
+    <label
+      htmlFor={htmlFor}
+      className="block text-[12.5px] font-medium text-zinc-700 mb-1.5"
+    >
       {children}
     </label>
   );
 }
 
 function Input({
-  id, type = "text", value, onChange, placeholder, disabled, readOnly,
+  id,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  readOnly,
 }: {
   id: string;
   type?: string;
@@ -83,7 +122,10 @@ function Input({
 }
 
 function PasswordInput({
-  id, value, onChange, placeholder,
+  id,
+  value,
+  onChange,
+  placeholder,
 }: {
   id: string;
   value: string;
@@ -118,20 +160,18 @@ function PasswordInput({
 
 export default function ProfilePage() {
   // ── Personal info state ──
-  const [fullName,   setFullName]   = useState(MOCK_USER.fullName);
-  const [email,      setEmail]      = useState(MOCK_USER.email);
+  const [fullName, setFullName] = useState(MOCK_USER.fullName);
+  const [email, setEmail] = useState(MOCK_USER.email);
   const [department, setDepartment] = useState(MOCK_USER.department);
-  const [phone,      setPhone]      = useState(MOCK_USER.phone);
+  const [phone, setPhone] = useState(MOCK_USER.phone);
 
   // ── Password state ──
-  const [currentPw,  setCurrentPw]  = useState("");
-  const [newPw,      setNewPw]      = useState("");
-  const [confirmPw,  setConfirmPw]  = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
 
   const pwValid =
-    currentPw.length > 0 &&
-    newPw.length >= 8 &&
-    newPw === confirmPw;
+    currentPw.length > 0 && newPw.length >= 8 && newPw === confirmPw;
 
   const pwMismatch = confirmPw.length > 0 && newPw !== confirmPw;
 
@@ -145,7 +185,6 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-260 space-y-6">
-
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
@@ -159,7 +198,6 @@ export default function ProfilePage() {
       {/* ── Section 1: Personal Information ─────────────────────────────── */}
       <div className="rounded-xl border border-zinc-200 bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr]">
-
           {/* ── Left: section label + avatar ── */}
           <div className="flex flex-col gap-5 border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
             <div>
@@ -194,7 +232,6 @@ export default function ProfilePage() {
           {/* ── Right: form fields ── */}
           <div className="flex flex-col">
             <div className="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-2">
-
               {/* Full Name */}
               <div>
                 <Label htmlFor="profile-name">Full Name</Label>
@@ -277,10 +314,11 @@ export default function ProfilePage() {
       {/* ── Section 2: Security ──────────────────────────────────────────── */}
       <div className="rounded-xl border border-zinc-200 bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr]">
-
           {/* ── Left: section label ── */}
           <div className="border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
-            <h3 className="text-[14px] font-semibold text-zinc-900">Security</h3>
+            <h3 className="text-[14px] font-semibold text-zinc-900">
+              Security
+            </h3>
             <p className="mt-1 text-[12.5px] text-zinc-400 leading-relaxed">
               Update your password. Use at least 8 characters.
             </p>
@@ -289,7 +327,6 @@ export default function ProfilePage() {
           {/* ── Right: password fields ── */}
           <div className="flex flex-col">
             <div className="space-y-4 px-6 py-6">
-
               {/* Current password */}
               <div className="max-w-sm">
                 <Label htmlFor="pw-current">Current Password</Label>
@@ -302,7 +339,6 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-
                 {/* New password */}
                 <div>
                   <Label htmlFor="pw-new">New Password</Label>
@@ -350,7 +386,6 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-
     </div>
   );
 }

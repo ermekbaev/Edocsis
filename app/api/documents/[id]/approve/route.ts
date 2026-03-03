@@ -105,7 +105,7 @@ export async function POST(
     const stepApprovals = await prisma.approval.findMany({
       where: {
         documentId: id,
-        stepNumber: document.currentStepNumber,
+        stepNumber: document.currentStepNumber ?? undefined,
       },
     });
 

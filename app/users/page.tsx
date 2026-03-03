@@ -5,7 +5,7 @@ import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type UserRole   = "Admin" | "Initiator" | "Approver" | "User";
+type UserRole = "Admin" | "Initiator" | "Approver" | "User";
 type UserStatus = "Active" | "Pending" | "Disabled";
 
 interface SystemUser {
@@ -22,8 +22,8 @@ interface SystemUser {
 const USERS: SystemUser[] = [
   {
     id: "usr-001",
-    name: "Adil Kaliyev",
-    email: "a.kaliyev@edocsis.com",
+    name: "ADMINISTRATOR",
+    email: "admin@edocsis.com",
     role: "Admin",
     status: "Active",
     createdDate: "12 Jan 2026",
@@ -108,18 +108,18 @@ const ROLE_OPTIONS: UserRole[] = ["User", "Initiator", "Approver", "Admin"];
 
 function roleBadge(role: UserRole): string {
   const map: Record<UserRole, string> = {
-    Admin:     "bg-zinc-900 text-white",
+    Admin: "bg-zinc-900 text-white",
     Initiator: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",
-    Approver:  "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
-    User:      "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
+    Approver: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
+    User: "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
   };
   return map[role];
 }
 
 function statusBadge(status: UserStatus): string {
   const map: Record<UserStatus, string> = {
-    Active:   "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-    Pending:  "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    Active: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    Pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
     Disabled: "bg-zinc-100 text-zinc-400 ring-1 ring-zinc-200",
   };
   return map[status];
@@ -149,9 +149,17 @@ function avatarColor(id: string): string {
 
 function XIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-      stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-      strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -162,20 +170,29 @@ function XIcon() {
 
 interface CreateUserModalProps {
   onClose: () => void;
-  onSubmit: (data: { name: string; email: string; role: string; password: string; department?: string }) => Promise<void>;
+  onSubmit: (data: {
+    name: string;
+    email: string;
+    role: string;
+    password: string;
+    department?: string;
+  }) => Promise<void>;
 }
 
 function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
   const [fullName, setFullName] = useState("");
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [department, setDepartment] = useState("");
-  const [role, setRole]         = useState<UserRole>("User");
+  const [role, setRole] = useState<UserRole>("User");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const canSubmit = fullName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
+  const canSubmit =
+    fullName.trim().length > 0 &&
+    email.trim().length > 0 &&
+    password.length >= 6;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -185,13 +202,20 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
 
     try {
       // Convert UI role to API role
-      const apiRole = role === "Admin" ? "ADMIN" : role === "Initiator" ? "INITIATOR" : role === "Approver" ? "APPROVER" : "USER";
+      const apiRole =
+        role === "Admin"
+          ? "ADMIN"
+          : role === "Initiator"
+            ? "INITIATOR"
+            : role === "Approver"
+              ? "APPROVER"
+              : "USER";
       await onSubmit({
         name: fullName.trim(),
         email: email.trim(),
         role: apiRole,
         password,
-        department: department.trim() || undefined
+        department: department.trim() || undefined,
       });
       setSuccess(true);
       setTimeout(() => {
@@ -208,11 +232,12 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
     /* Backdrop */
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-[2px]"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       {/* Dialog */}
       <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white shadow-xl">
-
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
           <div>
@@ -235,7 +260,6 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
 
         {/* Body */}
         <div className="space-y-4 px-6 py-5">
-
           {/* Success Display */}
           {success && (
             <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
@@ -340,13 +364,23 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
                 className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer"
               >
                 {ROLE_OPTIONS.map((r) => (
-                  <option key={r} value={r}>{r}</option>
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
                 ))}
               </select>
               <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round"
-                  strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </span>
@@ -355,10 +389,10 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               {role === "Admin"
                 ? "Full system access including user management and settings."
                 : role === "Initiator"
-                ? "Can create documents, fill in fields, and submit them for approval."
-                : role === "Approver"
-                ? "Can review, approve, or reject documents in assigned workflows."
-                : "Can view their own documents but cannot create new ones."}
+                  ? "Can create documents, fill in fields, and submit them for approval."
+                  : role === "Approver"
+                    ? "Can review, approve, or reject documents in assigned workflows."
+                    : "Can view their own documents but cannot create new ones."}
             </p>
           </div>
         </div>
@@ -411,7 +445,14 @@ export default function UsersPage() {
             id: user.id,
             name: user.name,
             email: user.email,
-            role: user.role === "ADMIN" ? "Admin" : user.role === "INITIATOR" ? "Initiator" : user.role === "APPROVER" ? "Approver" : "User",
+            role:
+              user.role === "ADMIN"
+                ? "Admin"
+                : user.role === "INITIATOR"
+                  ? "Initiator"
+                  : user.role === "APPROVER"
+                    ? "Approver"
+                    : "User",
             status: "Active" as UserStatus, // TODO: implement status in DB
             createdDate: new Date(user.createdAt).toLocaleDateString("en-US", {
               year: "numeric",
@@ -431,7 +472,13 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  async function handleCreateUser(data: { name: string; email: string; role: string; password: string; department?: string }) {
+  async function handleCreateUser(data: {
+    name: string;
+    email: string;
+    role: string;
+    password: string;
+    department?: string;
+  }) {
     const token = localStorage.getItem("token");
     const res = await fetch("/api/users", {
       method: "POST",
@@ -452,7 +499,14 @@ export default function UsersPage() {
       id: result.id,
       name: result.name,
       email: result.email,
-      role: result.role === "ADMIN" ? "Admin" : result.role === "INITIATOR" ? "Initiator" : result.role === "APPROVER" ? "Approver" : "User",
+      role:
+        result.role === "ADMIN"
+          ? "Admin"
+          : result.role === "INITIATOR"
+            ? "Initiator"
+            : result.role === "APPROVER"
+              ? "Approver"
+              : "User",
       status: "Active",
       createdDate: new Date(result.createdAt).toLocaleDateString("en-US", {
         year: "numeric",
@@ -466,7 +520,14 @@ export default function UsersPage() {
 
   async function handleUpdateRole(userId: string, newRole: UserRole) {
     const token = localStorage.getItem("token");
-    const apiRole = newRole === "Admin" ? "ADMIN" : newRole === "Initiator" ? "INITIATOR" : newRole === "Approver" ? "APPROVER" : "USER";
+    const apiRole =
+      newRole === "Admin"
+        ? "ADMIN"
+        : newRole === "Initiator"
+          ? "INITIATOR"
+          : newRole === "Approver"
+            ? "APPROVER"
+            : "USER";
 
     const res = await fetch(`/api/users/${userId}`, {
       method: "PUT",
@@ -484,14 +545,23 @@ export default function UsersPage() {
     }
 
     const updatedUser = await res.json();
-    setUsers(users.map((u) =>
-      u.id === userId
-        ? {
-            ...u,
-            role: updatedUser.role === "ADMIN" ? "Admin" : updatedUser.role === "INITIATOR" ? "Initiator" : updatedUser.role === "APPROVER" ? "Approver" : "User",
-          }
-        : u
-    ));
+    setUsers(
+      users.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              role:
+                updatedUser.role === "ADMIN"
+                  ? "Admin"
+                  : updatedUser.role === "INITIATOR"
+                    ? "Initiator"
+                    : updatedUser.role === "APPROVER"
+                      ? "Approver"
+                      : "User",
+            }
+          : u,
+      ),
+    );
     setEditingRole(null);
   }
 
@@ -517,7 +587,7 @@ export default function UsersPage() {
     setUsers(users.filter((u) => u.id !== userId));
   }
 
-  const activeCount  = users.filter((u) => u.status === "Active").length;
+  const activeCount = users.filter((u) => u.status === "Active").length;
   const pendingCount = users.filter((u) => u.status === "Pending").length;
 
   if (loading) {
@@ -528,9 +598,7 @@ export default function UsersPage() {
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
               Users
             </h2>
-            <p className="mt-1 text-[14px] text-zinc-500">
-              Loading...
-            </p>
+            <p className="mt-1 text-[14px] text-zinc-500">Loading...</p>
           </div>
         </div>
       </RoleGuard>
@@ -547,7 +615,6 @@ export default function UsersPage() {
       )}
 
       <div className="space-y-6">
-
         {/* ── Page Header ─────────────────────────────────────────────────── */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -571,10 +638,13 @@ export default function UsersPage() {
         {/* ── Summary strip ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { label: "Total Users",  value: users.length },
-            { label: "Active",       value: activeCount },
-            { label: "Pending",      value: pendingCount },
-            { label: "Disabled",     value: users.length - activeCount - pendingCount },
+            { label: "Total Users", value: users.length },
+            { label: "Active", value: activeCount },
+            { label: "Pending", value: pendingCount },
+            {
+              label: "Disabled",
+              value: users.length - activeCount - pendingCount,
+            },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -594,7 +664,6 @@ export default function UsersPage() {
         <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[680px] border-collapse">
-
               {/* Header */}
               <thead>
                 <tr className="border-b border-zinc-100 bg-zinc-50">
@@ -657,7 +726,12 @@ export default function UsersPage() {
                       {editingRole === user.id ? (
                         <select
                           value={user.role}
-                          onChange={(e) => handleUpdateRole(user.id, e.target.value as UserRole)}
+                          onChange={(e) =>
+                            handleUpdateRole(
+                              user.id,
+                              e.target.value as UserRole,
+                            )
+                          }
                           onBlur={() => setEditingRole(null)}
                           autoFocus
                           className="h-7 appearance-none rounded-lg border border-zinc-300 bg-white pl-2 pr-6 text-[11px] font-semibold focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
@@ -718,7 +792,8 @@ export default function UsersPage() {
             <p className="text-[12px] text-zinc-400">
               <span className="font-medium text-zinc-600">{users.length}</span>{" "}
               users total —{" "}
-              <span className="font-medium text-zinc-600">{activeCount}</span> active
+              <span className="font-medium text-zinc-600">{activeCount}</span>{" "}
+              active
             </p>
           </div>
         </div>

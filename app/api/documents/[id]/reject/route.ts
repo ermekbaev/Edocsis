@@ -41,7 +41,7 @@ export async function POST(
       documentId: id,
       approverId: auth.userId,
       status: "PENDING",
-      stepNumber: document.currentStepNumber ?? null,
+      stepNumber: document.currentStepNumber ?? undefined,
     },
   });
 
