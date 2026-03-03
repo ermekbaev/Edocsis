@@ -112,7 +112,7 @@ export async function POST(
           documentId: id,
           approverId: approver.id,
           status: "PENDING",
-          stepNumber: null,
+          stepNumber: undefined,
         },
       }),
       prisma.auditLog.create({
