@@ -1,8 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { unlink } from "fs/promises";
+import { readFile, unlink } from "fs/promises";
 import path from "path";
+
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+
+  const file = await prisma.file.findUnique({
+    where: { id },
+  });
+
+  if (!file) {
+    return NextResponse.json({ error: "File not found" }, { status: 404 });
+  }
+
+  try {
+    const filePath = path.join(process.cwd(), "public", file.path);
+    const buffer = await readFile(filePath);
+
+    return new NextResponse(buffer, {
+      headers: {
+        "Content-Type": file.mimeType,
+        "Content-Disposition": `attachment; filename="${encodeURIComponent(file.name)}"`,
+        "Content-Length": String(buffer.length),
+      },
+    });
+  } catch {
+    return NextResponse.json({ error: "File not available" }, { status: 404 });
+  }
+}
 
 export async function DELETE(
   req: NextRequest,

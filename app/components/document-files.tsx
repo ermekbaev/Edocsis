@@ -233,7 +233,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
                 <div className="text-2xl">{getFileIcon(file.mimeType)}</div>
                 <div className="flex-1 min-w-0">
                   <a
-                    href={file.path}
+                    href={`/api/files/${file.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block text-[13px] font-medium text-zinc-900 hover:underline truncate"

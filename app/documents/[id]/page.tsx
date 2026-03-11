@@ -324,7 +324,7 @@ export default function DocumentPage({
                       </div>
                       <div className="min-w-0 flex-1">
                         <a
-                          href={file.path}
+                          href={`/api/files/${file.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block truncate text-[13px] font-medium text-zinc-900 hover:text-zinc-600 transition-colors"
@@ -336,7 +336,7 @@ export default function DocumentPage({
                         </p>
                       </div>
                       <a
-                        href={file.path}
+                        href={`/api/files/${file.id}`}
                         download={file.name}
                         className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
                       >
