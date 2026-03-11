@@ -55,12 +55,12 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
     setError("");
 
     if (!title.trim()) {
-      setError("Title is required");
+      setError("Название обязательно");
       return;
     }
 
     if (!templateId) {
-      setError("Template is required");
+      setError("Шаблон обязателен");
       return;
     }
 
@@ -71,7 +71,7 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
       setTitle("");
       setTemplateId("");
     } catch (err: any) {
-      setError(err.message || "Failed to create document");
+      setError(err.message || "Не удалось создать документ");
     } finally {
       setSubmitting(false);
     }
@@ -80,9 +80,9 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
-        <h3 className="text-lg font-semibold text-zinc-900">Create Document</h3>
+        <h3 className="text-lg font-semibold text-zinc-900">Создать документ</h3>
         <p className="mt-1 text-[13px] text-zinc-500">
-          Create a new document from a template
+          Создать новый документ на основе шаблона
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -92,7 +92,7 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
               htmlFor="title"
               className="block text-[12.5px] font-medium text-zinc-700 mb-1.5"
             >
-              Title <span className="text-rose-600">*</span>
+              Название <span className="text-rose-600">*</span>
             </label>
             <input
               id="title"
@@ -100,7 +100,7 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-              placeholder="e.g. Q1 Budget Proposal"
+              placeholder="напр. Бюджет Q1"
               disabled={submitting || loading}
             />
           </div>
@@ -111,13 +111,13 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
               htmlFor="template"
               className="block text-[12.5px] font-medium text-zinc-700 mb-1.5"
             >
-              Template <span className="text-rose-600">*</span>
+              Шаблон <span className="text-rose-600">*</span>
             </label>
             {loading ? (
-              <div className="text-[13px] text-zinc-500">Loading templates...</div>
+              <div className="text-[13px] text-zinc-500">Загрузка шаблонов...</div>
             ) : templates.length === 0 ? (
               <div className="text-[13px] text-rose-600">
-                No templates available. Please create a template first.
+                Нет доступных шаблонов. Сначала создайте шаблон.
               </div>
             ) : (
               <select
@@ -151,14 +151,14 @@ export function DocumentModal({ isOpen, onClose, onSubmit }: DocumentModalProps)
               disabled={submitting}
               className="flex-1 rounded-lg border border-zinc-300 px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50"
             >
-              Cancel
+              Отмена
             </button>
             <button
               type="submit"
               disabled={submitting || loading || templates.length === 0}
               className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
             >
-              {submitting ? "Creating..." : "Create"}
+              {submitting ? "Создание..." : "Создать"}
             </button>
           </div>
         </form>

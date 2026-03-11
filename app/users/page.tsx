@@ -22,7 +22,7 @@ interface SystemUser {
 const USERS: SystemUser[] = [
   {
     id: "usr-001",
-    name: "ADMINISTRATOR",
+    name: "Администратор",
     email: "admin@edocsis.com",
     role: "Admin",
     status: "Active",

@@ -343,7 +343,14 @@ export default function TemplatesPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${categoryBadge(tpl.category)}`}
                     >
-                      {tpl.category}
+                      {({
+                        Legal: "Юридический",
+                        HR: "HR",
+                        Finance: "Финансы",
+                        Operations: "Операции",
+                        IT: "ИТ",
+                        Compliance: "Комплаенс",
+                      } as Record<string, string>)[tpl.category] ?? tpl.category}
                     </span>
                   </td>
 

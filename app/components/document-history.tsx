@@ -13,7 +13,7 @@ interface AuditLog {
   };
 }
 
-interface DocumentИсторияProps {
+interface DocumentHistoryProps {
   documentId: string;
 }
 
@@ -95,12 +95,12 @@ function getActionText(action: string) {
   }
 }
 
-export function DocumentИстория({ documentId }: DocumentИсторияProps) {
+export function DocumentHistory({ documentId }: DocumentHistoryProps) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchИстория() {
+    async function fetchHistory() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(`/api/documents/${documentId}/history`, {
@@ -118,7 +118,7 @@ export function DocumentИстория({ documentId }: DocumentИсторияPro
       }
     }
 
-    fetchИстория();
+    fetchHistory();
   }, [documentId]);
 
   if (loading) {

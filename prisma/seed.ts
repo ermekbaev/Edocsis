@@ -23,61 +23,11 @@ async function main() {
 
   const admin = await prisma.user.create({
     data: {
-      name: "ADMINISTRATOR",
+      name: "Администратор",
       email: "admin@edocsis.com",
       password: hashedPassword,
       role: "ADMIN",
       department: "IT",
-    },
-  });
-
-  const approver1 = await prisma.user.create({
-    data: {
-      name: "Elena Volkova",
-      email: "elena@edocsis.com",
-      password: hashedPassword,
-      role: "APPROVER",
-      department: "Legal",
-    },
-  });
-
-  const approver2 = await prisma.user.create({
-    data: {
-      name: "Boris Nikitin",
-      email: "boris@edocsis.com",
-      password: hashedPassword,
-      role: "APPROVER",
-      department: "Finance",
-    },
-  });
-
-  const user1 = await prisma.user.create({
-    data: {
-      name: "Maria Kuznetsova",
-      email: "maria@edocsis.com",
-      password: hashedPassword,
-      role: "USER",
-      department: "HR",
-    },
-  });
-
-  const user2 = await prisma.user.create({
-    data: {
-      name: "Sergey Lebedev",
-      email: "sergey@edocsis.com",
-      password: hashedPassword,
-      role: "USER",
-      department: "Operations",
-    },
-  });
-
-  const user3 = await prisma.user.create({
-    data: {
-      name: "Dmitry Romanov",
-      email: "dmitry@edocsis.com",
-      password: hashedPassword,
-      role: "USER",
-      department: "Engineering",
     },
   });
 
@@ -86,69 +36,69 @@ async function main() {
 
   const serviceContract = await prisma.template.create({
     data: {
-      name: "Service Contract",
-      description: "Standard service contract template for vendor agreements",
+      name: "Договор на оказание услуг",
+      description: "Стандартный шаблон договора на оказание услуг с контрагентами",
       content:
-        "SERVICE AGREEMENT\\n\\nDate: {{contractDate}}\\nClient: {{clientName}}\\nAddress: {{clientAddress}}\\n\\nServices: {{servicesDescription}}\\nAmount: ${{contractAmount}} USD\\nStart: {{startDate}}\\nEnd: {{endDate}}",
+        "ДОГОВОР НА ОКАЗАНИЕ УСЛУГ\\n\\nДата: {{contractDate}}\\nКлиент: {{clientName}}\\nАдрес: {{clientAddress}}\\n\\nУслуги: {{servicesDescription}}\\nСумма: {{contractAmount}} тг.\\nНачало: {{startDate}}\\nОкончание: {{endDate}}",
       fields: JSON.parse(
         JSON.stringify([
           {
             key: "contractDate",
-            label: "Contract Date",
+            label: "Дата договора",
             type: "date",
             required: true,
           },
           {
             key: "clientName",
-            label: "Client Name",
+            label: "Наименование клиента",
             type: "text",
             required: true,
           },
           {
             key: "clientAddress",
-            label: "Client Address",
+            label: "Адрес клиента",
             type: "textarea",
             required: true,
           },
           {
             key: "clientRegNumber",
-            label: "Client Registration Number",
+            label: "Регистрационный номер клиента",
             type: "text",
             required: false,
           },
           {
             key: "servicesDescription",
-            label: "Services Description",
+            label: "Описание услуг",
             type: "textarea",
             required: true,
           },
           {
             key: "contractAmount",
-            label: "Contract Amount (USD)",
+            label: "Сумма договора (тг.)",
             type: "number",
             required: true,
           },
           {
             key: "paymentSchedule",
-            label: "Payment Schedule",
+            label: "График оплаты",
             type: "text",
             required: false,
           },
           {
             key: "paymentDueDate",
-            label: "Payment Due Date",
+            label: "Срок оплаты",
             type: "date",
             required: true,
           },
           {
             key: "startDate",
-            label: "Contract Start Date",
+            label: "Дата начала договора",
             type: "date",
             required: true,
           },
           {
             key: "endDate",
-            label: "Contract End Date",
+            label: "Дата окончания договора",
             type: "date",
             required: true,
           },
@@ -160,57 +110,57 @@ async function main() {
 
   const nda = await prisma.template.create({
     data: {
-      name: "Non-Disclosure Agreement",
-      description: "Confidentiality agreement for business partnerships",
+      name: "Соглашение о неразглашении",
+      description: "Соглашение о конфиденциальности для делового партнёрства",
       content:
-        'NON-DISCLOSURE AGREEMENT\\n\\nThis Non-Disclosure Agreement ("Agreement") is made on {{agreementDate}} between:\\n\\nDISCLOSING PARTY:\\nName: {{disclosingPartyName}}\\nAddress: {{disclosingPartyAddress}}\\n\\nRECEIVING PARTY:\\nName: {{receivingPartyName}}\\nAddress: {{receivingPartyAddress}}\\n\\nPURPOSE:\\n{{purposeDescription}}\\n\\n1. CONFIDENTIAL INFORMATION\\nThe parties agree to keep confidential all information shared during the collaboration period.\\n\\n2. OBLIGATIONS\\nDuration of confidentiality: {{confidentialityYears}} years\\nNon-disclosure obligations apply from: {{effectiveDate}}\\n\\n3. EXCLUSIONS\\nInformation that is publicly available is not considered confidential.\\n\\nSigned on: {{agreementDate}}',
+        'СОГЛАШЕНИЕ О НЕРАЗГЛАШЕНИИ\\n\\nНастоящее Соглашение о неразглашении ("Соглашение") заключено {{agreementDate}} между:\\n\\nРАСКРЫВАЮЩАЯ СТОРОНА:\\nНаименование: {{disclosingPartyName}}\\nАдрес: {{disclosingPartyAddress}}\\n\\nПОЛУЧАЮЩАЯ СТОРОНА:\\nНаименование: {{receivingPartyName}}\\nАдрес: {{receivingPartyAddress}}\\n\\nЦЕЛЬ:\\n{{purposeDescription}}\\n\\n1. КОНФИДЕНЦИАЛЬНАЯ ИНФОРМАЦИЯ\\nСтороны обязуются сохранять конфиденциальность всей информации, переданной в ходе сотрудничества.\\n\\n2. ОБЯЗАТЕЛЬСТВА\\nСрок конфиденциальности: {{confidentialityYears}} лет\\nОбязательства о неразглашении действуют с: {{effectiveDate}}\\n\\n3. ИСКЛЮЧЕНИЯ\\nИнформация, находящаяся в открытом доступе, не является конфиденциальной.\\n\\nПодписано: {{agreementDate}}',
       fields: JSON.parse(
         JSON.stringify([
           {
             key: "agreementDate",
-            label: "Agreement Date",
+            label: "Дата соглашения",
             type: "date",
             required: true,
           },
           {
             key: "disclosingPartyName",
-            label: "Disclosing Party Name",
+            label: "Наименование раскрывающей стороны",
             type: "text",
             required: true,
           },
           {
             key: "disclosingPartyAddress",
-            label: "Disclosing Party Address",
+            label: "Адрес раскрывающей стороны",
             type: "textarea",
             required: true,
           },
           {
             key: "receivingPartyName",
-            label: "Receiving Party Name",
+            label: "Наименование получающей стороны",
             type: "text",
             required: true,
           },
           {
             key: "receivingPartyAddress",
-            label: "Receiving Party Address",
+            label: "Адрес получающей стороны",
             type: "textarea",
             required: true,
           },
           {
             key: "purposeDescription",
-            label: "Purpose of NDA",
+            label: "Цель соглашения",
             type: "textarea",
             required: true,
           },
           {
             key: "confidentialityYears",
-            label: "Confidentiality Period (years)",
+            label: "Срок конфиденциальности (лет)",
             type: "number",
             required: true,
           },
           {
             key: "effectiveDate",
-            label: "Effective Date",
+            label: "Дата вступления в силу",
             type: "date",
             required: true,
           },
@@ -222,57 +172,57 @@ async function main() {
 
   const hrContract = await prisma.template.create({
     data: {
-      name: "Employment Contract",
-      description: "Standard employment contract for new hires",
+      name: "Трудовой договор",
+      description: "Стандартный трудовой договор для новых сотрудников",
       content:
-        "EMPLOYMENT CONTRACT\\n\\nEmployee Name: {{employeeName}}\\nPosition: {{position}}\\nDepartment: {{department}}\\n\\nStart Date: {{startDate}}\\nSalary: ${{salary}} USD per month\\n\\nWork Schedule: {{workSchedule}}\\nProbation Period: {{probationMonths}} months\\n\\nThis employment contract is subject to company policies and labor laws.\\n\\nSigned on: {{contractDate}}",
+        "ТРУДОВОЙ ДОГОВОР\\n\\nФИО сотрудника: {{employeeName}}\\nДолжность: {{position}}\\nОтдел: {{department}}\\n\\nДата начала: {{startDate}}\\nЗарплата: {{salary}} тг./мес.\\n\\nГрафик работы: {{workSchedule}}\\nИспытательный срок: {{probationMonths}} мес.\\n\\nНастоящий трудовой договор регулируется внутренними политиками компании и трудовым законодательством.\\n\\nПодписано: {{contractDate}}",
       fields: JSON.parse(
         JSON.stringify([
           {
             key: "employeeName",
-            label: "Employee Full Name",
+            label: "ФИО сотрудника",
             type: "text",
             required: true,
           },
           {
             key: "position",
-            label: "Job Position",
+            label: "Должность",
             type: "text",
             required: true,
           },
           {
             key: "department",
-            label: "Department",
+            label: "Отдел",
             type: "text",
             required: true,
           },
           {
             key: "startDate",
-            label: "Start Date",
+            label: "Дата начала работы",
             type: "date",
             required: true,
           },
           {
             key: "salary",
-            label: "Monthly Salary (USD)",
+            label: "Ежемесячная зарплата (тг.)",
             type: "number",
             required: true,
           },
           {
             key: "workSchedule",
-            label: "Work Schedule",
+            label: "График работы",
             type: "text",
             required: false,
           },
           {
             key: "probationMonths",
-            label: "Probation Period (months)",
+            label: "Испытательный срок (мес.)",
             type: "number",
             required: false,
           },
           {
             key: "contractDate",
-            label: "Contract Date",
+            label: "Дата договора",
             type: "date",
             required: true,
           },
@@ -285,16 +235,16 @@ async function main() {
   // Simple templates without fields (for backward compatibility)
   const budgetMemo = await prisma.template.create({
     data: {
-      name: "Budget Request",
-      description: "Budget allocation and revision requests",
+      name: "Заявка на бюджет",
+      description: "Запросы на выделение и пересмотр бюджета",
       createdById: admin.id,
     },
   });
 
   const licenseAgreement = await prisma.template.create({
     data: {
-      name: "Software License Agreement",
-      description: "Software and SaaS license agreements",
+      name: "Лицензионное соглашение на ПО",
+      description: "Лицензионные соглашения на программное обеспечение и SaaS",
       createdById: admin.id,
     },
   });
@@ -302,33 +252,33 @@ async function main() {
   // Create approval routes for templates
   console.log("🔄 Creating approval routes...");
 
-  // Route for Service Contract: 3 steps
+  // Маршрут для Договора на оказание услуг: 3 этапа
   const serviceContractRoute = await prisma.approvalRoute.create({
     data: {
-      name: "Standard Contract Approval (3 steps)",
-      description: "Department Head → Legal → Finance approval workflow",
+      name: "Согласование договора (3 этапа)",
+      description: "Руководитель отдела → Юридический → Финансовый",
       templateId: serviceContract.id,
       steps: {
         create: [
           {
             stepNumber: 1,
-            name: "Department Head Approval",
-            description: "Initial approval by department head",
+            name: "Согласование руководителем отдела",
+            description: "Первичное согласование руководителем отдела",
             approverIds: JSON.parse(JSON.stringify([admin.id])),
             requireAll: false,
           },
           {
             stepNumber: 2,
-            name: "Legal Review",
-            description: "Legal department review and approval",
-            approverIds: JSON.parse(JSON.stringify([approver1.id])),
+            name: "Юридическая проверка",
+            description: "Проверка и согласование юридическим отделом",
+            approverIds: JSON.parse(JSON.stringify([admin.id])),
             requireAll: false,
           },
           {
             stepNumber: 3,
-            name: "Financial Approval",
-            description: "Final approval by finance department",
-            approverIds: JSON.parse(JSON.stringify([approver2.id])),
+            name: "Финансовое согласование",
+            description: "Финальное согласование финансовым отделом",
+            approverIds: JSON.parse(JSON.stringify([admin.id])),
             requireAll: false,
           },
         ],
@@ -336,25 +286,25 @@ async function main() {
     },
   });
 
-  // Route for NDA: 2 steps
+  // Маршрут для Соглашения о неразглашении: 2 этапа
   const ndaRoute = await prisma.approvalRoute.create({
     data: {
-      name: "NDA Approval (2 steps)",
-      description: "Legal → Management approval workflow",
+      name: "Согласование НДА (2 этапа)",
+      description: "Юридический → Руководство",
       templateId: nda.id,
       steps: {
         create: [
           {
             stepNumber: 1,
-            name: "Legal Review",
-            description: "Legal department review",
-            approverIds: JSON.parse(JSON.stringify([approver1.id])),
+            name: "Юридическая проверка",
+            description: "Проверка юридическим отделом",
+            approverIds: JSON.parse(JSON.stringify([admin.id])),
             requireAll: false,
           },
           {
             stepNumber: 2,
-            name: "Management Approval",
-            description: "Final approval by management",
+            name: "Согласование руководством",
+            description: "Финальное согласование руководством",
             approverIds: JSON.parse(JSON.stringify([admin.id])),
             requireAll: false,
           },
@@ -363,27 +313,27 @@ async function main() {
     },
   });
 
-  // Route for Employment Contract: 2 steps with parallel approval
+  // Маршрут для Трудового договора: 2 этапа
   const hrContractRoute = await prisma.approvalRoute.create({
     data: {
-      name: "HR Contract Approval (2 steps)",
-      description: "HR + Finance (parallel) → Management approval workflow",
+      name: "Согласование трудового договора (2 этапа)",
+      description: "HR + Финансы → Руководство",
       templateId: hrContract.id,
       steps: {
         create: [
           {
             stepNumber: 1,
-            name: "HR & Finance Review",
-            description: "Both HR and Finance must approve",
+            name: "Проверка HR и Финансов",
+            description: "HR и Финансы должны согласовать",
             approverIds: JSON.parse(
-              JSON.stringify([approver1.id, approver2.id]),
+              JSON.stringify([admin.id]),
             ),
-            requireAll: true, // Both must approve
+            requireAll: true,
           },
           {
             stepNumber: 2,
-            name: "Management Approval",
-            description: "Final approval by management",
+            name: "Согласование руководством",
+            description: "Финальное согласование руководством",
             approverIds: JSON.parse(JSON.stringify([admin.id])),
             requireAll: false,
           },
@@ -401,22 +351,15 @@ async function main() {
   console.log(
     `   - Created ${await prisma.approvalRoute.count()} approval routes`,
   );
-  console.log("\n🔐 Default password for all users: password123");
+  console.log("\n🔐 Default password: password123");
   console.log("\n👤 Users created:");
   console.log(`   - admin@edocsis.com (ADMIN)`);
-  console.log(`   - elena@edocsis.com (APPROVER)`);
-  console.log(`   - boris@edocsis.com (APPROVER)`);
-  console.log(`   - maria@edocsis.com (USER)`);
-  console.log(`   - sergey@edocsis.com (USER)`);
-  console.log(`   - dmitry@edocsis.com (USER)`);
   console.log("\n📋 Templates created:");
-  console.log(`   - Service Contract (10 fields) - 3-step approval`);
-  console.log(`   - Non-Disclosure Agreement (8 fields) - 2-step approval`);
-  console.log(
-    `   - Employment Contract (8 fields) - 2-step approval (parallel)`,
-  );
-  console.log(`   - Budget Request`);
-  console.log(`   - Software License Agreement`);
+  console.log(`   - Договор на оказание услуг (10 полей) — 3 этапа`);
+  console.log(`   - Соглашение о неразглашении (8 полей) — 2 этапа`);
+  console.log(`   - Трудовой договор (8 полей) — 2 этапа`);
+  console.log(`   - Заявка на бюджет`);
+  console.log(`   - Лицензионное соглашение на ПО`);
 }
 
 main()

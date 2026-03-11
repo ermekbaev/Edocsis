@@ -234,13 +234,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         ].join(" ")}
       >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-xs font-semibold text-white">
-          AK
+          А
         </div>
         <div className={`min-w-0 flex-1 ${labelClass}`}>
           <p className="truncate text-[13px] font-medium text-zinc-900">
-            Adil Kaliyev
+            Администратор
           </p>
-          <p className="truncate text-[11.5px] text-zinc-400">Product Manager</p>
+          <p className="truncate text-[11.5px] text-zinc-400">Администратор системы</p>
         </div>
       </Link>
     </aside>

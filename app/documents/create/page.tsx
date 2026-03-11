@@ -424,6 +424,19 @@ export default function CreateDocumentPage() {
                         />
                       )}
 
+                      {/* Number */}
+                      {field.type === "number" && (
+                        <input
+                          type="number"
+                          value={formValues[field.key] ?? ""}
+                          onChange={(e) =>
+                            handleFieldChange(field.key, e.target.value)
+                          }
+                          placeholder={field.placeholder}
+                          className={inputCls}
+                        />
+                      )}
+
                       {/* Text */}
                       {field.type === "text" && (
                         <input
@@ -554,10 +567,10 @@ export default function CreateDocumentPage() {
                   </p>
                   <div className="mt-1.5 flex items-center gap-2">
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-[9px] font-semibold text-white">
-                      AK
+                      А
                     </div>
                     <p className="text-[13px] font-medium text-zinc-800">
-                      Adil Kaliyev
+                      Администратор
                     </p>
                   </div>
                 </div>

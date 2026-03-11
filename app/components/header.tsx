@@ -32,40 +32,40 @@ function resolveTitle(pathname: string): string {
 const SEARCH_DOCS = [
   {
     id: "DOC-2024-0891",
-    title: "Procurement Contract — Azure Cloud Services",
-    status: "In Approval",
+    title: "Договор на закупку — Azure Cloud Services",
+    status: "На согласовании",
   },
   {
     id: "DOC-2024-0889",
-    title: "NDA with TechPartners LLC",
-    status: "In Approval",
+    title: "NDA с TechPartners LLC",
+    status: "На согласовании",
   },
   {
     id: "DOC-2024-0887",
-    title: "Vendor Qualification Form — LogiSoft",
-    status: "Approved",
+    title: "Анкета квалификации поставщика — LogiSoft",
+    status: "Согласовано",
   },
   {
     id: "DOC-2024-0885",
-    title: "Software License Agreement — Figma Enterprise",
-    status: "Draft",
+    title: "Лицензионное соглашение — Figma Enterprise",
+    status: "Черновик",
   },
   {
     id: "DOC-2024-0883",
-    title: "Annual Maintenance Agreement — Cisco",
-    status: "Approved",
+    title: "Договор годового обслуживания — Cisco",
+    status: "Согласовано",
   },
 ];
 
 const SEARCH_TEMPLATES = [
-  { id: "tpl-001", name: "Service Contract", category: "Legal" },
-  { id: "tpl-002", name: "Non-Disclosure Agreement", category: "Legal" },
-  { id: "tpl-003", name: "HR Contract", category: "HR" },
-  { id: "tpl-007", name: "DPA Template", category: "Compliance" },
+  { id: "tpl-001", name: "Договор на оказание услуг", category: "Юридический" },
+  { id: "tpl-002", name: "Соглашение о неразглашении", category: "Юридический" },
+  { id: "tpl-003", name: "Трудовой договор", category: "HR" },
+  { id: "tpl-007", name: "Шаблон DPA", category: "Комплаенс" },
 ];
 
 const SEARCH_USERS = [
-  { id: "usr-001", name: "Adil Kaliyev", email: "a.kaliyev@edocsis.com" },
+  { id: "usr-001", name: "Администратор", email: "admin@edocsis.com" },
   { id: "usr-002", name: "Elena Volkova", email: "e.volkova@edocsis.com" },
   {
     id: "usr-004",
@@ -93,7 +93,7 @@ const INITIAL_NOTIFS: Notif[] = [
     id: "n1",
     type: "approved",
     title: "Документ одобрен",
-    body: "Vendor Qualification Form — LogiSoft был одобрен Еленой Волковой.",
+    body: "Анкета квалификации поставщика — LogiSoft был одобрен Еленой Волковой.",
     time: "Только что",
     read: false,
   },
@@ -101,7 +101,7 @@ const INITIAL_NOTIFS: Notif[] = [
     id: "n2",
     type: "assigned",
     title: "Назначен новый документ",
-    body: "NDA with TechPartners LLC требует вашего согласования.",
+    body: "NDA с TechPartners LLC требует вашего согласования.",
     time: "2ч назад",
     read: false,
   },
@@ -109,7 +109,7 @@ const INITIAL_NOTIFS: Notif[] = [
     id: "n3",
     type: "deadline",
     title: "Напоминание о сроке",
-    body: "Annual Maintenance Agreement — Cisco истекает завтра.",
+    body: "Договор годового обслуживания — Cisco истекает завтра.",
     time: "5ч назад",
     read: false,
   },
@@ -117,7 +117,7 @@ const INITIAL_NOTIFS: Notif[] = [
     id: "n4",
     type: "rejected",
     title: "Документ отклонён",
-    body: "Q4 Budget Revision — Engineering Dept. был отклонён.",
+    body: "Пересмотр бюджета Q4 — Инженерный отдел был отклонён.",
     time: "1д назад",
     read: true,
   },
@@ -125,7 +125,7 @@ const INITIAL_NOTIFS: Notif[] = [
     id: "n5",
     type: "approved",
     title: "Документ одобрен",
-    body: "Travel Policy Amendment — Q1 2026 был одобрен.",
+    body: "Изменение политики командировок — Q1 2026 был одобрен.",
     time: "2д назад",
     read: true,
   },
@@ -135,10 +135,10 @@ const INITIAL_NOTIFS: Notif[] = [
 
 function docStatusColor(status: string): string {
   const m: Record<string, string> = {
-    "In Approval": "text-amber-600",
-    Approved: "text-emerald-600",
-    Draft: "text-zinc-400",
-    Rejected: "text-rose-600",
+    "На согласовании": "text-amber-600",
+    "Согласовано": "text-emerald-600",
+    "Черновик": "text-zinc-400",
+    "Отклонено": "text-rose-600",
   };
   return m[status] ?? "text-zinc-400";
 }

@@ -5,10 +5,10 @@ import { useState } from "react";
 // ─── Mock user ────────────────────────────────────────────────────────────────
 
 const MOCK_USER = {
-  fullName: "ADMINISTRATOR",
-  email: "a.kaliyev@edocsis.com",
+  fullName: "Администратор",
+  email: "admin@edocsis.com",
   role: "ADMIN",
-  department: "Product",
+  department: "IT",
   phone: "+7 701 234 5678",
 };
 
@@ -293,7 +293,7 @@ export default function ProfilePage() {
                   type="tel"
                   value={phone}
                   onChange={setPhone}
-                  placeholder="+1 555 000 0000"
+                  placeholder="+7 700 000 0000"
                 />
               </div>
             </div>

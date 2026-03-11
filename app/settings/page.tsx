@@ -241,7 +241,7 @@ export default function SettingsPage() {
                   id="doc-format"
                   value={docFormat}
                   onChange={setDocFormat}
-                  placeholder="e.g. DOC-YYYY-####"
+                  placeholder="напр. DOC-YYYY-####"
                 />
                 <p className="mt-1.5 text-[11.5px] text-zinc-400">
                   Используйте <span className="font-mono">YYYY</span> для года и{" "}
