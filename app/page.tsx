@@ -76,21 +76,21 @@ function statusBadge(status: DocStatus): string {
 
 function statusLabel(status: DocStatus): string {
   const map: Record<DocStatus, string> = {
-    DRAFT: "Draft",
-    IN_APPROVAL: "In Approval",
-    APPROVED: "Approved",
-    REJECTED: "Rejected",
+    DRAFT: "Черновик",
+    IN_APPROVAL: "На согласовании",
+    APPROVED: "Согласовано",
+    REJECTED: "Отклонено",
   };
   return map[status] ?? status;
 }
 
 function activityMeta(action: string): { label: string; color: string } {
   const map: Record<string, { label: string; color: string }> = {
-    created: { label: "created", color: "text-zinc-500" },
-    submitted: { label: "submitted for approval", color: "text-amber-600" },
-    approved: { label: "approved", color: "text-emerald-600" },
-    rejected: { label: "rejected", color: "text-rose-600" },
-    updated: { label: "updated", color: "text-blue-600" },
+    created: { label: "создал(а)", color: "text-zinc-500" },
+    submitted: { label: "отправил(а) на согласование", color: "text-amber-600" },
+    approved: { label: "согласовал(а)", color: "text-emerald-600" },
+    rejected: { label: "отклонил(а)", color: "text-rose-600" },
+    updated: { label: "обновил(а)", color: "text-blue-600" },
   };
   return map[action] ?? { label: action, color: "text-zinc-500" };
 }
@@ -122,13 +122,13 @@ function formatTime(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins} min ago`;
-  if (diffHours < 24) return `${diffHours} hr ago`;
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffMins < 1) return "Только что";
+  if (diffMins < 60) return `${diffMins} мин. назад`;
+  if (diffHours < 24) return `${diffHours} ч. назад`;
+  if (diffDays === 1) return "Вчера";
+  if (diffDays < 7) return `${diffDays} дн. назад`;
 
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("ru-RU", { month: "short", day: "numeric" });
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -136,11 +136,11 @@ function formatTime(dateString: string): string {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [greeting, setGreeting] = useState("Good day");
+  const [greeting, setGreeting] = useState("Добрый день");
   const [currentDate, setCurrentDate] = useState("");
 
   const currentUser = useCurrentUser();
-  const userName = currentUser?.name || "User";
+  const userName = currentUser?.name || "Пользователь";
 
   useEffect(() => {
     fetchDashboardData();
@@ -170,13 +170,13 @@ export default function DashboardPage() {
 
   function getGreeting(): string {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return "Доброе утро";
+    if (hour < 18) return "Добрый день";
+    return "Добрый вечер";
   }
 
   function getCurrentDate(): string {
-    return new Date().toLocaleDateString("en-US", {
+    return new Date().toLocaleDateString("ru-RU", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -201,7 +201,7 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <div className="rounded-xl border border-zinc-200 bg-white p-8 text-center">
-          <p className="text-[14px] text-zinc-500">Failed to load dashboard data</p>
+          <p className="text-[14px] text-zinc-500">Не удалось загрузить данные</p>
         </div>
       </div>
     );
@@ -209,25 +209,25 @@ export default function DashboardPage() {
 
   const stats = data ? [
     {
-      label: "Total Documents",
+      label: "Всего документов",
       value: data.stats.totalDocuments.toString(),
       change: `+${data.stats.byStatus.draft}`,
       trend: "up" as const,
     },
     {
-      label: "In Approval",
+      label: "На согласовании",
       value: data.stats.byStatus.inApproval.toString(),
       change: `+${Math.floor(data.stats.byStatus.inApproval * 0.15)}`,
       trend: "up" as const,
     },
     {
-      label: "Approved",
+      label: "Согласовано",
       value: data.stats.byStatus.approved.toString(),
       change: `+${Math.floor(data.stats.byStatus.approved * 0.1)}`,
       trend: "up" as const,
     },
     {
-      label: "Rejected",
+      label: "Отклонено",
       value: data.stats.byStatus.rejected.toString(),
       change: `+${data.stats.byStatus.rejected}`,
       trend: "down" as const,
@@ -242,7 +242,7 @@ export default function DashboardPage() {
           {greeting}, {userName}
         </h2>
         <p className="mt-1 text-[14px] text-zinc-500">
-          Document management overview — {currentDate}
+          Обзор документооборота — {currentDate}
         </p>
       </div>
 
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                   stat.trend === "up" ? "text-emerald-600" : "text-rose-500"
                 }`}
               >
-                {stat.change} this week
+                {stat.change} за неделю
               </span>
             </div>
           </div>
@@ -278,19 +278,19 @@ export default function DashboardPage() {
         <div className="xl:col-span-2 rounded-xl border border-zinc-200 bg-white overflow-hidden">
           <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
             <h3 className="text-[14px] font-semibold text-zinc-900">
-              Recent Documents
+              Последние документы
             </h3>
             <Link
               href="/documents"
               className="text-[12.5px] font-medium text-zinc-500 transition-colors hover:text-zinc-900"
             >
-              View all
+              Показать все
             </Link>
           </div>
 
           {/* Table header */}
           <div className="grid grid-cols-[2fr_1.2fr_100px_1fr_1fr] gap-3 border-b border-zinc-100 bg-zinc-50 px-5 py-2.5">
-            {["Title", "Template", "Status", "Initiator", "Current Approver"].map(
+            {["Название", "Шаблон", "Статус", "Инициатор", "Согласующий"].map(
               (col) => (
                 <span
                   key={col}
@@ -306,7 +306,7 @@ export default function DashboardPage() {
           <div className="divide-y divide-zinc-100">
             {!data.recentDocuments || data.recentDocuments.length === 0 ? (
               <div className="px-5 py-8 text-center text-[13px] text-zinc-400">
-                No documents yet
+                Документов пока нет
               </div>
             ) : (
               data.recentDocuments.map((doc) => (
@@ -325,7 +325,7 @@ export default function DashboardPage() {
 
                   {/* Template */}
                   <p className="truncate text-[12.5px] text-zinc-500">
-                    {doc.template?.name ?? "No template"}
+                    {doc.template?.name ?? "Без шаблона"}
                   </p>
 
                   {/* Status */}
@@ -356,7 +356,7 @@ export default function DashboardPage() {
         <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
           <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
             <h3 className="text-[14px] font-semibold text-zinc-900">
-              Awaiting My Approval
+              Ожидают моего согласования
             </h3>
             {data.pendingApprovals && data.pendingApprovals.length > 0 && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11.5px] font-semibold text-amber-700">
@@ -368,7 +368,7 @@ export default function DashboardPage() {
           <div className="divide-y divide-zinc-100">
             {!data.pendingApprovals || data.pendingApprovals.length === 0 ? (
               <div className="px-5 py-8 text-center text-[13px] text-zinc-400">
-                No pending approvals
+                Нет ожидающих согласований
               </div>
             ) : (
               data.pendingApprovals.map((doc) => (
@@ -379,11 +379,11 @@ export default function DashboardPage() {
                       {doc.title}
                     </p>
                     <p className="mt-1 text-[11.5px] text-zinc-400">
-                      {doc.template?.name ?? "No template"}
+                      {doc.template?.name ?? "Без шаблона"}
                     </p>
                     <div className="mt-1.5 flex items-center gap-3 text-[11.5px] text-zinc-400">
                       <span>
-                        From:{" "}
+                        От:{" "}
                         <span className="text-zinc-600">{doc.initiator.name}</span>
                       </span>
                       <span>·</span>
@@ -397,7 +397,7 @@ export default function DashboardPage() {
                       href={`/approvals/${doc.id}`}
                       className="flex-1 rounded-lg bg-zinc-900 py-1.5 text-[12px] font-semibold text-white text-center transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
                     >
-                      Review
+                      Рассмотреть
                     </Link>
                   </div>
                 </div>
@@ -411,13 +411,13 @@ export default function DashboardPage() {
       <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
         <div className="border-b border-zinc-100 px-5 py-4">
           <h3 className="text-[14px] font-semibold text-zinc-900">
-            Recent Activity
+            Последняя активность
           </h3>
         </div>
         <div className="divide-y divide-zinc-100">
           {!data.recentActivity || data.recentActivity.length === 0 ? (
             <div className="px-5 py-8 text-center text-[13px] text-zinc-400">
-              No recent activity
+              Нет последней активности
             </div>
           ) : (
             data.recentActivity.map((item) => {

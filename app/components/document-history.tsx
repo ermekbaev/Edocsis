@@ -13,7 +13,7 @@ interface AuditLog {
   };
 }
 
-interface DocumentHistoryProps {
+interface DocumentИсторияProps {
   documentId: string;
 }
 
@@ -81,26 +81,26 @@ function getActionColor(action: string) {
 function getActionText(action: string) {
   switch (action) {
     case "created":
-      return "created the document";
+      return "создал(а) документ";
     case "updated":
-      return "updated the document";
+      return "обновил(а) документ";
     case "submitted":
-      return "submitted for approval";
+      return "отправил(а) на согласование";
     case "approved":
-      return "approved the document";
+      return "согласовал(а) документ";
     case "rejected":
-      return "rejected the document";
+      return "отклонил(а) документ";
     default:
       return action;
   }
 }
 
-export function DocumentHistory({ documentId }: DocumentHistoryProps) {
+export function DocumentИстория({ documentId }: DocumentИсторияProps) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchHistory() {
+    async function fetchИстория() {
       try {
         const token = localStorage.getItem("token");
         const res = await fetch(`/api/documents/${documentId}/history`, {
@@ -118,14 +118,14 @@ export function DocumentHistory({ documentId }: DocumentHistoryProps) {
       }
     }
 
-    fetchHistory();
+    fetchИстория();
   }, [documentId]);
 
   if (loading) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">History</h3>
-        <p className="text-[13px] text-zinc-500">Loading...</p>
+        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">История</h3>
+        <p className="text-[13px] text-zinc-500">Загрузка...</p>
       </div>
     );
   }
@@ -133,15 +133,15 @@ export function DocumentHistory({ documentId }: DocumentHistoryProps) {
   if (logs.length === 0) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">History</h3>
-        <p className="text-[13px] text-zinc-500">No activity yet.</p>
+        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">История</h3>
+        <p className="text-[13px] text-zinc-500">Действий пока нет.</p>
       </div>
     );
   }
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6">
-      <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">History</h3>
+      <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">История</h3>
 
       <div className="space-y-4">
         {logs.map((log, index) => (
@@ -174,7 +174,7 @@ export function DocumentHistory({ documentId }: DocumentHistoryProps) {
               )}
 
               <p className="mt-1 text-[11.5px] text-zinc-400">
-                {new Date(log.createdAt).toLocaleString("en-US", {
+                {new Date(log.createdAt).toLocaleString("ru-RU", {
                   year: "numeric",
                   month: "short",
                   day: "numeric",

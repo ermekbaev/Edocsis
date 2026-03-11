@@ -122,12 +122,12 @@ export function NotificationsDropdown() {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    if (diffInSeconds < 60) return "Только что";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} мин назад`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} ч назад`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} д назад`;
 
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("ru-RU", {
       month: "short",
       day: "numeric",
     });
@@ -141,7 +141,7 @@ export function NotificationsDropdown() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 transition-colors"
-        aria-label="Notifications"
+        aria-label="Уведомления"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -172,10 +172,10 @@ export function NotificationsDropdown() {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3">
             <h3 className="text-[14px] font-semibold text-zinc-900">
-              Notifications
+              Уведомления
               {unreadCount > 0 && (
                 <span className="ml-2 text-[12px] font-normal text-zinc-500">
-                  ({unreadCount} unread)
+                  ({unreadCount} непрочитанных)
                 </span>
               )}
             </h3>
@@ -184,7 +184,7 @@ export function NotificationsDropdown() {
                 onClick={markAllAsRead}
                 className="text-[11.5px] font-medium text-zinc-600 hover:text-zinc-900"
               >
-                Mark all read
+                Отметить все как прочитанные
               </button>
             )}
           </div>
@@ -193,12 +193,12 @@ export function NotificationsDropdown() {
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
               <div className="px-4 py-8 text-center text-[13px] text-zinc-500">
-                Loading...
+                Загрузка...
               </div>
             ) : notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <div className="text-3xl mb-2">🔔</div>
-                <p className="text-[13px] text-zinc-500">No notifications yet</p>
+                <p className="text-[13px] text-zinc-500">Уведомлений пока нет</p>
               </div>
             ) : (
               notifications.map((notification) => (
@@ -225,15 +225,15 @@ export function NotificationsDropdown() {
                         <button
                           onClick={() => markAsRead(notification.id)}
                           className="rounded-md px-2 py-1 text-[10.5px] font-medium text-blue-700 hover:bg-blue-100 transition-colors"
-                          title="Mark as read"
+                          title="Отметить как прочитанное"
                         >
-                          Read
+                          Прочитано
                         </button>
                       )}
                       <button
                         onClick={() => deleteNotification(notification.id)}
                         className="rounded-md p-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                        title="Delete"
+                        title="Удалить"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -264,7 +264,7 @@ export function NotificationsDropdown() {
                 onClick={() => setIsOpen(false)}
                 className="text-[12px] font-medium text-zinc-600 hover:text-zinc-900"
               >
-                Close
+                Закрыть
               </button>
             </div>
           )}

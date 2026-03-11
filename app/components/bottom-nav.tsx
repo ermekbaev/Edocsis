@@ -19,10 +19,10 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { label: "Dashboard",  href: "/",          icon: DashboardIcon  },
-  { label: "Documents",  href: "/documents",  icon: DocumentsIcon  },
-  { label: "Templates",  href: "/templates",  icon: TemplatesIcon  },
-  { label: "Approvals",  href: "/approvals",  icon: ApprovalsIcon  },
+  { label: "Главная",       href: "/",          icon: DashboardIcon  },
+  { label: "Документы",     href: "/documents",  icon: DocumentsIcon  },
+  { label: "Шаблоны",       href: "/templates",  icon: TemplatesIcon  },
+  { label: "Согласования",  href: "/approvals",  icon: ApprovalsIcon  },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────

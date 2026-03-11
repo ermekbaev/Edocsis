@@ -68,7 +68,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to upload file");
+        throw new Error(error.error || "Не удалось загрузить файл");
       }
 
       const uploadedFile = await res.json();
@@ -81,7 +81,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
   }
 
   async function handleDelete(fileId: string) {
-    if (!window.confirm("Are you sure you want to delete this file?")) {
+    if (!window.confirm("Вы уверены, что хотите удалить этот файл?")) {
       return;
     }
 
@@ -94,7 +94,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to delete file");
+        throw new Error(error.error || "Не удалось удалить файл");
       }
 
       setFiles(files.filter((f) => f.id !== fileId));
@@ -130,9 +130,9 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
   }
 
   function formatFileSize(bytes: number): string {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return "0 Б";
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ["Б", "КБ", "МБ", "ГБ"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
   }
@@ -152,8 +152,8 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
   if (loading) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Files</h3>
-        <p className="text-[13px] text-zinc-500">Loading...</p>
+        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Файлы</h3>
+        <p className="text-[13px] text-zinc-500">Загрузка...</p>
       </div>
     );
   }
@@ -161,7 +161,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6">
       <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">
-        Files
+        Файлы
         {files.length > 0 && (
           <span className="ml-2 text-[13px] font-normal text-zinc-500">
             ({files.length})
@@ -192,22 +192,22 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
         {uploading ? (
           <div className="flex flex-col items-center gap-2">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
-            <p className="text-[13px] text-zinc-600">Uploading...</p>
+            <p className="text-[13px] text-zinc-600">Загрузка...</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2">
             <div className="text-3xl">📁</div>
             <p className="text-[13px] text-zinc-600">
-              Drag and drop a file here, or{" "}
+              Перетащите файл сюда или{" "}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="text-zinc-900 underline hover:no-underline"
               >
-                browse
+                выберите
               </button>
             </p>
-            <p className="text-[11.5px] text-zinc-400">Maximum file size: 10MB</p>
+            <p className="text-[11.5px] text-zinc-400">Максимальный размер файла: 10 МБ</p>
           </div>
         )}
       </div>
@@ -222,7 +222,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
       {/* Files List */}
       <div className="space-y-2">
         {files.length === 0 ? (
-          <p className="text-[13px] text-zinc-500">No files uploaded yet.</p>
+          <p className="text-[13px] text-zinc-500">Файлы ещё не загружены.</p>
         ) : (
           files.map((file) => (
             <div
@@ -250,7 +250,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
                     </span>
                     <span className="text-zinc-300">•</span>
                     <span className="text-[11.5px] text-zinc-400">
-                      {new Date(file.createdAt).toLocaleString("en-US", {
+                      {new Date(file.createdAt).toLocaleString("ru-RU", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -266,7 +266,7 @@ export function DocumentFiles({ documentId }: DocumentFilesProps) {
                 onClick={() => handleDelete(file.id)}
                 className="ml-3 flex-shrink-0 rounded-md px-2.5 py-1.5 text-[11.5px] font-medium text-rose-700 hover:bg-rose-100 transition-colors"
               >
-                Delete
+                Удалить
               </button>
             </div>
           ))

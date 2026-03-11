@@ -33,19 +33,19 @@ const STATUS_OPTIONS: Array<DocStatus | "All"> = [
 type SortOption = "newest" | "oldest" | "updated";
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-  { value: "newest",  label: "Newest first"  },
-  { value: "oldest",  label: "Oldest first"  },
-  { value: "updated", label: "Last modified" },
+  { value: "newest",  label: "Сначала новые"  },
+  { value: "oldest",  label: "Сначала старые"  },
+  { value: "updated", label: "По дате изменения" },
 ];
 
 type RoleFilter = "All" | "USER" | "INITIATOR" | "APPROVER" | "ADMIN";
 
 const ROLE_FILTER_OPTIONS: { value: RoleFilter; label: string }[] = [
-  { value: "All",       label: "All Roles"  },
-  { value: "INITIATOR", label: "Initiator"  },
-  { value: "APPROVER",  label: "Approver"   },
-  { value: "ADMIN",     label: "Admin"      },
-  { value: "USER",      label: "User"       },
+  { value: "All",       label: "Все роли"      },
+  { value: "INITIATOR", label: "Инициатор"    },
+  { value: "APPROVER",  label: "Согласующий"  },
+  { value: "ADMIN",     label: "Администратор"},
+  { value: "USER",      label: "Пользователь" },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ export default function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<DocStatus | "All">("All");
-  const [initiatorFilter, setInitiatorFilter] = useState("All Initiators");
+  const [initiatorFilter, setInitiatorFilter] = useState("Все инициаторы");
   const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("All");
 
@@ -175,7 +175,7 @@ export default function DocumentsPage() {
             template: doc.template?.name || "—",
             status: doc.status === "DRAFT" ? "Draft" : doc.status === "IN_APPROVAL" ? "In Approval" : doc.status === "APPROVED" ? "Approved" : "Rejected",
             initiator: doc.initiator?.name || "—",
-            createdDate: new Date(doc.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+            createdDate: new Date(doc.createdAt).toLocaleDateString("ru-RU", { year: "numeric", month: "short", day: "numeric" }),
             currentApprover: doc.currentApprover?.name || "—",
           }));
           setDocuments(mapped);
@@ -188,7 +188,7 @@ export default function DocumentsPage() {
   }, [debouncedSearch, statusFilter, sortOption, roleFilter]);
 
   async function handleDeleteDocument(documentId: string, documentTitle: string) {
-    if (!window.confirm(`Are you sure you want to delete "${documentTitle}"?`)) {
+    if (!window.confirm(`Вы уверены, что хотите удалить "${documentTitle}"?`)) {
       return;
     }
 
@@ -202,7 +202,7 @@ export default function DocumentsPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      alert(error.error || "Failed to delete document");
+      alert(error.error || "Не удалось удалить документ");
       return;
     }
 
@@ -210,12 +210,12 @@ export default function DocumentsPage() {
   }
 
   // Unique initiators from loaded documents
-  const uniqueInitiators = ["All Initiators", ...Array.from(
+  const uniqueInitiators = ["Все инициаторы", ...Array.from(
     new Set(documents.map((d) => d.initiator).filter((i) => i && i !== "—"))
   )];
 
   // Client-side initiator filter
-  const filteredDocuments = initiatorFilter === "All Initiators"
+  const filteredDocuments = initiatorFilter === "Все инициаторы"
     ? documents
     : documents.filter((d) => d.initiator === initiatorFilter);
 
@@ -226,10 +226,10 @@ export default function DocumentsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Documents
+            Документы
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
-            Manage and track all organization documents across approval workflows.
+            Управление и отслеживание документов организации.
           </p>
         </div>
         {(currentUser?.role === "INITIATOR" || currentUser?.role === "ADMIN") && (
@@ -238,7 +238,7 @@ export default function DocumentsPage() {
             className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
           >
             <span className="text-[16px] leading-none font-light">+</span>
-            Create Document
+            Создать документ
           </Link>
         )}
       </div>
@@ -254,7 +254,7 @@ export default function DocumentsPage() {
             </span>
             <input
               type="text"
-              placeholder="Search by title or ID…"
+              placeholder="Поиск по названию или ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 pl-8 pr-3 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
@@ -272,7 +272,7 @@ export default function DocumentsPage() {
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
-                  {s === "All" ? "All Statuses" : s}
+                  {s === "All" ? "Все статусы" : s === "Draft" ? "Черновик" : s === "In Approval" ? "На согласовании" : s === "Approved" ? "Согласовано" : s === "Rejected" ? "Отклонено" : s}
                 </option>
               ))}
             </select>
@@ -333,7 +333,7 @@ export default function DocumentsPage() {
 
           {/* Results count */}
           <span className="ml-auto text-[12.5px] text-zinc-400">
-            {filteredDocuments.length} documents
+            {filteredDocuments.length} документов
           </span>
         </div>
       </div>
@@ -344,25 +344,25 @@ export default function DocumentsPage() {
           <thead>
             <tr className="border-b border-zinc-100 bg-zinc-50">
               <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[30%]">
-                Title
+                Название
               </th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                Template
+                Шаблон
               </th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[110px]">
-                Status
+                Статус
               </th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                Initiator
+                Инициатор
               </th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                Created Date
+                Дата создания
               </th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                Current Approver
+                Согласующий
               </th>
               <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[200px]">
-                Actions
+                Действия
               </th>
             </tr>
           </thead>
@@ -396,7 +396,7 @@ export default function DocumentsPage() {
                   <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${statusBadge(doc.status)}`}
                   >
-                    {doc.status}
+                    {doc.status === "Draft" ? "Черновик" : doc.status === "In Approval" ? "На согласовании" : doc.status === "Approved" ? "Согласовано" : "Отклонено"}
                   </span>
                 </td>
 
@@ -431,7 +431,7 @@ export default function DocumentsPage() {
                         className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
                       >
                         <EditIcon />
-                        Edit
+                        Изменить
                       </Link>
                     )}
 
@@ -442,7 +442,7 @@ export default function DocumentsPage() {
                       className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
                     >
                       <TrashIcon />
-                      Delete
+                      Удалить
                     </button>
                   </div>
                 </td>
@@ -454,8 +454,8 @@ export default function DocumentsPage() {
         {/* Table footer */}
         <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50 px-5 py-3">
           <p className="text-[12px] text-zinc-400">
-            Showing <span className="font-medium text-zinc-600">1–{filteredDocuments.length}</span> of{" "}
-            <span className="font-medium text-zinc-600">{filteredDocuments.length}</span> documents
+            Показано <span className="font-medium text-zinc-600">1–{filteredDocuments.length}</span> из{" "}
+            <span className="font-medium text-zinc-600">{filteredDocuments.length}</span> документов
           </p>
           <div className="flex items-center gap-1">
             <button
@@ -463,14 +463,14 @@ export default function DocumentsPage() {
               disabled
               className="h-7 rounded-md border border-zinc-200 px-2.5 text-[12px] font-medium text-zinc-400 disabled:opacity-40 hover:border-zinc-300 hover:text-zinc-600 transition-colors"
             >
-              Previous
+              Назад
             </button>
             <button
               type="button"
               disabled
               className="h-7 rounded-md border border-zinc-200 px-2.5 text-[12px] font-medium text-zinc-400 disabled:opacity-40 hover:border-zinc-300 hover:text-zinc-600 transition-colors"
             >
-              Next
+              Вперёд
             </button>
           </div>
         </div>

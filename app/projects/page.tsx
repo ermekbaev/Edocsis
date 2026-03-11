@@ -2,12 +2,12 @@ import Link from "next/link";
 import { PROJECTS, STATUS_STYLES } from "@/app/data/projects";
 
 const COLUMNS = [
-  "Name",
-  "Key",
-  "Start date",
-  "End date",
-  "Status",
-  "Project manager",
+  "Название",
+  "Ключ",
+  "Дата начала",
+  "Дата окончания",
+  "Статус",
+  "Руководитель проекта",
 ] as const;
 
 export default function ProjectsPage() {
@@ -17,10 +17,10 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Projects
+            Проекты
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
-            {PROJECTS.length} projects across your organization
+            {PROJECTS.length} проектов в вашей организации
           </p>
         </div>
         <button
@@ -38,7 +38,7 @@ export default function ProjectsPage() {
           >
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Create project
+          Создать проект
         </button>
       </div>
 

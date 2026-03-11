@@ -27,6 +27,13 @@ interface DocumentData {
   };
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Черновик",
+  IN_APPROVAL: "На согласовании",
+  APPROVED: "Согласовано",
+  REJECTED: "Отклонено",
+};
+
 export default function EditDocumentPage({
   params,
 }: {
@@ -60,11 +67,11 @@ export default function EditDocumentPage({
           setDocument(data);
           setTitle(data.title);
         } else {
-          setError("Failed to load document");
+          setError("Не удалось загрузить документ");
         }
       } catch (err) {
         console.error("Failed to fetch document:", err);
-        setError("Failed to load document");
+        setError("Не удалось загрузить документ");
       } finally {
         setLoading(false);
       }
@@ -93,7 +100,7 @@ export default function EditDocumentPage({
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to save document");
+        throw new Error(error.error || "Не удалось сохранить документ");
       }
 
       const updated = await res.json();
@@ -121,7 +128,7 @@ export default function EditDocumentPage({
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.error || "Failed to save field values");
+      throw new Error(error.error || "Не удалось сохранить значения полей");
     }
 
     const updated = await res.json();
@@ -129,7 +136,7 @@ export default function EditDocumentPage({
   }
 
   async function handleSubmitForApproval() {
-    if (!documentId || !window.confirm("Submit this document for approval?")) {
+    if (!documentId || !window.confirm("Отправить этот документ на согласование?")) {
       return;
     }
 
@@ -145,7 +152,7 @@ export default function EditDocumentPage({
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to submit document");
+        throw new Error(error.error || "Не удалось отправить документ");
       }
 
       router.push("/documents");
@@ -157,7 +164,7 @@ export default function EditDocumentPage({
   }
 
   async function handleDelete() {
-    if (!documentId || !window.confirm("Are you sure you want to delete this document?")) {
+    if (!documentId || !window.confirm("Вы уверены, что хотите удалить этот документ?")) {
       return;
     }
 
@@ -170,7 +177,7 @@ export default function EditDocumentPage({
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to delete document");
+        throw new Error(error.error || "Не удалось удалить документ");
       }
 
       router.push("/documents");
@@ -184,7 +191,7 @@ export default function EditDocumentPage({
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Loading...
+            Загрузка...
           </h2>
         </div>
       </div>
@@ -196,7 +203,7 @@ export default function EditDocumentPage({
       <div className="space-y-6">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Document not found
+            Документ не найден
           </h2>
         </div>
       </div>
@@ -214,19 +221,19 @@ export default function EditDocumentPage({
           href="/documents"
           className="text-zinc-500 hover:text-zinc-900 transition-colors"
         >
-          Documents
+          Документы
         </Link>
         <span className="text-zinc-300">/</span>
         <span className="text-zinc-900 font-medium">{document.number}</span>
         <span className="text-zinc-300">/</span>
-        <span className="text-zinc-900 font-medium">Edit</span>
+        <span className="text-zinc-900 font-medium">Редактировать</span>
       </nav>
 
       {/* Page Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Edit Document
+            Редактировать документ
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
             {document.number} — {document.template.name}
@@ -240,7 +247,7 @@ export default function EditDocumentPage({
               disabled={submitting}
               className="inline-flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-[13px] font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
             >
-              {submitting ? "Submitting..." : "Submit for Approval"}
+              {submitting ? "Отправка..." : "Отправить на согласование"}
             </button>
           )}
           <button
@@ -248,14 +255,14 @@ export default function EditDocumentPage({
             onClick={handleDelete}
             className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-2.5 text-[13px] font-semibold text-rose-700 transition-colors hover:bg-rose-100"
           >
-            Delete
+            Удалить
           </button>
         </div>
       </div>
 
       {/* Status Badge */}
       <div className="flex items-center gap-2">
-        <span className="text-[12.5px] text-zinc-500">Status:</span>
+        <span className="text-[12.5px] text-zinc-500">Статус:</span>
         <span
           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
             document.status === "DRAFT"
@@ -267,7 +274,7 @@ export default function EditDocumentPage({
               : "bg-rose-50 text-rose-700 ring-1 ring-rose-200"
           }`}
         >
-          {document.status}
+          {STATUS_LABELS[document.status] || document.status}
         </span>
       </div>
 
@@ -280,7 +287,7 @@ export default function EditDocumentPage({
               htmlFor="title"
               className="block text-[12.5px] font-medium text-zinc-700 mb-1.5"
             >
-              Document Title <span className="text-rose-600">*</span>
+              Название документа <span className="text-rose-600">*</span>
             </label>
             <input
               id="title"
@@ -289,14 +296,14 @@ export default function EditDocumentPage({
               onChange={(e) => setTitle(e.target.value)}
               disabled={!canEdit || saving}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-50 disabled:text-zinc-500"
-              placeholder="Enter document title"
+              placeholder="Введите название документа"
             />
           </div>
 
           {/* Template (read-only) */}
           <div>
             <label className="block text-[12.5px] font-medium text-zinc-700 mb-1.5">
-              Template
+              Шаблон
             </label>
             <div className="text-[13px] text-zinc-600">{document.template.name}</div>
           </div>
@@ -304,7 +311,7 @@ export default function EditDocumentPage({
           {/* Initiator (read-only) */}
           <div>
             <label className="block text-[12.5px] font-medium text-zinc-700 mb-1.5">
-              Initiator
+              Инициатор
             </label>
             <div className="text-[13px] text-zinc-600">{document.initiator.name}</div>
           </div>
@@ -324,21 +331,21 @@ export default function EditDocumentPage({
                 onClick={() => router.push("/documents")}
                 className="flex-1 rounded-lg border border-zinc-300 px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
               >
-                Cancel
+                Отмена
               </button>
               <button
                 type="submit"
                 disabled={saving || !title.trim()}
                 className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
               >
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? "Сохранение..." : "Сохранить изменения"}
               </button>
             </div>
           )}
 
           {!canEdit && (
             <div className="rounded-lg bg-amber-50 px-4 py-3 text-[13px] text-amber-700">
-              This document cannot be edited because it is no longer in DRAFT status.
+              Этот документ нельзя редактировать, так как он больше не в статусе «Черновик».
             </div>
           )}
         </form>

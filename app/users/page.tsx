@@ -104,6 +104,19 @@ const USERS: SystemUser[] = [
 
 const ROLE_OPTIONS: UserRole[] = ["User", "Initiator", "Approver", "Admin"];
 
+const ROLE_LABELS: Record<UserRole, string> = {
+  Admin: "Администратор",
+  Initiator: "Инициатор",
+  Approver: "Согласующий",
+  User: "Пользователь",
+};
+
+const STATUS_LABELS: Record<UserStatus, string> = {
+  Active: "Активные",
+  Pending: "Ожидание",
+  Disabled: "Отключённые",
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function roleBadge(role: UserRole): string {
@@ -222,7 +235,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
         onClose();
       }, 1500);
     } catch (err: any) {
-      setError(err.message || "Failed to create user");
+      setError(err.message || "Не удалось создать пользователя");
     } finally {
       setSubmitting(false);
     }
@@ -242,17 +255,17 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
         <div className="flex items-center justify-between border-b border-zinc-100 px-6 py-4">
           <div>
             <h3 className="text-[15px] font-semibold text-zinc-900">
-              Create User
+              Создать пользователя
             </h3>
             <p className="mt-0.5 text-[12.5px] text-zinc-400">
-              Add a new user to the system.
+              Добавить нового пользователя в систему.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600"
-            aria-label="Close"
+            aria-label="Закрыть"
           >
             <XIcon />
           </button>
@@ -264,7 +277,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
           {success && (
             <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
               <p className="text-[12.5px] font-medium text-emerald-900">
-                User created successfully!
+                Пользователь успешно создан!
               </p>
             </div>
           )}
@@ -282,12 +295,12 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               htmlFor="invite-name"
               className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
             >
-              Full Name
+              ФИО
             </label>
             <input
               id="invite-name"
               type="text"
-              placeholder="e.g. Ivan Petrov"
+              placeholder="напр. Иван Петров"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
@@ -300,7 +313,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               htmlFor="invite-email"
               className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
             >
-              Email Address
+              Электронная почта
             </label>
             <input
               id="invite-email"
@@ -318,12 +331,12 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               htmlFor="invite-password"
               className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
             >
-              Password
+              Пароль
             </label>
             <input
               id="invite-password"
               type="password"
-              placeholder="Min. 6 characters"
+              placeholder="Мин. 6 символов"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
@@ -336,12 +349,12 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               htmlFor="invite-department"
               className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
             >
-              Department (optional)
+              Отдел (необязательно)
             </label>
             <input
               id="invite-department"
               type="text"
-              placeholder="e.g. IT, HR, Finance"
+              placeholder="напр. ИТ, HR, Финансы"
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
@@ -354,7 +367,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               htmlFor="invite-role"
               className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
             >
-              Role
+              Роль
             </label>
             <div className="relative">
               <select
@@ -365,7 +378,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               >
                 {ROLE_OPTIONS.map((r) => (
                   <option key={r} value={r}>
-                    {r}
+                    {ROLE_LABELS[r]}
                   </option>
                 ))}
               </select>
@@ -387,12 +400,12 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
             </div>
             <p className="mt-1.5 text-[11.5px] text-zinc-400">
               {role === "Admin"
-                ? "Full system access including user management and settings."
+                ? "Полный доступ к системе, включая управление пользователями и настройками."
                 : role === "Initiator"
-                  ? "Can create documents, fill in fields, and submit them for approval."
+                  ? "Может создавать документы, заполнять поля и отправлять на согласование."
                   : role === "Approver"
-                    ? "Can review, approve, or reject documents in assigned workflows."
-                    : "Can view their own documents but cannot create new ones."}
+                    ? "Может просматривать, согласовывать или отклонять документы в назначенных маршрутах."
+                    : "Может просматривать свои документы, но не может создавать новые."}
             </p>
           </div>
         </div>
@@ -405,7 +418,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
             disabled={submitting}
             className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-[13px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50"
           >
-            Cancel
+            Отмена
           </button>
           {!success && (
             <button
@@ -414,7 +427,7 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
               disabled={!canSubmit || submitting}
               className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {submitting ? "Creating..." : "Create User"}
+              {submitting ? "Создание..." : "Создать пользователя"}
             </button>
           )}
         </div>
@@ -454,7 +467,7 @@ export default function UsersPage() {
                     ? "Approver"
                     : "User",
             status: "Active" as UserStatus, // TODO: implement status in DB
-            createdDate: new Date(user.createdAt).toLocaleDateString("en-US", {
+            createdDate: new Date(user.createdAt).toLocaleDateString("ru-RU", {
               year: "numeric",
               month: "short",
               day: "numeric",
@@ -491,7 +504,7 @@ export default function UsersPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.error || "Failed to create user");
+      throw new Error(error.error || "Не удалось создать пользователя");
     }
 
     const result = await res.json();
@@ -508,7 +521,7 @@ export default function UsersPage() {
               ? "Approver"
               : "User",
       status: "Active",
-      createdDate: new Date(result.createdAt).toLocaleDateString("en-US", {
+      createdDate: new Date(result.createdAt).toLocaleDateString("ru-RU", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -540,7 +553,7 @@ export default function UsersPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      alert(error.error || "Failed to update role");
+      alert(error.error || "Не удалось обновить роль");
       return;
     }
 
@@ -566,7 +579,7 @@ export default function UsersPage() {
   }
 
   async function handleDeleteUser(userId: string, userName: string) {
-    if (!window.confirm(`Are you sure you want to delete "${userName}"?`)) {
+    if (!window.confirm(`Вы уверены, что хотите удалить "${userName}"?`)) {
       return;
     }
 
@@ -580,7 +593,7 @@ export default function UsersPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      alert(error.error || "Failed to delete user");
+      alert(error.error || "Не удалось удалить пользователя");
       return;
     }
 
@@ -596,9 +609,9 @@ export default function UsersPage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Users
+              Пользователи
             </h2>
-            <p className="mt-1 text-[14px] text-zinc-500">Loading...</p>
+            <p className="mt-1 text-[14px] text-zinc-500">Загрузка...</p>
           </div>
         </div>
       </RoleGuard>
@@ -619,10 +632,10 @@ export default function UsersPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Users
+              Пользователи
             </h2>
             <p className="mt-1 text-[14px] text-zinc-500">
-              Manage system users and roles.
+              Управление пользователями и ролями.
             </p>
           </div>
           <button
@@ -631,18 +644,18 @@ export default function UsersPage() {
             className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
           >
             <span className="text-[16px] leading-none font-light">+</span>
-            Create User
+            Создать пользователя
           </button>
         </div>
 
         {/* ── Summary strip ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
-            { label: "Total Users", value: users.length },
-            { label: "Active", value: activeCount },
-            { label: "Pending", value: pendingCount },
+            { label: "Всего пользователей", value: users.length },
+            { label: "Активные", value: activeCount },
+            { label: "Ожидание", value: pendingCount },
             {
-              label: "Disabled",
+              label: "Отключённые",
               value: users.length - activeCount - pendingCount,
             },
           ].map((stat) => (
@@ -668,22 +681,22 @@ export default function UsersPage() {
               <thead>
                 <tr className="border-b border-zinc-100 bg-zinc-50">
                   <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[28%]">
-                    Name
+                    Имя
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                    Email
+                    Эл. почта
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[110px]">
-                    Role
+                    Роль
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[100px]">
-                    Status
+                    Статус
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                    Created Date
+                    Дата создания
                   </th>
                   <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[140px]">
-                    Actions
+                    Действия
                   </th>
                 </tr>
               </thead>
@@ -738,7 +751,7 @@ export default function UsersPage() {
                         >
                           {ROLE_OPTIONS.map((r) => (
                             <option key={r} value={r}>
-                              {r.toUpperCase()}
+                              {ROLE_LABELS[r].toUpperCase()}
                             </option>
                           ))}
                         </select>
@@ -748,7 +761,7 @@ export default function UsersPage() {
                           onClick={() => setEditingRole(user.id)}
                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap transition-opacity hover:opacity-75 ${roleBadge(user.role)}`}
                         >
-                          {user.role.toUpperCase()}
+                          {ROLE_LABELS[user.role].toUpperCase()}
                         </button>
                       )}
                     </td>
@@ -758,7 +771,7 @@ export default function UsersPage() {
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${statusBadge(user.status)}`}
                       >
-                        {user.status}
+                        {STATUS_LABELS[user.status]}
                       </span>
                     </td>
 
@@ -777,7 +790,7 @@ export default function UsersPage() {
                           onClick={() => handleDeleteUser(user.id, user.name)}
                           className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
                         >
-                          Delete
+                          Удалить
                         </button>
                       </div>
                     </td>
@@ -791,9 +804,9 @@ export default function UsersPage() {
           <div className="border-t border-zinc-100 bg-zinc-50 px-5 py-3">
             <p className="text-[12px] text-zinc-400">
               <span className="font-medium text-zinc-600">{users.length}</span>{" "}
-              users total —{" "}
+              всего пользователей —{" "}
               <span className="font-medium text-zinc-600">{activeCount}</span>{" "}
-              active
+              активных
             </p>
           </div>
         </div>

@@ -28,7 +28,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Login failed");
+        setError(data.error ?? "Ошибка входа");
         return;
       }
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
 
       router.push("/");
     } catch {
-      setError("Network error. Please try again.");
+      setError("Ошибка сети. Попробуйте снова.");
     } finally {
       setLoading(false);
     }
@@ -60,7 +60,7 @@ export default function LoginPage() {
               Edocsis
             </h1>
             <p className="mt-0.5 text-[13px] text-zinc-400">
-              Sign in to your account
+              Войдите в свой аккаунт
             </p>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function LoginPage() {
             <div>
               <label htmlFor="email"
                 className="mb-1.5 block text-[12.5px] font-medium text-zinc-700">
-                Email
+                Электронная почта
               </label>
               <input
                 id="email"
@@ -99,7 +99,7 @@ export default function LoginPage() {
             <div>
               <label htmlFor="password"
                 className="mb-1.5 block text-[12.5px] font-medium text-zinc-700">
-                Password
+                Пароль
               </label>
               <div className="relative">
                 <input
@@ -117,7 +117,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setShowPw((s) => !s)}
                   className="absolute inset-y-0 right-0 flex items-center px-2.5 text-zinc-400 hover:text-zinc-600 transition-colors"
-                  aria-label={showPw ? "Hide password" : "Show password"}
+                  aria-label={showPw ? "Скрыть пароль" : "Показать пароль"}
                 >
                   {showPw ? (
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -141,13 +141,13 @@ export default function LoginPage() {
               disabled={loading || !email || !password}
               className="mt-2 h-9 w-full rounded-lg bg-zinc-900 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {loading ? "Signing in…" : "Sign In"}
+              {loading ? "Вход…" : "Войти"}
             </button>
           </form>
         </div>
 
         <p className="mt-6 text-center text-[12px] text-zinc-400">
-          No self-registration. Contact your administrator.
+          Самостоятельная регистрация недоступна. Обратитесь к администратору.
         </p>
       </div>
     </div>

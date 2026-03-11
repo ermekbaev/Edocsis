@@ -78,7 +78,7 @@ export default function CreateRoutePage() {
         }
       } catch (err) {
         console.error("Failed to fetch data:", err);
-        setError("Failed to load templates and users");
+        setError("Не удалось загрузить шаблоны и пользователей");
       } finally {
         setLoading(false);
       }
@@ -130,19 +130,19 @@ export default function CreateRoutePage() {
     try {
       // Validate
       if (!name.trim()) {
-        throw new Error("Route name is required");
+        throw new Error("Название маршрута обязательно");
       }
       if (!templateId) {
-        throw new Error("Template is required");
+        throw new Error("Шаблон обязателен");
       }
       if (steps.some(s => !s.name.trim())) {
-        throw new Error("All steps must have a name");
+        throw new Error("Все этапы должны иметь название");
       }
       if (steps.some(s => s.approverMode === "users" && s.approverIds.length === 0)) {
-        throw new Error("All steps in 'users' mode must have at least one approver selected");
+        throw new Error("Для всех этапов в режиме «пользователи» должен быть выбран хотя бы один согласующий");
       }
       if (steps.some(s => s.approverMode === "role" && !s.approverRole)) {
-        throw new Error("All steps in 'role' mode must have a role selected");
+        throw new Error("Для всех этапов в режиме «по роли» должна быть выбрана роль");
       }
 
       const token = localStorage.getItem("token");
@@ -169,7 +169,7 @@ export default function CreateRoutePage() {
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to create route");
+        throw new Error(error.error || "Не удалось создать маршрут");
       }
 
       // Redirect to routes page
@@ -186,10 +186,10 @@ export default function CreateRoutePage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Create Approval Route
+              Создание маршрута согласования
             </h2>
             <p className="mt-1 text-[14px] text-zinc-500">
-              Loading...
+              Загрузка...
             </p>
           </div>
         </div>
@@ -203,18 +203,18 @@ export default function CreateRoutePage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Create Approval Route
+              Создание маршрута согласования
             </h2>
             <p className="mt-1 text-[14px] text-zinc-500">
-              Configure multi-step approval workflows for templates.
+              Настройка многоэтапных маршрутов согласования для шаблонов.
             </p>
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-12 text-center">
             <p className="text-[14px] text-zinc-500">
-              No templates available. All templates already have approval routes, or you need to{" "}
+              Нет доступных шаблонов. Все шаблоны уже имеют маршруты согласования, или вам необходимо{" "}
               <Link href="/templates/create" className="font-medium text-zinc-900 hover:underline">
-                create a template first
+                сначала создать шаблон
               </Link>
               .
             </p>
@@ -236,13 +236,13 @@ export default function CreateRoutePage() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            Back to Routes
+            Назад к маршрутам
           </Link>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Create Approval Route
+            Создание маршрута согласования
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
-            Configure multi-step approval workflows for templates.
+            Настройка многоэтапных маршрутов согласования для шаблонов.
           </p>
         </div>
 
@@ -251,14 +251,14 @@ export default function CreateRoutePage() {
           {/* Route Details */}
           <div className="rounded-xl border border-zinc-200 bg-white p-6">
             <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">
-              Route Details
+              Детали маршрута
             </h3>
 
             <div className="space-y-4">
               {/* Name */}
               <div>
                 <label htmlFor="name" className="block text-[13px] font-medium text-zinc-700 mb-1.5">
-                  Route Name <span className="text-rose-500">*</span>
+                  Название маршрута <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -266,7 +266,7 @@ export default function CreateRoutePage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] text-zinc-900 placeholder-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none"
-                  placeholder="e.g., Standard Contract Approval"
+                  placeholder="напр., Стандартное согласование договора"
                   required
                 />
               </div>
@@ -274,7 +274,7 @@ export default function CreateRoutePage() {
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-[13px] font-medium text-zinc-700 mb-1.5">
-                  Description
+                  Описание
                 </label>
                 <textarea
                   id="description"
@@ -282,14 +282,14 @@ export default function CreateRoutePage() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
                   className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] text-zinc-900 placeholder-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none resize-none"
-                  placeholder="Optional description of this approval route"
+                  placeholder="Необязательное описание маршрута согласования"
                 />
               </div>
 
               {/* Template */}
               <div>
                 <label htmlFor="template" className="block text-[13px] font-medium text-zinc-700 mb-1.5">
-                  Template <span className="text-rose-500">*</span>
+                  Шаблон <span className="text-rose-500">*</span>
                 </label>
                 <select
                   id="template"
@@ -298,7 +298,7 @@ export default function CreateRoutePage() {
                   className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] text-zinc-900 transition-colors focus:border-zinc-900 focus:outline-none"
                   required
                 >
-                  <option value="">Select a template</option>
+                  <option value="">Выберите шаблон</option>
                   {templates.map((template) => (
                     <option key={template.id} value={template.id}>
                       {template.name}
@@ -306,7 +306,7 @@ export default function CreateRoutePage() {
                   ))}
                 </select>
                 <p className="mt-1.5 text-[11.5px] text-zinc-400">
-                  Only templates without existing approval routes are shown
+                  Показаны только шаблоны без существующих маршрутов согласования
                 </p>
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function CreateRoutePage() {
           <div className="rounded-xl border border-zinc-200 bg-white p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[15px] font-semibold text-zinc-900">
-                Approval Steps
+                Этапы согласования
               </h3>
               <button
                 type="button"
@@ -324,7 +324,7 @@ export default function CreateRoutePage() {
                 className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-zinc-700"
               >
                 <span className="text-[14px] leading-none font-light">+</span>
-                Add Step
+                Добавить этап
               </button>
             </div>
 
@@ -342,14 +342,14 @@ export default function CreateRoutePage() {
                       {/* Step Name */}
                       <div>
                         <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                          Step Name <span className="text-rose-500">*</span>
+                          Название этапа <span className="text-rose-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={step.name}
                           onChange={(e) => updateStep(index, "name", e.target.value)}
                           className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[13px] text-zinc-900 placeholder-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none"
-                          placeholder="e.g., Department Head Approval"
+                          placeholder="напр., Согласование руководителем отдела"
                           required
                         />
                       </div>
@@ -357,28 +357,28 @@ export default function CreateRoutePage() {
                       {/* Step Description */}
                       <div>
                         <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                          Step Description
+                          Описание этапа
                         </label>
                         <input
                           type="text"
                           value={step.description}
                           onChange={(e) => updateStep(index, "description", e.target.value)}
                           className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[13px] text-zinc-900 placeholder-zinc-400 transition-colors focus:border-zinc-900 focus:outline-none"
-                          placeholder="Optional description"
+                          placeholder="Необязательное описание"
                         />
                       </div>
 
                       {/* Approver assignment — mode toggle */}
                       <div>
                         <label className="block text-[12px] font-medium text-zinc-700 mb-2">
-                          Approvers <span className="text-rose-500">*</span>
+                          Согласующие <span className="text-rose-500">*</span>
                         </label>
 
                         {/* Mode toggle */}
                         <div className="mb-3 flex rounded-lg border border-zinc-200 bg-zinc-50 p-0.5 w-fit gap-0.5">
                           {([
-                            { value: "users", label: "Specific users" },
-                            { value: "role",  label: "By role"         },
+                            { value: "users", label: "Конкретные пользователи" },
+                            { value: "role",  label: "По роли"         },
                           ] as { value: ApproverMode; label: string }[]).map((opt) => (
                             <button
                               key={opt.value}
@@ -404,9 +404,9 @@ export default function CreateRoutePage() {
                                 onChange={(e) => updateStep(index, "approverRole", e.target.value)}
                                 className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-white pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-900 focus:outline-none cursor-pointer"
                               >
-                                <option value="">Select a role…</option>
-                                <option value="APPROVER">Approver — all users with Approver role</option>
-                                <option value="ADMIN">Admin — all users with Admin role</option>
+                                <option value="">Выберите роль…</option>
+                                <option value="APPROVER">Согласующий — все пользователи с ролью Согласующий</option>
+                                <option value="ADMIN">Администратор — все пользователи с ролью Администратор</option>
                               </select>
                               <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
@@ -414,7 +414,7 @@ export default function CreateRoutePage() {
                             </div>
                             {step.approverRole && (
                               <p className="text-[11.5px] text-zinc-500">
-                                All current and future users with role <strong>{step.approverRole}</strong> will be notified and can approve.
+                                Все текущие и будущие пользователи с ролью <strong>{step.approverRole}</strong> будут уведомлены и смогут согласовать.
                               </p>
                             )}
                           </div>
@@ -426,7 +426,7 @@ export default function CreateRoutePage() {
                             <div className="max-h-48 overflow-y-auto rounded-lg border border-zinc-200 bg-white">
                               {approvers.length === 0 ? (
                                 <p className="p-3 text-[12px] text-zinc-400">
-                                  No approvers available. Create users with APPROVER or ADMIN role.
+                                  Нет доступных согласующих. Создайте пользователей с ролью СОГЛАСУЮЩИЙ или АДМИНИСТРАТОР.
                                 </p>
                               ) : (
                                 approvers.map((approver) => (
@@ -454,7 +454,7 @@ export default function CreateRoutePage() {
                             </div>
                             {step.approverIds.length > 0 && (
                               <p className="mt-1.5 text-[11.5px] text-zinc-500">
-                                {step.approverIds.length} approver{step.approverIds.length !== 1 ? 's' : ''} selected
+                                {step.approverIds.length} согласующ{step.approverIds.length === 1 ? 'ий' : 'их'} выбрано
                               </p>
                             )}
                           </div>
@@ -471,13 +471,13 @@ export default function CreateRoutePage() {
                             className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
                           />
                           <span className="text-[13px] text-zinc-700">
-                            Require all approvers to approve
+                            Все должны согласовать
                           </span>
                         </label>
                         <p className="mt-1 ml-6 text-[11.5px] text-zinc-400">
                           {step.requireAll
-                            ? "All selected approvers must approve before moving to the next step"
-                            : "Any one of the selected approvers can approve to move to the next step"}
+                            ? "Все выбранные согласующие должны одобрить документ перед переходом к следующему этапу"
+                            : "Любой из выбранных согласующих может одобрить документ для перехода к следующему этапу"}
                         </p>
                       </div>
                     </div>
@@ -489,7 +489,7 @@ export default function CreateRoutePage() {
                         onClick={() => removeStep(index)}
                         className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-white px-2 py-1 text-[11px] font-medium text-rose-600 transition-colors hover:bg-rose-50"
                       >
-                        Remove
+                        Удалить
                       </button>
                     )}
                   </div>
@@ -511,14 +511,14 @@ export default function CreateRoutePage() {
               href="/routes"
               className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-50"
             >
-              Cancel
+              Отмена
             </Link>
             <button
               type="submit"
               disabled={submitting}
               className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitting ? "Creating..." : "Create Route"}
+              {submitting ? "Создание..." : "Создать маршрут"}
             </button>
           </div>
         </form>

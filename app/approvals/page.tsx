@@ -22,9 +22,10 @@ interface PendingDocument {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function daysLabel(days: number): string {
-  if (days === 0) return "Today";
-  if (days === 1) return "1 day ago";
-  return `${days} days ago`;
+  if (days === 0) return "Сегодня";
+  if (days === 1) return "1 день назад";
+  if (days >= 2 && days <= 4) return `${days} дня назад`;
+  return `${days} дней назад`;
 }
 
 function ViewIcon() {
@@ -126,10 +127,10 @@ export default function ApprovalsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            My Approvals
+            Мои согласования
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
-            Documents waiting for your decision.
+            Документы, ожидающие вашего решения.
           </p>
         </div>
 
@@ -137,13 +138,13 @@ export default function ApprovalsPage() {
         <div className="shrink-0 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2">
           <span className="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true" />
           <span className="text-[13px] font-semibold text-amber-800">
-            {documents.length} pending
+            {documents.length} ожидает
           </span>
           {urgentCount > 0 && (
             <>
               <span className="text-amber-300" aria-hidden="true">·</span>
               <span className="text-[13px] font-medium text-rose-600">
-                {urgentCount} urgent
+                {urgentCount} срочно
               </span>
             </>
           )}
@@ -161,22 +162,22 @@ export default function ApprovalsPage() {
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50">
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[28%]">
-                  Title
+                  Название
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                  Template
+                  Шаблон
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                  Initiator
+                  Инициатор
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                  Submitted
+                  Отправлено
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[120px]">
-                  Status
+                  Статус
                 </th>
                 <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[200px]">
-                  Actions
+                  Действия
                 </th>
               </tr>
             </thead>
@@ -199,7 +200,7 @@ export default function ApprovalsPage() {
                       </p>
                       {doc.priority === "Urgent" && (
                         <span className="rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-600 ring-1 ring-rose-200">
-                          Urgent
+                          Срочно
                         </span>
                       )}
                     </div>
@@ -240,7 +241,7 @@ export default function ApprovalsPage() {
                   {/* Status badge */}
                   <td className="px-4 py-3.5">
                     <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold text-amber-700 ring-1 ring-amber-200 whitespace-nowrap">
-                      In Approval
+                      На согласовании
                     </span>
                   </td>
 
@@ -254,7 +255,7 @@ export default function ApprovalsPage() {
                         disabled={processing.has(doc.approvalId)}
                         className="rounded-lg bg-zinc-900 px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-zinc-700 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Approve
+                        Согласовать
                       </button>
 
                       {/* Reject */}
@@ -264,13 +265,13 @@ export default function ApprovalsPage() {
                         disabled={processing.has(doc.approvalId)}
                         className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Reject
+                        Отклонить
                       </button>
 
                       {/* View */}
                       <Link
                         href={`/documents/${doc.id}`}
-                        title="View document"
+                        title="Просмотреть документ"
                         className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700"
                       >
                         <ViewIcon />
@@ -286,11 +287,11 @@ export default function ApprovalsPage() {
         {/* Table footer */}
         <div className="border-t border-zinc-100 bg-zinc-50 px-5 py-3">
           <p className="text-[12px] text-zinc-400">
-            Showing{" "}
+            Показано{" "}
             <span className="font-medium text-zinc-600">
               {documents.length}
             </span>{" "}
-            documents awaiting your approval
+            документов, ожидающих вашего согласования
           </p>
         </div>
       </div>

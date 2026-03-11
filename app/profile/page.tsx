@@ -148,7 +148,7 @@ function PasswordInput({
         type="button"
         onClick={() => setShow((s) => !s)}
         className="absolute inset-y-0 right-0 flex items-center px-2.5 text-zinc-400 hover:text-zinc-600 transition-colors"
-        aria-label={show ? "Hide password" : "Show password"}
+        aria-label={show ? "Скрыть пароль" : "Показать пароль"}
       >
         <EyeIcon off={show} />
       </button>
@@ -188,10 +188,10 @@ export default function ProfilePage() {
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-          My Profile
+          Мой профиль
         </h2>
         <p className="mt-1 text-[14px] text-zinc-500">
-          Manage your personal information.
+          Управление личной информацией.
         </p>
       </div>
 
@@ -202,10 +202,10 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-5 border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
             <div>
               <h3 className="text-[14px] font-semibold text-zinc-900">
-                Personal Information
+                Личные данные
               </h3>
               <p className="mt-1 text-[12.5px] text-zinc-400 leading-relaxed">
-                Update your name, contact details, and department.
+                Обновите имя, контактные данные и отдел.
               </p>
             </div>
 
@@ -220,10 +220,10 @@ export default function ProfilePage() {
                   className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-white px-3.5 py-2 text-[12.5px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
                 >
                   <CameraIcon />
-                  Upload Photo
+                  Загрузить фото
                 </button>
                 <p className="mt-1.5 text-[11.5px] text-zinc-400">
-                  JPG, PNG or WebP. Max 2 MB.
+                  JPG, PNG или WebP. Макс. 2 МБ.
                 </p>
               </div>
             </div>
@@ -234,18 +234,18 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-2">
               {/* Full Name */}
               <div>
-                <Label htmlFor="profile-name">Full Name</Label>
+                <Label htmlFor="profile-name">ФИО</Label>
                 <Input
                   id="profile-name"
                   value={fullName}
                   onChange={setFullName}
-                  placeholder="Your full name"
+                  placeholder="Ваше полное имя"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <Label htmlFor="profile-email">Email Address</Label>
+                <Label htmlFor="profile-email">Электронная почта</Label>
                 <Input
                   id="profile-email"
                   type="email"
@@ -257,36 +257,36 @@ export default function ProfilePage() {
 
               {/* Role — read-only */}
               <div>
-                <Label htmlFor="profile-role">Role</Label>
+                <Label htmlFor="profile-role">Роль</Label>
                 <div className="flex h-9 items-center">
                   <span className="inline-flex items-center rounded-full bg-zinc-900 px-3 py-0.5 text-[11px] font-semibold text-white">
                     {MOCK_USER.role}
                   </span>
                 </div>
                 <p className="mt-1 text-[11px] text-zinc-400">
-                  Role is managed by your administrator.
+                  Роль управляется администратором.
                 </p>
               </div>
 
               {/* Department */}
               <div>
                 <Label htmlFor="profile-dept">
-                  Department{" "}
-                  <span className="font-normal text-zinc-400">(optional)</span>
+                  Отдел{" "}
+                  <span className="font-normal text-zinc-400">(необязательно)</span>
                 </Label>
                 <Input
                   id="profile-dept"
                   value={department}
                   onChange={setDepartment}
-                  placeholder="e.g. Engineering"
+                  placeholder="напр. Инженерный"
                 />
               </div>
 
               {/* Phone */}
               <div>
                 <Label htmlFor="profile-phone">
-                  Phone{" "}
-                  <span className="font-normal text-zinc-400">(optional)</span>
+                  Телефон{" "}
+                  <span className="font-normal text-zinc-400">(необязательно)</span>
                 </Label>
                 <Input
                   id="profile-phone"
@@ -304,7 +304,7 @@ export default function ProfilePage() {
                 type="button"
                 className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
               >
-                Save Changes
+                Сохранить изменения
               </button>
             </div>
           </div>
@@ -317,10 +317,10 @@ export default function ProfilePage() {
           {/* ── Left: section label ── */}
           <div className="border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
             <h3 className="text-[14px] font-semibold text-zinc-900">
-              Security
+              Безопасность
             </h3>
             <p className="mt-1 text-[12.5px] text-zinc-400 leading-relaxed">
-              Update your password. Use at least 8 characters.
+              Обновите пароль. Минимум 8 символов.
             </p>
           </div>
 
@@ -329,44 +329,44 @@ export default function ProfilePage() {
             <div className="space-y-4 px-6 py-6">
               {/* Current password */}
               <div className="max-w-sm">
-                <Label htmlFor="pw-current">Current Password</Label>
+                <Label htmlFor="pw-current">Текущий пароль</Label>
                 <PasswordInput
                   id="pw-current"
                   value={currentPw}
                   onChange={setCurrentPw}
-                  placeholder="Enter current password"
+                  placeholder="Введите текущий пароль"
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* New password */}
                 <div>
-                  <Label htmlFor="pw-new">New Password</Label>
+                  <Label htmlFor="pw-new">Новый пароль</Label>
                   <PasswordInput
                     id="pw-new"
                     value={newPw}
                     onChange={setNewPw}
-                    placeholder="Min. 8 characters"
+                    placeholder="Мин. 8 символов"
                   />
                   {newPw.length > 0 && newPw.length < 8 && (
                     <p className="mt-1.5 text-[11.5px] text-amber-600">
-                      Password must be at least 8 characters.
+                      Пароль должен содержать минимум 8 символов.
                     </p>
                   )}
                 </div>
 
                 {/* Confirm password */}
                 <div>
-                  <Label htmlFor="pw-confirm">Confirm New Password</Label>
+                  <Label htmlFor="pw-confirm">Подтвердите новый пароль</Label>
                   <PasswordInput
                     id="pw-confirm"
                     value={confirmPw}
                     onChange={setConfirmPw}
-                    placeholder="Repeat new password"
+                    placeholder="Повторите новый пароль"
                   />
                   {pwMismatch && (
                     <p className="mt-1.5 text-[11.5px] text-rose-600">
-                      Passwords do not match.
+                      Пароли не совпадают.
                     </p>
                   )}
                 </div>
@@ -380,7 +380,7 @@ export default function ProfilePage() {
                 disabled={!pwValid}
                 className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-[13px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Update Password
+                Обновить пароль
               </button>
             </div>
           </div>

@@ -113,7 +113,7 @@ export default function CreateDocumentPage() {
             return;
           }
           const errorData = await res.json();
-          throw new Error(errorData.error || "Failed to load templates");
+          throw new Error(errorData.error || "Не удалось загрузить шаблоны");
         }
 
         const data = await res.json();
@@ -135,7 +135,7 @@ export default function CreateDocumentPage() {
         setError(null);
       } catch (error) {
         console.error("Error loading templates:", error);
-        setError(error instanceof Error ? error.message : "Failed to load templates");
+        setError(error instanceof Error ? error.message : "Не удалось загрузить шаблоны");
       } finally {
         setLoading(false);
       }
@@ -159,11 +159,11 @@ export default function CreateDocumentPage() {
 
   async function handleSubmit(asDraft: boolean) {
     if (!title.trim()) {
-      alert("Please enter a document title");
+      alert("Введите название документа");
       return;
     }
     if (!template && attachedFiles.length === 0) {
-      alert("Please select a template or attach at least one file");
+      alert("Выберите шаблон или прикрепите файл");
       return;
     }
 
@@ -190,7 +190,7 @@ export default function CreateDocumentPage() {
 
       if (!createRes.ok) {
         const errorData = await createRes.json();
-        throw new Error(errorData.error || "Failed to create document");
+        throw new Error(errorData.error || "Не удалось создать документ");
       }
 
       const newDocument = await createRes.json();
@@ -221,7 +221,7 @@ export default function CreateDocumentPage() {
 
         if (!submitRes.ok) {
           const errorData = await submitRes.json();
-          throw new Error(errorData.error || "Failed to submit for approval");
+          throw new Error(errorData.error || "Не удалось отправить на согласование");
         }
       }
 
@@ -229,11 +229,11 @@ export default function CreateDocumentPage() {
       window.location.href = `/documents/${newDocument.id}`;
     } catch (error) {
       console.error("Error creating document:", error);
-      alert(error instanceof Error ? error.message : "Failed to create document");
+      alert(error instanceof Error ? error.message : "Не удалось создать документ");
     }
   }
 
-  const today = new Date().toLocaleDateString("en-GB", {
+  const today = new Date().toLocaleDateString("ru-RU", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -248,16 +248,16 @@ export default function CreateDocumentPage() {
         className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
       >
         <BackIcon />
-        Back to Documents
+        Назад к документам
       </Link>
 
       {/* ── Page heading ───────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-          Create Document
+          Создать документ
         </h2>
         <p className="mt-1 text-[14px] text-zinc-500">
-          Select a template, fill in the required fields, then save or submit for approval.
+          Выберите шаблон, заполните поля и сохраните или отправьте на согласование.
         </p>
       </div>
 
@@ -271,10 +271,10 @@ export default function CreateDocumentPage() {
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <div className="border-b border-zinc-100 px-5 py-4">
               <h3 className="text-[14px] font-semibold text-zinc-900">
-                Select Template
+                Выберите шаблон
               </h3>
               <p className="mt-0.5 text-[12.5px] text-zinc-400">
-                Choose a document type to load the appropriate form fields.
+                Выберите тип документа для загрузки полей формы.
               </p>
             </div>
 
@@ -291,7 +291,7 @@ export default function CreateDocumentPage() {
                   disabled={loading}
                 >
                   <option value="">
-                    {loading ? "Loading templates..." : error ? `Error: ${error}` : templates.length === 0 ? "No templates available" : "— Select a template —"}
+                    {loading ? "Загрузка шаблонов..." : error ? `Ошибка: ${error}` : templates.length === 0 ? "Нет доступных шаблонов" : "— Выберите шаблон —"}
                   </option>
                   {templates.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -309,19 +309,19 @@ export default function CreateDocumentPage() {
                 <div className="flex items-start gap-3 rounded-lg border border-zinc-100 bg-zinc-50 px-4 py-3">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-400" aria-hidden="true" />
                   <p className="text-[12.5px] leading-relaxed text-zinc-500">
-                    {template.description || "No description available"}
+                    {template.description || "Описание отсутствует"}
                   </p>
                 </div>
               ) : loading ? (
                 <div className="flex items-center justify-center rounded-lg border border-dashed border-zinc-200 py-8">
                   <p className="text-[13px] text-zinc-400">
-                    Loading...
+                    Загрузка...
                   </p>
                 </div>
               ) : (
                 <div className="flex items-center justify-center rounded-lg border border-dashed border-zinc-200 py-8">
                   <p className="text-[13px] text-zinc-400">
-                    No template selected. Select one above to continue.
+                    Шаблон не выбран. Выберите шаблон выше, чтобы продолжить.
                   </p>
                 </div>
               )}
@@ -335,23 +335,23 @@ export default function CreateDocumentPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-[14px] font-semibold text-zinc-900">
-                      Document Fields
+                      Поля документа
                     </h3>
                     <p className="mt-0.5 text-[12.5px] text-zinc-400">
-                      Fields specific to{" "}
+                      Поля для шаблона{" "}
                       <span className="font-medium text-zinc-600">
                         {template.name}
                       </span>
-                      . Required fields marked{" "}
+                      . Обязательные поля отмечены{" "}
                       <span className="text-rose-500">*</span>
                     </p>
                   </div>
                   {/* Required vs optional count */}
                   <div className="shrink-0 text-right">
                     <span className="text-[11px] text-zinc-400">
-                      {template.fields.filter((f) => f.required).length} required
+                      {template.fields.filter((f) => f.required).length} обязательных
                       {" / "}
-                      {template.fields.filter((f) => !f.required).length} optional
+                      {template.fields.filter((f) => !f.required).length} необязательных
                     </span>
                   </div>
                 </div>
@@ -371,7 +371,7 @@ export default function CreateDocumentPage() {
                         )}
                         {!field.required && (
                           <span className="ml-1.5 text-[10.5px] font-normal text-zinc-400">
-                            optional
+                            необязательно
                           </span>
                         )}
                       </label>
@@ -386,7 +386,7 @@ export default function CreateDocumentPage() {
                             }
                             className={selectCls}
                           >
-                            <option value="">Select…</option>
+                            <option value="">Выберите…</option>
                             {field.options?.map((opt) => (
                               <option key={opt} value={opt}>
                                 {opt}
@@ -445,9 +445,9 @@ export default function CreateDocumentPage() {
           {/* File Attachments */}
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <div className="border-b border-zinc-100 px-5 py-4">
-              <h3 className="text-[14px] font-semibold text-zinc-900">Attachments</h3>
+              <h3 className="text-[14px] font-semibold text-zinc-900">Вложения</h3>
               <p className="mt-0.5 text-[12.5px] text-zinc-400">
-                Optional. PDF, DOCX, XLSX, JPG, PNG — max 10 MB each.
+                Необязательно. PDF, DOCX, XLSX, JPG, PNG — макс. 10 МБ каждый.
               </p>
             </div>
             <div className="px-5 py-5 space-y-3">
@@ -471,8 +471,8 @@ export default function CreateDocumentPage() {
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
                 <span className="text-[12.5px] text-zinc-400">
-                  Drag & drop files here or{" "}
-                  <span className="font-medium text-zinc-600">browse</span>
+                  Перетащите файлы сюда или{" "}
+                  <span className="font-medium text-zinc-600">выберите</span>
                 </span>
                 <input
                   type="file"
@@ -498,7 +498,7 @@ export default function CreateDocumentPage() {
                         </svg>
                         <span className="truncate text-[12.5px] text-zinc-700">{file.name}</span>
                         <span className="shrink-0 text-[11px] text-zinc-400">
-                          {(file.size / 1024).toFixed(0)} KB
+                          {(file.size / 1024).toFixed(0)} КБ
                         </span>
                       </div>
                       <button
@@ -523,7 +523,7 @@ export default function CreateDocumentPage() {
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <div className="border-b border-zinc-100 px-5 py-4">
               <h3 className="text-[14px] font-semibold text-zinc-900">
-                Document Details
+                Детали документа
               </h3>
             </div>
 
@@ -531,7 +531,7 @@ export default function CreateDocumentPage() {
               {/* Title input */}
               <div>
                 <label className="mb-1.5 block text-[12px] font-medium text-zinc-600">
-                  Document Title <span className="text-rose-500">*</span>
+                  Название документа <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -539,8 +539,8 @@ export default function CreateDocumentPage() {
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={
                     template
-                      ? `e.g. ${template.name} — ${new Date().getFullYear()}`
-                      : "Enter document title…"
+                      ? `напр. ${template.name} — ${new Date().getFullYear()}`
+                      : "Введите название документа…"
                   }
                   className={inputCls}
                 />
@@ -550,7 +550,7 @@ export default function CreateDocumentPage() {
               <div className="space-y-3 border-t border-zinc-100 pt-4">
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-                    Initiator
+                    Инициатор
                   </p>
                   <div className="mt-1.5 flex items-center gap-2">
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-[9px] font-semibold text-white">
@@ -564,7 +564,7 @@ export default function CreateDocumentPage() {
 
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-                    Date
+                    Дата
                   </p>
                   <p className="mt-1 text-[13px] font-medium text-zinc-800">
                     {today}
@@ -573,21 +573,21 @@ export default function CreateDocumentPage() {
 
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-                    Template
+                    Шаблон
                   </p>
                   <p className="mt-1 text-[13px] font-medium text-zinc-700">
                     {template?.name ?? (
-                      <span className="text-zinc-400">Not selected</span>
+                      <span className="text-zinc-400">Не выбран</span>
                     )}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-                    Status
+                    Статус
                   </p>
                   <span className="mt-1 inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-500 ring-1 ring-zinc-200">
-                    Draft
+                    Черновик
                   </span>
                 </div>
               </div>
@@ -599,10 +599,10 @@ export default function CreateDocumentPage() {
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-5 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
-                  Select Approver
+                  Выберите согласующего
                 </h3>
                 <p className="mt-0.5 text-[12px] text-zinc-400">
-                  {template ? "This template has no approval route" : "Choose who will approve this document"}
+                  {template ? "У этого шаблона нет маршрута согласования" : "Выберите, кто будет согласовывать этот документ"}
                 </p>
               </div>
 
@@ -613,7 +613,7 @@ export default function CreateDocumentPage() {
                     onChange={(e) => setSelectedApproverId(e.target.value || null)}
                     className="h-10 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3.5 pr-9 text-[13px] text-zinc-800 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer"
                   >
-                    <option value="">— Select approver —</option>
+                    <option value="">— Выберите согласующего —</option>
                     {approvers.map((approver) => (
                       <option key={approver.id} value={approver.id}>
                         {approver.name} ({approver.role})
@@ -626,7 +626,7 @@ export default function CreateDocumentPage() {
                 </div>
                 {approvers.length === 0 && (
                   <p className="mt-2 text-[11.5px] text-zinc-400">
-                    No approvers available. Please contact an administrator.
+                    Нет доступных согласующих. Обратитесь к администратору.
                   </p>
                 )}
               </div>
@@ -638,10 +638,10 @@ export default function CreateDocumentPage() {
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-5 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
-                  Approval Route
+                  Маршрут согласования
                 </h3>
                 <p className="mt-0.5 text-[12px] text-zinc-400">
-                  Steps after submission
+                  Этапы после отправки
                 </p>
               </div>
 
@@ -675,7 +675,7 @@ export default function CreateDocumentPage() {
                             )}
                             {step.requireAll && (
                               <span className="mt-1 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700 ring-1 ring-amber-200">
-                                All must approve
+                                Все должны согласовать
                               </span>
                             )}
                           </div>
@@ -685,7 +685,7 @@ export default function CreateDocumentPage() {
                   </ol>
                 ) : (
                   <p className="text-[13px] text-zinc-400">
-                    No approval route configured
+                    Маршрут согласования не настроен
                   </p>
                 )}
               </div>
@@ -700,7 +700,7 @@ export default function CreateDocumentPage() {
               className="flex w-full items-center justify-center rounded-lg bg-zinc-900 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
               disabled={!title.trim() || (!template && attachedFiles.length === 0)}
             >
-              Submit for Approval
+              Отправить на согласование
             </button>
             <button
               type="button"
@@ -708,10 +708,10 @@ export default function CreateDocumentPage() {
               className="flex w-full items-center justify-center rounded-lg border border-zinc-200 bg-white py-2.5 text-[13px] font-semibold text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed"
               disabled={!title.trim() || (!template && attachedFiles.length === 0)}
             >
-              Save as Draft
+              Сохранить как черновик
             </button>
             <p className="text-center text-[11px] text-zinc-400">
-              Drafts can be edited and submitted later.
+              Черновики можно редактировать и отправить позже.
             </p>
           </div>
         </div>

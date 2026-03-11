@@ -77,8 +77,8 @@ export function ApprovalProgress({
   if (loading) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Approval Progress</h3>
-        <p className="text-[13px] text-zinc-500">Loading...</p>
+        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Прогресс согласования</h3>
+        <p className="text-[13px] text-zinc-500">Загрузка...</p>
       </div>
     );
   }
@@ -86,8 +86,8 @@ export function ApprovalProgress({
   if (steps.length === 0) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Approval Progress</h3>
-        <p className="text-[13px] text-zinc-500">No approval route configured for this template.</p>
+        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Прогресс согласования</h3>
+        <p className="text-[13px] text-zinc-500">Маршрут согласования для этого шаблона не настроен.</p>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export function ApprovalProgress({
 
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6">
-      <h3 className="text-[15px] font-semibold text-zinc-900 mb-6">Approval Progress</h3>
+      <h3 className="text-[15px] font-semibold text-zinc-900 mb-6">Прогресс согласования</h3>
 
       <div className="space-y-6">
         {steps.map((step, index) => {
@@ -221,12 +221,12 @@ export function ApprovalProgress({
                       }`}
                     >
                       {status === "completed"
-                        ? "Completed"
+                        ? "Завершено"
                         : status === "current"
-                        ? "In Progress"
+                        ? "В процессе"
                         : status === "rejected"
-                        ? "Rejected"
-                        : "Pending"}
+                        ? "Отклонено"
+                        : "Ожидание"}
                     </span>
                   </div>
 
@@ -261,16 +261,16 @@ export function ApprovalProgress({
                             }
                           >
                             {approval.status === "APPROVED"
-                              ? "Approved"
+                              ? "Согласовано"
                               : approval.status === "REJECTED"
-                              ? "Rejected"
-                              : "Pending"}
+                              ? "Отклонено"
+                              : "Ожидание"}
                           </span>
                           {approval.decidedAt && (
                             <>
                               <span className="text-zinc-400">·</span>
                               <span className="text-zinc-400">
-                                {new Date(approval.decidedAt).toLocaleDateString("en-US", {
+                                {new Date(approval.decidedAt).toLocaleDateString("ru-RU", {
                                   month: "short",
                                   day: "numeric",
                                   hour: "2-digit",
@@ -287,7 +287,7 @@ export function ApprovalProgress({
                   {/* Require all indicator */}
                   {step.requireAll && step.approverIds.length > 1 && (
                     <p className="mt-2 text-[11.5px] text-zinc-400 italic">
-                      All {step.approverIds.length} approvers must approve
+                      Все {step.approverIds.length} согласующих должны одобрить
                     </p>
                   )}
                 </div>

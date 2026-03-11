@@ -29,7 +29,7 @@ export function TemplateModal({
     setError("");
 
     if (!name.trim()) {
-      setError("Name is required");
+      setError("Название обязательно");
       return;
     }
 
@@ -40,7 +40,7 @@ export function TemplateModal({
       setName("");
       setDescription("");
     } catch (err: any) {
-      setError(err.message || "Failed to save template");
+      setError(err.message || "Не удалось сохранить шаблон");
     } finally {
       setSubmitting(false);
     }
@@ -50,12 +50,12 @@ export function TemplateModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-xl">
         <h3 className="text-lg font-semibold text-zinc-900">
-          {mode === "create" ? "Create Template" : "Edit Template"}
+          {mode === "create" ? "Создать шаблон" : "Редактировать шаблон"}
         </h3>
         <p className="mt-1 text-[13px] text-zinc-500">
           {mode === "create"
-            ? "Add a new document template"
-            : "Update template information"}
+            ? "Добавить новый шаблон документа"
+            : "Обновить информацию о шаблоне"}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -65,7 +65,7 @@ export function TemplateModal({
               htmlFor="name"
               className="block text-[12.5px] font-medium text-zinc-700 mb-1.5"
             >
-              Name <span className="text-rose-600">*</span>
+              Название <span className="text-rose-600">*</span>
             </label>
             <input
               id="name"
@@ -73,7 +73,7 @@ export function TemplateModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-              placeholder="e.g. Service Contract"
+              placeholder="напр. Договор на оказание услуг"
               disabled={submitting}
             />
           </div>
@@ -84,7 +84,7 @@ export function TemplateModal({
               htmlFor="description"
               className="block text-[12.5px] font-medium text-zinc-700 mb-1.5"
             >
-              Description
+              Описание
             </label>
             <textarea
               id="description"
@@ -92,7 +92,7 @@ export function TemplateModal({
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-              placeholder="Brief description of this template"
+              placeholder="Краткое описание шаблона"
               disabled={submitting}
             />
           </div>
@@ -112,7 +112,7 @@ export function TemplateModal({
               disabled={submitting}
               className="flex-1 rounded-lg border border-zinc-300 px-4 py-2 text-[13px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50"
             >
-              Cancel
+              Отмена
             </button>
             <button
               type="submit"
@@ -121,11 +121,11 @@ export function TemplateModal({
             >
               {submitting
                 ? mode === "create"
-                  ? "Creating..."
-                  : "Saving..."
+                  ? "Создание..."
+                  : "Сохранение..."
                 : mode === "create"
-                ? "Create"
-                : "Save"}
+                ? "Создать"
+                : "Сохранить"}
             </button>
           </div>
         </form>

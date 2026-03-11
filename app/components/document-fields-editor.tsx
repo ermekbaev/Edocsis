@@ -46,7 +46,7 @@ export function DocumentFieldsEditor({
       .map((field) => field.label);
 
     if (missingFields.length > 0) {
-      setError(`Required fields: ${missingFields.join(", ")}`);
+      setError(`Обязательные поля: ${missingFields.join(", ")}`);
       return;
     }
 
@@ -54,7 +54,7 @@ export function DocumentFieldsEditor({
     try {
       await onSave(values);
     } catch (err: any) {
-      setError(err.message || "Failed to save");
+      setError(err.message || "Не удалось сохранить");
     } finally {
       setSaving(false);
     }
@@ -63,7 +63,7 @@ export function DocumentFieldsEditor({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6">
       <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">
-        Document Fields
+        Поля документа
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,7 +87,7 @@ export function DocumentFieldsEditor({
                 disabled={disabled || saving}
                 rows={4}
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-50 disabled:text-zinc-500"
-                placeholder={`Enter ${field.label.toLowerCase()}`}
+                placeholder={`Введите ${field.label.toLowerCase()}`}
               />
             ) : field.type === "number" ? (
               <input
@@ -99,7 +99,7 @@ export function DocumentFieldsEditor({
                 }
                 disabled={disabled || saving}
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-50 disabled:text-zinc-500"
-                placeholder={`Enter ${field.label.toLowerCase()}`}
+                placeholder={`Введите ${field.label.toLowerCase()}`}
               />
             ) : field.type === "date" ? (
               <input
@@ -118,7 +118,7 @@ export function DocumentFieldsEditor({
                 onChange={(e) => handleChange(field.key, e.target.value)}
                 disabled={disabled || saving}
                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-50 disabled:text-zinc-500"
-                placeholder={`Enter ${field.label.toLowerCase()}`}
+                placeholder={`Введите ${field.label.toLowerCase()}`}
               />
             )}
           </div>
@@ -137,7 +137,7 @@ export function DocumentFieldsEditor({
               disabled={saving}
               className="w-full rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
             >
-              {saving ? "Saving..." : "Save Field Values"}
+              {saving ? "Сохранение..." : "Сохранить значения полей"}
             </button>
           </div>
         )}

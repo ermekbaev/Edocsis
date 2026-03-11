@@ -181,7 +181,7 @@ export default function NewTemplatePage() {
         const json = JSON.parse(text);
 
         if (!json.name) {
-          setError("Invalid template file: missing 'name' field");
+          setError("Некорректный файл шаблона: отсутствует поле 'name'");
           return;
         }
 
@@ -215,11 +215,11 @@ export default function NewTemplatePage() {
         setFields(extractedFields);
         setError(null);
       } else {
-        setError("Unsupported file type. Please upload .json, .docx, or .txt file");
+        setError("Неподдерживаемый формат файла. Загрузите файл .json, .docx или .txt");
       }
     } catch (err) {
       console.error("File import error:", err);
-      setError("Failed to parse file. Please check the file format.");
+      setError("Не удалось обработать файл. Проверьте формат файла.");
     }
   }
 
@@ -234,7 +234,7 @@ export default function NewTemplatePage() {
       if (['json', 'docx', 'txt'].includes(fileExtension || '')) {
         handleFileImport(file);
       } else {
-        setError("Please upload a .json, .docx, or .txt file");
+        setError("Загрузите файл формата .json, .docx или .txt");
       }
     }
   }
@@ -262,23 +262,23 @@ export default function NewTemplatePage() {
     setError(null);
 
     if (!name.trim()) {
-      setError("Template name is required");
+      setError("Название шаблона обязательно");
       return;
     }
 
     for (let i = 0; i < fields.length; i++) {
       const field = fields[i];
       if (!field.key.trim()) {
-        setError(`Field #${i + 1}: Key is required`);
+        setError(`Поле #${i + 1}: Ключ обязателен`);
         return;
       }
       if (!field.label.trim()) {
-        setError(`Field #${i + 1}: Label is required`);
+        setError(`Поле #${i + 1}: Название обязательно`);
         return;
       }
       const duplicateKey = fields.find((f, idx) => idx !== i && f.key === field.key);
       if (duplicateKey) {
-        setError(`Field #${i + 1}: Duplicate key "${field.key}"`);
+        setError(`Поле #${i + 1}: Дублирующийся ключ "${field.key}"`);
         return;
       }
     }
@@ -303,14 +303,14 @@ export default function NewTemplatePage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to create template");
+        throw new Error(data.error || "Не удалось создать шаблон");
       }
 
       const template = await res.json();
       router.push(`/templates/${template.id}`);
     } catch (err) {
       console.error("Failed to create template:", err);
-      setError(err instanceof Error ? err.message : "Failed to create template");
+      setError(err instanceof Error ? err.message : "Не удалось создать шаблон");
     } finally {
       setLoading(false);
     }
@@ -324,16 +324,16 @@ export default function NewTemplatePage() {
           className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
         >
           <BackIcon />
-          Back to Templates
+          Назад к шаблонам
         </Link>
 
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Create New Template
+              Создать новый шаблон
             </h1>
             <p className="mt-1 text-[14px] text-zinc-500">
-              Define document template with fields and content
+              Определите шаблон документа с полями и содержимым
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -343,14 +343,14 @@ export default function NewTemplatePage() {
               className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[12px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <InfoIcon />
-              {showHelp ? "Hide Help" : "Show Help"}
+              {showHelp ? "Скрыть справку" : "Показать справку"}
             </button>
             <button
               type="submit"
               disabled={loading}
               className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Creating..." : "Create Template"}
+              {loading ? "Создание..." : "Создать шаблон"}
             </button>
           </div>
         </div>
@@ -358,7 +358,7 @@ export default function NewTemplatePage() {
         {showHelp && (
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
             <h3 className="text-[14px] font-semibold text-blue-900 mb-3">
-              📚 Инструкция по созданию шаблона
+              Инструкция по созданию шаблона
             </h3>
             <div className="space-y-3 text-[13px] text-blue-800">
               <div>
@@ -370,19 +370,19 @@ export default function NewTemplatePage() {
               <div>
                 <p className="font-semibold">2. Добавьте поля</p>
                 <p className="mt-1 text-[12px] text-blue-700">
-                  Нажмите "Add Field" и введите <strong>название поля</strong> (например, "Имя сотрудника" или "Employee Name").
+                  Нажмите "Добавить поле" и введите <strong>название поля</strong> (например, "Имя сотрудника").
                   Система автоматически создаст <strong>ключ поля</strong>!
                 </p>
               </div>
               <div>
                 <p className="font-semibold">3. Вставьте переменные</p>
                 <p className="mt-1 text-[12px] text-blue-700">
-                  Нажмите кнопку "Insert to Content" рядом с полем, чтобы добавить его в контент документа.
+                  Нажмите кнопку "Вставить в содержимое" рядом с полем, чтобы добавить его в контент документа.
                   Переменные выглядят так: {'{{employeeName}}'}
                 </p>
               </div>
               <div>
-                <p className="font-semibold">💡 Совет: Импорт шаблона</p>
+                <p className="font-semibold">Совет: Импорт шаблона</p>
                 <p className="mt-1 text-[12px] text-blue-700">
                   Перетащите файл (JSON, Word .docx, или .txt) в область ниже.
                   Система автоматически извлечет переменные из Word/txt файлов!
@@ -419,33 +419,33 @@ export default function NewTemplatePage() {
           <div className="flex flex-col items-center">
             <UploadIcon />
             <p className="mt-3 text-[13px] font-medium text-zinc-700">
-              Import Template (JSON, Word, or Text)
+              Импорт шаблона (JSON, Word или текст)
             </p>
             <p className="mt-1 text-[12px] text-zinc-500">
-              Drag & drop .json, .docx, or .txt file or click to browse
+              Перетащите файл .json, .docx или .txt или нажмите для выбора
             </p>
             <p className="mt-2 text-[11px] text-emerald-600 font-medium">
-              ✨ Word/Text files: Variables will be auto-extracted!
+              Word/текстовые файлы: переменные будут извлечены автоматически!
             </p>
           </div>
         </div>
 
         <div className="rounded-xl border border-zinc-200 bg-white p-6">
           <h2 className="text-[15px] font-semibold text-zinc-900 mb-4">
-            Basic Information
+            Основная информация
           </h2>
 
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-[13px] font-medium text-zinc-700 mb-1.5">
-                Template Name <span className="text-rose-500">*</span>
+                Название шаблона <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Purchase Order"
+                placeholder="напр. Заказ на закупку"
                 required
                 className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-0"
               />
@@ -453,13 +453,13 @@ export default function NewTemplatePage() {
 
             <div>
               <label htmlFor="description" className="block text-[13px] font-medium text-zinc-700 mb-1.5">
-                Description
+                Описание
               </label>
               <textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of this template"
+                placeholder="Краткое описание шаблона"
                 rows={2}
                 className="w-full rounded-lg border border-zinc-200 px-3 py-2 text-[13px] text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-0"
               />
@@ -471,10 +471,10 @@ export default function NewTemplatePage() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-[15px] font-semibold text-zinc-900">
-                Document Fields
+                Поля документа
               </h2>
               <p className="mt-0.5 text-[12px] text-emerald-600">
-                ✨ Enter field labels - keys will be generated automatically
+                Введите названия полей — ключи будут сгенерированы автоматически
               </p>
             </div>
             <button
@@ -483,15 +483,15 @@ export default function NewTemplatePage() {
               className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-medium text-zinc-700 transition-colors hover:bg-zinc-50"
             >
               <PlusIcon />
-              Add Field
+              Добавить поле
             </button>
           </div>
 
           {fields.length === 0 ? (
             <div className="rounded-lg border border-dashed border-zinc-200 bg-zinc-50 px-4 py-8 text-center">
-              <p className="text-[13px] text-zinc-500">No fields added yet</p>
+              <p className="text-[13px] text-zinc-500">Поля еще не добавлены</p>
               <p className="mt-1 text-[12px] text-zinc-400">
-                Click "Add Field" to create document fields
+                Нажмите "Добавить поле" для создания полей документа
               </p>
             </div>
           ) : (
@@ -504,26 +504,26 @@ export default function NewTemplatePage() {
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     <div className="md:col-span-2">
                       <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-                        Field Label <span className="text-rose-500">*</span>
-                        <span className="ml-1 text-[10px] text-emerald-600">✨ auto-generates key</span>
+                        Название поля <span className="text-rose-500">*</span>
+                        <span className="ml-1 text-[10px] text-emerald-600">автогенерация ключа</span>
                       </label>
                       <input
                         type="text"
                         value={field.label}
                         onChange={(e) => updateField(index, { label: e.target.value })}
-                        placeholder="e.g. Employee Name or Имя Сотрудника"
+                        placeholder="напр. Имя сотрудника"
                         className="w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] text-zinc-900 placeholder-zinc-400 focus:border-zinc-400 focus:outline-none"
                       />
                       {field.key && (
                         <p className="mt-1 text-[10px] text-emerald-600">
-                          ✓ Generated key: <code className="bg-emerald-50 px-1 rounded font-mono">{field.key}</code>
+                          Сгенерированный ключ: <code className="bg-emerald-50 px-1 rounded font-mono">{field.key}</code>
                         </p>
                       )}
                     </div>
 
                     <div>
                       <label className="block text-[11px] font-medium text-zinc-600 mb-1">
-                        Type
+                        Тип
                       </label>
                       <select
                         value={field.type}
@@ -532,10 +532,10 @@ export default function NewTemplatePage() {
                         }
                         className="w-full rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] text-zinc-900 focus:border-zinc-400 focus:outline-none"
                       >
-                        <option value="text">Text</option>
-                        <option value="textarea">Textarea</option>
-                        <option value="date">Date</option>
-                        <option value="number">Number</option>
+                        <option value="text">Текст</option>
+                        <option value="textarea">Текстовая область</option>
+                        <option value="date">Дата</option>
+                        <option value="number">Число</option>
                       </select>
                     </div>
 
@@ -547,7 +547,7 @@ export default function NewTemplatePage() {
                           onChange={(e) => updateField(index, { required: e.target.checked })}
                           className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-0 focus:ring-offset-0"
                         />
-                        <span className="text-[12px] text-zinc-700">Required</span>
+                        <span className="text-[12px] text-zinc-700">Обязательное</span>
                       </label>
 
                       <button
@@ -556,7 +556,7 @@ export default function NewTemplatePage() {
                         disabled={!field.key}
                         className="rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 transition-colors hover:bg-blue-100 disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        Insert to Content
+                        Вставить в содержимое
                       </button>
 
                       <button
@@ -577,17 +577,17 @@ export default function NewTemplatePage() {
         <div className="rounded-xl border border-zinc-200 bg-white p-6">
           <div className="mb-4">
             <h2 className="text-[15px] font-semibold text-zinc-900">
-              Document Content
+              Содержимое документа
             </h2>
             <p className="mt-0.5 text-[12px] text-zinc-500">
-              Write your document content. Use "Insert to Content" buttons above to add field variables
+              Напишите содержимое документа. Используйте кнопки "Вставить в содержимое" выше для добавления переменных полей
             </p>
           </div>
 
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={"Enter document content with {{variables}}\n\nExample:\nORDER FORM\n\nVendor: {{vendorName}}\nAmount: ${{amount}} USD\nDate: {{orderDate}}"}
+            placeholder={"Введите содержимое документа с {{переменными}}\n\nПример:\nФОРМА ЗАКАЗА\n\nПоставщик: {{vendorName}}\nСумма: {{amount}} руб.\nДата: {{orderDate}}"}
             rows={12}
             className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2.5 text-[12.5px] text-zinc-900 font-mono placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-0"
           />

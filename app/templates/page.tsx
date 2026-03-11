@@ -98,12 +98,12 @@ export default function TemplatesPage() {
             description: tpl.description || "",
             fieldCount: (tpl.fields && Array.isArray(tpl.fields)) ? tpl.fields.length : 0,
             approvalSteps: tpl.approvalRoute?.steps?.length || 0,
-            createdDate: new Date(tpl.createdAt).toLocaleDateString("en-US", {
+            createdDate: new Date(tpl.createdAt).toLocaleDateString("ru-RU", {
               year: "numeric",
               month: "short",
               day: "numeric",
             }),
-            updatedDate: new Date(tpl.createdAt).toLocaleDateString("en-US", {
+            updatedDate: new Date(tpl.createdAt).toLocaleDateString("ru-RU", {
               year: "numeric",
               month: "short",
               day: "numeric",
@@ -136,7 +136,7 @@ export default function TemplatesPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.error || "Failed to create template");
+      throw new Error(error.error || "Не удалось создать шаблон");
     }
 
     const newTemplate = await res.json();
@@ -147,12 +147,12 @@ export default function TemplatesPage() {
       description: newTemplate.description || "",
       fieldCount: 0,
       approvalSteps: 0,
-      createdDate: new Date(newTemplate.createdAt).toLocaleDateString("en-US", {
+      createdDate: new Date(newTemplate.createdAt).toLocaleDateString("ru-RU", {
         year: "numeric",
         month: "short",
         day: "numeric",
       }),
-      updatedDate: new Date(newTemplate.createdAt).toLocaleDateString("en-US", {
+      updatedDate: new Date(newTemplate.createdAt).toLocaleDateString("ru-RU", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -178,7 +178,7 @@ export default function TemplatesPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      throw new Error(error.error || "Failed to update template");
+      throw new Error(error.error || "Не удалось обновить шаблон");
     }
 
     const updatedTemplate = await res.json();
@@ -190,7 +190,7 @@ export default function TemplatesPage() {
       fieldCount: selectedTemplate.fieldCount,
       approvalSteps: selectedTemplate.approvalSteps,
       createdDate: selectedTemplate.createdDate,
-      updatedDate: new Date(updatedTemplate.updatedAt).toLocaleDateString("en-US", {
+      updatedDate: new Date(updatedTemplate.updatedAt).toLocaleDateString("ru-RU", {
         year: "numeric",
         month: "short",
         day: "numeric",
@@ -202,7 +202,7 @@ export default function TemplatesPage() {
   }
 
   async function handleDeleteTemplate(templateId: string, templateName: string) {
-    if (!window.confirm(`Are you sure you want to delete "${templateName}"?`)) {
+    if (!window.confirm(`Вы уверены, что хотите удалить "${templateName}"?`)) {
       return;
     }
 
@@ -216,7 +216,7 @@ export default function TemplatesPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      alert(error.error || "Failed to delete template");
+      alert(error.error || "Не удалось удалить шаблон");
       return;
     }
 
@@ -231,10 +231,10 @@ export default function TemplatesPage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Templates
+              Шаблоны
             </h2>
             <p className="mt-1 text-[14px] text-zinc-500">
-              Loading...
+              Загрузка...
             </p>
           </div>
         </div>
@@ -250,10 +250,10 @@ export default function TemplatesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Templates
+            Шаблоны
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
-            Manage document templates and approval workflows.
+            Управление шаблонами документов и маршрутами согласования.
           </p>
         </div>
         <Link
@@ -261,17 +261,17 @@ export default function TemplatesPage() {
           className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
         >
           <span className="text-[16px] leading-none font-light">+</span>
-          Create Template
+          Создать шаблон
         </Link>
       </div>
 
       {/* ── Summary strip ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: "Total Templates",  value: templates.length },
-          { label: "Active",           value: activeCount },
-          { label: "Draft",            value: templates.length - activeCount },
-          { label: "Categories",       value: new Set(templates.map((t) => t.category)).size },
+          { label: "Всего шаблонов",    value: templates.length },
+          { label: "Активные",         value: activeCount },
+          { label: "Черновики",        value: templates.length - activeCount },
+          { label: "Категории",        value: new Set(templates.map((t) => t.category)).size },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -296,25 +296,25 @@ export default function TemplatesPage() {
             <thead>
               <tr className="border-b border-zinc-100 bg-zinc-50">
                 <th className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[32%]">
-                  Template Name
+                  Название шаблона
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                  Category
+                  Категория
                 </th>
                 <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                  Fields
+                  Поля
                 </th>
                 <th className="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                  Approval Steps
+                  Этапы согласования
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
-                  Created Date
+                  Дата создания
                 </th>
                 <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                  Status
+                  Статус
                 </th>
                 <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[140px]">
-                  Actions
+                  Действия
                 </th>
               </tr>
             </thead>
@@ -377,7 +377,7 @@ export default function TemplatesPage() {
                     </p>
                     {tpl.updatedDate !== tpl.createdDate && (
                       <p className="mt-0.5 text-[11px] text-zinc-400">
-                        Updated {tpl.updatedDate}
+                        Обновлено {tpl.updatedDate}
                       </p>
                     )}
                   </td>
@@ -387,7 +387,7 @@ export default function TemplatesPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${statusBadge(tpl.status)}`}
                     >
-                      {tpl.status}
+                      {tpl.status === "Active" ? "Активный" : "Черновик"}
                     </span>
                   </td>
 
@@ -405,7 +405,7 @@ export default function TemplatesPage() {
                         className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
                       >
                         <EditIcon />
-                        Edit
+                        Изменить
                       </button>
 
                       {/* Delete */}
@@ -415,7 +415,7 @@ export default function TemplatesPage() {
                         className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
                       >
                         <TrashIcon />
-                        Delete
+                        Удалить
                       </button>
                     </div>
                   </td>
@@ -429,8 +429,8 @@ export default function TemplatesPage() {
         <div className="border-t border-zinc-100 bg-zinc-50 px-5 py-3">
           <p className="text-[12px] text-zinc-400">
             <span className="font-medium text-zinc-600">{templates.length}</span>{" "}
-            templates total —{" "}
-            <span className="font-medium text-zinc-600">{activeCount}</span> active
+            шаблонов всего —{" "}
+            <span className="font-medium text-zinc-600">{activeCount}</span> активных
           </p>
         </div>
       </div>

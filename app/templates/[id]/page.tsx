@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import Link from "next/link";
@@ -96,9 +97,9 @@ export default function TemplateDetailPage() {
 
         if (!res.ok) {
           if (res.status === 404) {
-            setError("Template not found");
+            setError("Шаблон не найден");
           } else {
-            setError("Failed to load template");
+            setError("Не удалось загрузить шаблон");
           }
           return;
         }
@@ -107,7 +108,7 @@ export default function TemplateDetailPage() {
         setTemplate(data);
       } catch (err) {
         console.error("Failed to fetch template:", err);
-        setError("Failed to load template");
+        setError("Не удалось загрузить шаблон");
       } finally {
         setLoading(false);
       }
@@ -122,7 +123,7 @@ export default function TemplateDetailPage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Loading...
+              Загрузка...
             </h2>
           </div>
         </div>
@@ -139,10 +140,12 @@ export default function TemplateDetailPage() {
             className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
           >
             <BackIcon />
-            Back to Templates
+            Назад к шаблонам
           </Link>
           <div className="rounded-xl border border-rose-200 bg-rose-50 px-6 py-4">
-            <p className="text-[14px] text-rose-700">{error || "Template not found"}</p>
+            <p className="text-[14px] text-rose-700">
+              {error || "Шаблон не найден"}
+            </p>
           </div>
         </div>
       </RoleGuard>
@@ -161,7 +164,7 @@ export default function TemplateDetailPage() {
           className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
         >
           <BackIcon />
-          Back to Templates
+          Назад к шаблонам
         </Link>
 
         {/* ── Template Header ────────────────────────────────────────────────── */}
@@ -183,31 +186,34 @@ export default function TemplateDetailPage() {
           {/* Metadata strip */}
           <div className="mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-t border-zinc-100 pt-5 sm:grid-cols-4">
             {[
-              { label: "Created By", value: template.createdBy.name },
+              { label: "Автор", value: template.createdBy.name },
               {
-                label: "Created Date",
-                value: new Date(template.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                }),
+                label: "Дата создания",
+                value: new Date(template.createdAt).toLocaleDateString(
+                  "ru-RU",
+                  {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  },
+                ),
               },
               {
-                label: "Used In",
-                value: `${template._count.documents} document${
-                  template._count.documents !== 1 ? "s" : ""
-                }`,
+                label: "Используется в",
+                value: `${template._count.documents} док.`,
               },
               {
-                label: "Total Fields",
-                value: `${fields.length} field${fields.length !== 1 ? "s" : ""}`,
+                label: "Всего полей",
+                value: `${fields.length}`,
               },
             ].map(({ label, value }) => (
               <div key={label}>
                 <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
                   {label}
                 </p>
-                <p className="mt-0.5 text-[13px] font-medium text-zinc-700">{value}</p>
+                <p className="mt-0.5 text-[13px] font-medium text-zinc-700">
+                  {value}
+                </p>
               </div>
             ))}
           </div>
@@ -222,10 +228,10 @@ export default function TemplateDetailPage() {
               <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
                 <div className="border-b border-zinc-100 px-5 py-4">
                   <h3 className="text-[14px] font-semibold text-zinc-900">
-                    Document Content
+                    Содержимое документа
                   </h3>
                   <p className="mt-0.5 text-[12px] text-zinc-400">
-                    Template with variables marked as {"{{"}"fieldName"{"}}"}
+                    Шаблон с переменными вида {"{{"}"fieldName"{"}}"}
                   </p>
                 </div>
                 <div className="px-5 py-4 bg-zinc-50">
@@ -242,12 +248,12 @@ export default function TemplateDetailPage() {
                 <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
                   <div>
                     <h3 className="text-[14px] font-semibold text-zinc-900">
-                      Document Fields
+                      Поля документа
                     </h3>
                     <p className="mt-0.5 text-[12px] text-zinc-400">
-                      {fields.length} fields —{" "}
-                      {fields.filter((f) => f.required).length} required,{" "}
-                      {fields.filter((f) => !f.required).length} optional
+                      {fields.length} полей —{" "}
+                      {fields.filter((f) => f.required).length} обязательных,{" "}
+                      {fields.filter((f) => !f.required).length} необязательных
                     </p>
                   </div>
                 </div>
@@ -257,22 +263,25 @@ export default function TemplateDetailPage() {
                   <thead>
                     <tr className="border-b border-zinc-100 bg-zinc-50">
                       <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                        Field Name
+                        Название поля
                       </th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                        Field Key
+                        Ключ поля
                       </th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                        Type
+                        Тип
                       </th>
                       <th className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
-                        Required
+                        Обязательное
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
                     {fields.map((field) => (
-                      <tr key={field.key} className="hover:bg-zinc-50 transition-colors">
+                      <tr
+                        key={field.key}
+                        className="hover:bg-zinc-50 transition-colors"
+                      >
                         {/* Field Name */}
                         <td className="px-5 py-3.5">
                           <p className="text-[13px] font-semibold text-zinc-900">
@@ -283,7 +292,9 @@ export default function TemplateDetailPage() {
                         {/* Field Key */}
                         <td className="px-4 py-3.5">
                           <code className="text-[11.5px] text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">
-                            {"{{"}{field.key}{"}}"}
+                            {"{{"}
+                            {field.key}
+                            {"}}"}
                           </code>
                         </td>
 
@@ -291,7 +302,7 @@ export default function TemplateDetailPage() {
                         <td className="px-4 py-3.5">
                           <span
                             className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold ${fieldTypeBadge(
-                              field.type
+                              field.type,
                             )}`}
                           >
                             {field.type}
@@ -302,11 +313,11 @@ export default function TemplateDetailPage() {
                         <td className="px-4 py-3.5">
                           {field.required ? (
                             <span className="inline-flex items-center rounded-full bg-zinc-900 px-2 py-0.5 text-[10.5px] font-semibold text-white">
-                              Required
+                              Обязательное
                             </span>
                           ) : (
                             <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10.5px] font-medium text-zinc-500">
-                              Optional
+                              Необязательное
                             </span>
                           )}
                         </td>
@@ -323,28 +334,35 @@ export default function TemplateDetailPage() {
             {/* Template stats */}
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-5 py-4">
-                <h3 className="text-[14px] font-semibold text-zinc-900">Template Info</h3>
+                <h3 className="text-[14px] font-semibold text-zinc-900">
+                  Информация о шаблоне
+                </h3>
               </div>
               <div className="divide-y divide-zinc-100">
                 {[
-                  { label: "Total Fields", value: fields.length },
+                  { label: "Всего полей", value: fields.length },
                   {
-                    label: "Required Fields",
+                    label: "Обязательные",
                     value: fields.filter((f) => f.required).length,
                   },
                   {
-                    label: "Optional Fields",
+                    label: "Необязательные",
                     value: fields.filter((f) => !f.required).length,
                   },
-                  { label: "Approval Steps", value: steps.length },
-                  { label: "Used In", value: `${template._count.documents} docs` },
+                  { label: "Этапы согласования", value: steps.length },
+                  {
+                    label: "Используется в",
+                    value: `${template._count.documents} док.`,
+                  },
                 ].map(({ label, value }) => (
                   <div
                     key={label}
                     className="flex items-center justify-between px-5 py-3"
                   >
                     <p className="text-[12.5px] text-zinc-500">{label}</p>
-                    <p className="text-[13px] font-semibold text-zinc-900">{value}</p>
+                    <p className="text-[13px] font-semibold text-zinc-900">
+                      {value}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -355,10 +373,10 @@ export default function TemplateDetailPage() {
               <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
                 <div className="border-b border-zinc-100 px-5 py-4">
                   <h3 className="text-[14px] font-semibold text-zinc-900">
-                    Approval Workflow
+                    Маршрут согласования
                   </h3>
                   <p className="mt-0.5 text-[12px] text-zinc-400">
-                    {steps.length}-step {steps.length === 1 ? "process" : "sequential process"}
+                    {steps.length}-этапный процесс
                   </p>
                 </div>
 
@@ -367,7 +385,10 @@ export default function TemplateDetailPage() {
                     {steps.map((step, idx) => {
                       const isLast = idx === steps.length - 1;
                       return (
-                        <li key={step.stepNumber} className="relative flex gap-4">
+                        <li
+                          key={step.stepNumber}
+                          className="relative flex gap-4"
+                        >
                           {/* Connector */}
                           {!isLast && (
                             <span
@@ -393,17 +414,17 @@ export default function TemplateDetailPage() {
                             )}
                             <div className="mt-1.5 flex items-center gap-2">
                               <span className="text-[11px] text-zinc-400">
-                                {step.approverIds.length} approver
-                                {step.approverIds.length !== 1 ? "s" : ""}
+                                {step.approverIds.length} согласующ{step.approverIds.length === 1 ? "ий" : "их"}
                               </span>
-                              {step.requireAll && step.approverIds.length > 1 && (
-                                <>
-                                  <span className="text-zinc-300">·</span>
-                                  <span className="text-[11px] font-medium text-amber-600">
-                                    All must approve
-                                  </span>
-                                </>
-                              )}
+                              {step.requireAll &&
+                                step.approverIds.length > 1 && (
+                                  <>
+                                    <span className="text-zinc-300">·</span>
+                                    <span className="text-[11px] font-medium text-amber-600">
+                                      Все должны согласовать
+                                    </span>
+                                  </>
+                                )}
                             </div>
                           </div>
                         </li>
@@ -419,8 +440,8 @@ export default function TemplateDetailPage() {
                         aria-hidden="true"
                       />
                       <p className="text-[12px] leading-relaxed text-zinc-500">
-                        Steps are executed sequentially. Each approver is notified only
-                        after the previous step is completed.
+                        Этапы выполняются последовательно. Каждый согласующий
+                        уведомляется только после завершения предыдущего этапа.
                       </p>
                     </div>
                   )}

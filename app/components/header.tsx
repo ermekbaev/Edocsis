@@ -10,13 +10,13 @@ import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 // ─── Page title map ───────────────────────────────────────────────────────────
 
 const PAGE_TITLES: Record<string, string> = {
-  "/": "Dashboard",
-  "/documents": "Documents",
-  "/templates": "Templates",
-  "/approvals": "My Approvals",
-  "/users": "Users",
-  "/settings": "Settings",
-  "/profile": "My Profile",
+  "/": "Главная",
+  "/documents": "Документы",
+  "/templates": "Шаблоны",
+  "/approvals": "Мои согласования",
+  "/users": "Пользователи",
+  "/settings": "Настройки",
+  "/profile": "Мой профиль",
 };
 
 function resolveTitle(pathname: string): string {
@@ -24,7 +24,7 @@ function resolveTitle(pathname: string): string {
   const matched = Object.keys(PAGE_TITLES).find(
     (key) => key !== "/" && pathname.startsWith(key),
   );
-  return matched ? PAGE_TITLES[matched] : "Dashboard";
+  return matched ? PAGE_TITLES[matched] : "Главная";
 }
 
 // ─── Search mock data ─────────────────────────────────────────────────────────
@@ -92,41 +92,41 @@ const INITIAL_NOTIFS: Notif[] = [
   {
     id: "n1",
     type: "approved",
-    title: "Document Approved",
-    body: "Vendor Qualification Form — LogiSoft was approved by Elena Volkova.",
-    time: "Just now",
+    title: "Документ одобрен",
+    body: "Vendor Qualification Form — LogiSoft был одобрен Еленой Волковой.",
+    time: "Только что",
     read: false,
   },
   {
     id: "n2",
     type: "assigned",
-    title: "New Document Assigned",
-    body: "NDA with TechPartners LLC requires your approval.",
-    time: "2h ago",
+    title: "Назначен новый документ",
+    body: "NDA with TechPartners LLC требует вашего согласования.",
+    time: "2ч назад",
     read: false,
   },
   {
     id: "n3",
     type: "deadline",
-    title: "Deadline Reminder",
-    body: "Annual Maintenance Agreement — Cisco is due tomorrow.",
-    time: "5h ago",
+    title: "Напоминание о сроке",
+    body: "Annual Maintenance Agreement — Cisco истекает завтра.",
+    time: "5ч назад",
     read: false,
   },
   {
     id: "n4",
     type: "rejected",
-    title: "Document Rejected",
-    body: "Q4 Budget Revision — Engineering Dept. was rejected.",
-    time: "1d ago",
+    title: "Документ отклонён",
+    body: "Q4 Budget Revision — Engineering Dept. был отклонён.",
+    time: "1д назад",
     read: true,
   },
   {
     id: "n5",
     type: "approved",
-    title: "Document Approved",
-    body: "Travel Policy Amendment — Q1 2026 was approved.",
-    time: "2d ago",
+    title: "Документ одобрен",
+    body: "Travel Policy Amendment — Q1 2026 был одобрен.",
+    time: "2д назад",
     read: true,
   },
 ];
@@ -462,7 +462,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           type="button"
           onClick={onMenuClick}
           className="flex h-9 w-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 lg:hidden"
-          aria-label="Toggle navigation"
+          aria-label="Переключить навигацию"
         >
           <MenuIcon className="h-5 w-5" />
         </button>
@@ -478,7 +478,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setActivePanel("search")}
-            placeholder="Search documents, templates, users…"
+            placeholder="Поиск документов, шаблонов, пользователей…"
             className="h-9 w-full rounded-lg border border-zinc-200 bg-zinc-50 pl-9 pr-8 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-300 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-300 transition-colors"
           />
           {searchQuery && (
@@ -486,7 +486,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               type="button"
               onClick={() => setSearchQuery("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-              aria-label="Clear search"
+              aria-label="Очистить поиск"
             >
               <ClearIcon />
             </button>
@@ -498,7 +498,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               {q && !hasResults ? (
                 <div className="px-4 py-8 text-center">
                   <p className="text-[13px] text-zinc-400">
-                    No results for{" "}
+                    Нет результатов для{" "}
                     <span className="font-medium text-zinc-600">
                       &quot;{searchQuery}&quot;
                     </span>
@@ -510,7 +510,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {filteredDocs.length > 0 && (
                     <div>
                       <p className="px-4 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-zinc-400">
-                        Documents
+                        Документы
                       </p>
                       {filteredDocs.map((doc) => (
                         <Link
@@ -541,7 +541,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {filteredTpls.length > 0 && (
                     <div className="border-t border-zinc-100">
                       <p className="px-4 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-zinc-400">
-                        Templates
+                        Шаблоны
                       </p>
                       {filteredTpls.map((tpl) => (
                         <Link
@@ -570,7 +570,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {filteredUsers.length > 0 && (
                     <div className="border-t border-zinc-100">
                       <p className="px-4 pb-1 pt-3 text-[10.5px] font-semibold uppercase tracking-wider text-zinc-400">
-                        Users
+                        Пользователи
                       </p>
                       {filteredUsers.map((user) => (
                         <Link
@@ -602,7 +602,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                       onClick={closeSearch}
                       className="text-[12px] font-medium text-zinc-500 transition-colors hover:text-zinc-700"
                     >
-                      View all results →
+                      Смотреть все результаты →
                     </Link>
                   </div>
                 </div>
@@ -625,7 +625,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             type="button"
             onClick={() => toggle("user")}
             className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-zinc-100"
-            aria-label="User menu"
+            aria-label="Меню пользователя"
           >
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-indigo-600 text-[11px] font-semibold text-white">
               {userInitials}
@@ -682,7 +682,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <span className="text-zinc-400">
                     <ProfileMenuIcon />
                   </span>
-                  My Profile
+                  Мой профиль
                 </Link>
                 <Link
                   href="/settings"
@@ -692,7 +692,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   <span className="text-zinc-400">
                     <GearMenuIcon />
                   </span>
-                  Settings
+                  Настройки
                 </Link>
               </div>
 
@@ -703,7 +703,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   className="flex w-full items-center gap-2.5 px-4 py-2 text-[13px] text-rose-600 transition-colors hover:bg-rose-50"
                 >
                   <LogoutMenuIcon />
-                  Log Out
+                  Выйти
                 </button>
               </div>
             </div>

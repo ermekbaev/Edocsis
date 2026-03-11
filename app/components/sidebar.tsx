@@ -32,16 +32,16 @@ interface SidebarProps {
 // ─── Nav Config ───────────────────────────────────────────────────────────────
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard",   href: "/",          icon: DashboardIcon  },
-  { label: "Documents",   href: "/documents",  icon: DocumentsIcon  },
-  { label: "Templates",   href: "/templates",  icon: TemplatesIcon  },
-  { label: "My Approvals", href: "/approvals", icon: ApprovalsIcon  },
+  { label: "Главная",          href: "/",          icon: DashboardIcon  },
+  { label: "Документы",        href: "/documents",  icon: DocumentsIcon  },
+  { label: "Шаблоны",          href: "/templates",  icon: TemplatesIcon  },
+  { label: "Мои согласования", href: "/approvals",  icon: ApprovalsIcon  },
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
-  { label: "Users",    href: "/users",    icon: UsersIcon    },
-  { label: "Routes",   href: "/routes",   icon: RoutesIcon   },
-  { label: "Settings", href: "/settings", icon: SettingsIcon },
+  { label: "Пользователи", href: "/users",    icon: UsersIcon    },
+  { label: "Маршруты",     href: "/routes",   icon: RoutesIcon   },
+  { label: "Настройки",    href: "/settings", icon: SettingsIcon },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 lg:hidden"
-            aria-label="Close sidebar"
+            aria-label="Закрыть боковую панель"
           >
             <XIcon width={16} height={16} />
           </button>
@@ -155,7 +155,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
             labelClass,
           ].join(" ")}
         >
-          Main
+          Основное
         </p>
 
         {visibleNavItems.map((item) => {
@@ -192,7 +192,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 labelClass,
               ].join(" ")}
             >
-              Settings
+              Настройки
             </p>
           </>
         )}
@@ -225,7 +225,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <Link
         href="/profile"
         onClick={onClose}
-        title={!open ? "My Profile" : undefined}
+        title={!open ? "Мой профиль" : undefined}
         className={[
           "shrink-0 border-t border-zinc-200 p-3 transition-colors hover:bg-zinc-50",
           open

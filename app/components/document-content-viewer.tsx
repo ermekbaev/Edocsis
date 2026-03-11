@@ -20,15 +20,15 @@ export function DocumentContentViewer({
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
         <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">
-          Document Content
+          Содержимое документа
         </h3>
         <div className="rounded-lg bg-zinc-50 px-4 py-8 text-center">
           <div className="text-3xl mb-2">📄</div>
           <p className="text-[13px] text-zinc-500">
-            This template has no content defined.
+            У этого шаблона нет содержимого.
           </p>
           <p className="text-[12px] text-zinc-400 mt-1">
-            Files and comments can still be attached to this document.
+            К документу можно прикрепить файлы и комментарии.
           </p>
         </div>
       </div>
@@ -42,10 +42,10 @@ export function DocumentContentViewer({
     <div className="rounded-xl border border-zinc-200 bg-white">
       <div className="border-b border-zinc-200 px-6 py-4">
         <h3 className="text-[15px] font-semibold text-zinc-900">
-          Document Content
+          Содержимое документа
         </h3>
         <p className="text-[12px] text-zinc-500 mt-0.5">
-          Generated from template: {template.name}
+          Сгенерировано из шаблона: {template.name}
         </p>
       </div>
 

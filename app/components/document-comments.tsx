@@ -67,7 +67,7 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to add comment");
+        throw new Error(error.error || "Не удалось добавить комментарий");
       }
 
       const comment = await res.json();
@@ -88,8 +88,8 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
   if (loading) {
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Comments</h3>
-        <p className="text-[13px] text-zinc-500">Loading...</p>
+        <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">Комментарии</h3>
+        <p className="text-[13px] text-zinc-500">Загрузка...</p>
       </div>
     );
   }
@@ -97,7 +97,7 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-6">
       <h3 className="text-[15px] font-semibold text-zinc-900 mb-4">
-        Comments
+        Комментарии
         {comments.length > 0 && (
           <span className="ml-2 text-[13px] font-normal text-zinc-500">
             ({comments.length})
@@ -108,7 +108,7 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
       {/* Comments list */}
       <div className="space-y-4 mb-6">
         {comments.length === 0 ? (
-          <p className="text-[13px] text-zinc-500">No comments yet. Be the first to comment!</p>
+          <p className="text-[13px] text-zinc-500">Комментариев пока нет. Будьте первым!</p>
         ) : (
           comments.map((comment) => (
             <div
@@ -125,7 +125,7 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
                       {comment.user.name}
                     </p>
                     <p className="text-[11.5px] text-zinc-400">
-                      {new Date(comment.createdAt).toLocaleString("en-US", {
+                      {new Date(comment.createdAt).toLocaleString("ru-RU", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
@@ -151,7 +151,7 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Write a comment..."
+            placeholder="Написать комментарий..."
             rows={3}
             disabled={submitting}
             className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 disabled:bg-zinc-50"
@@ -170,7 +170,7 @@ export function DocumentComments({ documentId, currentUserId }: DocumentComments
             disabled={!newComment.trim() || submitting}
             className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? "Posting..." : "Post Comment"}
+            {submitting ? "Отправка..." : "Отправить"}
           </button>
         </div>
       </form>

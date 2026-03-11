@@ -23,7 +23,7 @@ export default async function ProjectDetailPage({
       {/* Breadcrumb */}
       <div className="flex items-center gap-1.5 text-[13px] text-zinc-400">
         <Link href="/projects" className="transition-colors hover:text-zinc-600">
-          Projects
+          Проекты
         </Link>
         <span>/</span>
         <span className="text-zinc-700">{project.name}</span>
@@ -48,34 +48,34 @@ export default async function ProjectDetailPage({
 
       {/* Info cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <InfoCard label="Start date" value={project.startDate} />
-        <InfoCard label="End date" value={project.endDate} />
+        <InfoCard label="Дата начала" value={project.startDate} />
+        <InfoCard label="Дата окончания" value={project.endDate} />
         <InfoCard
-          label="Project manager"
+          label="Руководитель проекта"
           value={project.manager.name}
           avatar={project.manager.initials}
         />
-        <InfoCard label="Contract" value="contract_v2.pdf" isFile />
+        <InfoCard label="Договор" value="contract_v2.pdf" isFile />
       </div>
 
       {/* Tasks */}
       <div className="rounded-xl border border-zinc-200 bg-white">
         <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">
           <h3 className="text-[14px] font-semibold text-zinc-900">
-            Work Breakdown
+            Структура работ
           </h3>
           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11.5px] font-medium text-zinc-600">
-            {countTasks(tasks)} tasks
+            {countTasks(tasks)} задач
           </span>
         </div>
 
         {/* Column header */}
         <div className="grid grid-cols-[1fr_100px_100px_120px] items-center gap-2 border-b border-zinc-100 px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 lg:grid-cols-[1fr_140px_100px_100px_120px]">
-          <span>Task</span>
-          <span className="hidden lg:block">Assignees</span>
-          <span>Dates</span>
-          <span>Plan</span>
-          <span>Fact</span>
+          <span>Задача</span>
+          <span className="hidden lg:block">Исполнители</span>
+          <span>Даты</span>
+          <span>План</span>
+          <span>Факт</span>
         </div>
 
         {tasks.length > 0 ? (
@@ -83,7 +83,7 @@ export default async function ProjectDetailPage({
         ) : (
           <div className="flex h-40 items-center justify-center">
             <p className="text-[13px] text-zinc-400">
-              No tasks added to this project yet
+              Задачи ещё не добавлены в этот проект
             </p>
           </div>
         )}

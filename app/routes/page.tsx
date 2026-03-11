@@ -68,7 +68,7 @@ export default function RoutesPage() {
   }, []);
 
   async function handleDeleteRoute(routeId: string, routeName: string) {
-    if (!window.confirm(`Are you sure you want to delete "${routeName}"?`)) {
+    if (!window.confirm(`Вы уверены, что хотите удалить "${routeName}"?`)) {
       return;
     }
 
@@ -82,7 +82,7 @@ export default function RoutesPage() {
 
     if (!res.ok) {
       const error = await res.json();
-      alert(error.error || "Failed to delete route");
+      alert(error.error || "Не удалось удалить маршрут");
       return;
     }
 
@@ -97,10 +97,10 @@ export default function RoutesPage() {
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Approval Routes
+              Маршруты согласования
             </h2>
             <p className="mt-1 text-[14px] text-zinc-500">
-              Loading...
+              Загрузка...
             </p>
           </div>
         </div>
@@ -116,10 +116,10 @@ export default function RoutesPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Approval Routes
+            Маршруты согласования
           </h2>
           <p className="mt-1 text-[14px] text-zinc-500">
-            Manage approval workflows for document templates.
+            Управление маршрутами согласования для шаблонов документов.
           </p>
         </div>
         <Link
@@ -127,16 +127,16 @@ export default function RoutesPage() {
           className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
         >
           <span className="text-[16px] leading-none font-light">+</span>
-          Create Route
+          Создать маршрут
         </Link>
       </div>
 
       {/* ── Summary strip ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         {[
-          { label: "Total Routes", value: routes.length },
-          { label: "Total Steps", value: totalSteps },
-          { label: "Avg Steps/Route", value: routes.length > 0 ? (totalSteps / routes.length).toFixed(1) : "0" },
+          { label: "Всего маршрутов", value: routes.length },
+          { label: "Всего этапов", value: totalSteps },
+          { label: "Среднее этапов/маршрут", value: routes.length > 0 ? (totalSteps / routes.length).toFixed(1) : "0" },
         ].map((stat) => (
           <div
             key={stat.label}
@@ -156,9 +156,9 @@ export default function RoutesPage() {
       {routes.length === 0 ? (
         <div className="rounded-xl border border-zinc-200 bg-white p-12 text-center">
           <p className="text-[14px] text-zinc-500">
-            No approval routes yet.{" "}
+            Маршрутов согласования пока нет.{" "}
             <Link href="/routes/create" className="font-medium text-zinc-900 hover:underline">
-              Create your first route
+              Создайте первый маршрут
             </Link>
           </p>
         </div>
@@ -184,7 +184,7 @@ export default function RoutesPage() {
                     {route.template && (
                       <div className="mt-2">
                         <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200">
-                          Template: {route.template.name}
+                          Шаблон: {route.template.name}
                         </span>
                       </div>
                     )}
@@ -195,7 +195,7 @@ export default function RoutesPage() {
                     className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
                   >
                     <TrashIcon />
-                    Delete
+                    Удалить
                   </button>
                 </div>
               </div>
@@ -222,11 +222,11 @@ export default function RoutesPage() {
                         )}
                         <div className="mt-2 flex items-center gap-2">
                           <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
-                            {step.approverIds.length} approver{step.approverIds.length !== 1 ? 's' : ''}
+                            {step.approverIds.length} согласующ{step.approverIds.length === 1 ? 'ий' : 'их'}
                           </span>
                           {step.requireAll && (
                             <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-semibold text-amber-700 ring-1 ring-amber-200">
-                              All required
+                              Все обязательные
                             </span>
                           )}
                         </div>

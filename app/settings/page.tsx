@@ -171,10 +171,10 @@ export default function SettingsPage() {
       {/* ── Page Header ─────────────────────────────────────────────────── */}
       <div>
         <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-          System Settings
+          Настройки системы
         </h2>
         <p className="mt-1 text-[14px] text-zinc-500">
-          Configure document workflows and system preferences.
+          Настройка документооборота и системных параметров.
         </p>
       </div>
 
@@ -184,9 +184,9 @@ export default function SettingsPage() {
 
           {/* Left */}
           <div className="border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
-            <h3 className="text-[14px] font-semibold text-zinc-900">General</h3>
+            <h3 className="text-[14px] font-semibold text-zinc-900">Общие</h3>
             <p className="mt-1 text-[12.5px] text-zinc-400 leading-relaxed">
-              Organisation name, document defaults, and numbering format.
+              Название организации, параметры документов и формат нумерации.
             </p>
           </div>
 
@@ -196,47 +196,47 @@ export default function SettingsPage() {
 
               {/* Company Name — full width */}
               <div className="sm:col-span-2">
-                <Label htmlFor="company-name">Company Name</Label>
+                <Label htmlFor="company-name">Название компании</Label>
                 <Input
                   id="company-name"
                   value={companyName}
                   onChange={setCompanyName}
-                  placeholder="Your organisation name"
+                  placeholder="Название вашей организации"
                 />
               </div>
 
               {/* Visibility */}
               <div>
-                <Label htmlFor="visibility">Default Document Visibility</Label>
+                <Label htmlFor="visibility">Видимость документов по умолчанию</Label>
                 <Select
                   id="visibility"
                   value={visibility}
                   onChange={setVisibility}
                   options={[
-                    { label: "Private",        value: "private"     },
-                    { label: "Department",     value: "department"  },
-                    { label: "Company-wide",   value: "company"     },
+                    { label: "Личный",         value: "private"     },
+                    { label: "Отдел",          value: "department"  },
+                    { label: "Вся компания",   value: "company"     },
                   ]}
                 />
               </div>
 
               {/* Approval flow */}
               <div>
-                <Label htmlFor="approval-flow">Default Approval Flow</Label>
+                <Label htmlFor="approval-flow">Маршрут согласования по умолчанию</Label>
                 <Select
                   id="approval-flow"
                   value={approvalFlow}
                   onChange={setApprovalFlow}
                   options={[
-                    { label: "Single Approver",    value: "single" },
-                    { label: "Multi-step Approval", value: "multi"  },
+                    { label: "Один согласующий",       value: "single" },
+                    { label: "Многоэтапное согласование", value: "multi"  },
                   ]}
                 />
               </div>
 
               {/* Doc number format */}
               <div className="sm:col-span-2">
-                <Label htmlFor="doc-format">Document Number Format</Label>
+                <Label htmlFor="doc-format">Формат номера документа</Label>
                 <Input
                   id="doc-format"
                   value={docFormat}
@@ -244,13 +244,13 @@ export default function SettingsPage() {
                   placeholder="e.g. DOC-YYYY-####"
                 />
                 <p className="mt-1.5 text-[11.5px] text-zinc-400">
-                  Use <span className="font-mono">YYYY</span> for year and{" "}
-                  <span className="font-mono">####</span> for auto-increment number.
+                  Используйте <span className="font-mono">YYYY</span> для года и{" "}
+                  <span className="font-mono">####</span> для автоинкремента.
                 </p>
               </div>
             </div>
 
-            <CardFooter label="Save Changes" />
+            <CardFooter label="Сохранить изменения" />
           </div>
         </div>
       </div>
@@ -261,9 +261,9 @@ export default function SettingsPage() {
 
           {/* Left */}
           <div className="border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
-            <h3 className="text-[14px] font-semibold text-zinc-900">Notifications</h3>
+            <h3 className="text-[14px] font-semibold text-zinc-900">Уведомления</h3>
             <p className="mt-1 text-[12.5px] text-zinc-400 leading-relaxed">
-              Choose which email notifications are sent to users.
+              Выберите, какие уведомления отправлять пользователям.
             </p>
           </div>
 
@@ -276,8 +276,8 @@ export default function SettingsPage() {
                   id="notify-approval"
                   checked={notifyApproval}
                   onChange={setNotifyApproval}
-                  label="Approval notifications"
-                  description="Send an email when a document is approved."
+                  label="Уведомления о согласовании"
+                  description="Отправить письмо при согласовании документа."
                 />
               </div>
 
@@ -286,8 +286,8 @@ export default function SettingsPage() {
                   id="notify-reject"
                   checked={notifyReject}
                   onChange={setNotifyReject}
-                  label="Rejection notifications"
-                  description="Send an email when a document is rejected."
+                  label="Уведомления об отклонении"
+                  description="Отправить письмо при отклонении документа."
                 />
               </div>
 
@@ -296,8 +296,8 @@ export default function SettingsPage() {
                   id="notify-deadline"
                   checked={notifyDeadline}
                   onChange={setNotifyDeadline}
-                  label="Deadline reminders"
-                  description="Remind approvers 24 hours before a document deadline."
+                  label="Напоминания о сроках"
+                  description="Напомнить согласующим за 24 часа до истечения срока."
                 />
               </div>
 
@@ -306,13 +306,13 @@ export default function SettingsPage() {
                   id="notify-summary"
                   checked={notifySummary}
                   onChange={setNotifySummary}
-                  label="Daily summary email"
-                  description="Send a daily digest of pending approvals each morning."
+                  label="Ежедневная сводка"
+                  description="Отправлять ежедневный дайджест ожидающих согласований каждое утро."
                 />
               </div>
             </div>
 
-            <CardFooter label="Save Notification Settings" />
+            <CardFooter label="Сохранить настройки уведомлений" />
           </div>
         </div>
       </div>
@@ -323,9 +323,9 @@ export default function SettingsPage() {
 
           {/* Left */}
           <div className="border-b border-zinc-100 px-6 py-6 lg:border-b-0 lg:border-r">
-            <h3 className="text-[14px] font-semibold text-zinc-900">Security</h3>
+            <h3 className="text-[14px] font-semibold text-zinc-900">Безопасность</h3>
             <p className="mt-1 text-[12.5px] text-zinc-400 leading-relaxed">
-              Session management, authentication, and password policy.
+              Управление сессиями, аутентификация и политика паролей.
             </p>
           </div>
 
@@ -335,21 +335,21 @@ export default function SettingsPage() {
 
               {/* Session timeout */}
               <div>
-                <Label htmlFor="session-timeout">Session Timeout</Label>
+                <Label htmlFor="session-timeout">Время сессии</Label>
                 <div className="flex items-center gap-3">
                   <Select
                     id="session-timeout"
                     value={sessionTimeout}
                     onChange={setSessionTimeout}
                     options={[
-                      { label: "15 minutes", value: "15" },
-                      { label: "30 minutes", value: "30" },
-                      { label: "60 minutes", value: "60" },
+                      { label: "15 минут", value: "15" },
+                      { label: "30 минут", value: "30" },
+                      { label: "60 минут", value: "60" },
                     ]}
                   />
                 </div>
                 <p className="mt-1.5 text-[11.5px] text-zinc-400">
-                  Users will be signed out after this period of inactivity.
+                  Пользователи будут автоматически разлогинены после периода неактивности.
                 </p>
               </div>
 
@@ -359,14 +359,14 @@ export default function SettingsPage() {
                   id="two-factor"
                   checked={twoFactor}
                   onChange={setTwoFactor}
-                  label="Two-Factor Authentication"
-                  description="Require all users to verify their identity with a second factor when signing in."
+                  label="Двухфакторная аутентификация"
+                  description="Требовать от всех пользователей подтверждение личности вторым фактором при входе."
                 />
               </div>
 
               {/* Min password length */}
               <div>
-                <Label htmlFor="min-pw">Password Minimum Length</Label>
+                <Label htmlFor="min-pw">Минимальная длина пароля</Label>
                 <div className="flex items-center gap-3">
                   <NumberInput
                     id="min-pw"
@@ -375,15 +375,15 @@ export default function SettingsPage() {
                     min={6}
                     max={32}
                   />
-                  <span className="text-[12.5px] text-zinc-400">characters</span>
+                  <span className="text-[12.5px] text-zinc-400">символов</span>
                 </div>
                 <p className="mt-1.5 text-[11.5px] text-zinc-400">
-                  Minimum 6, maximum 32 characters.
+                  Минимум 6, максимум 32 символа.
                 </p>
               </div>
             </div>
 
-            <CardFooter label="Save Security Settings" />
+            <CardFooter label="Сохранить настройки безопасности" />
           </div>
         </div>
       </div>

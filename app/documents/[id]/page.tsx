@@ -22,10 +22,10 @@ function statusBadge(status: DocStatus): string {
 
 function statusLabel(status: DocStatus): string {
   const map: Record<DocStatus, string> = {
-    DRAFT:        "Draft",
-    IN_APPROVAL:  "In Approval",
-    APPROVED:     "Approved",
-    REJECTED:     "Rejected",
+    DRAFT:        "Черновик",
+    IN_APPROVAL:  "На согласовании",
+    APPROVED:     "Согласовано",
+    REJECTED:     "Отклонено",
   };
   return map[status];
 }
@@ -93,13 +93,13 @@ export default function DocumentPage({
       });
       const data = await res.json();
       if (!res.ok) {
-        setActionError(data.error || "Failed to approve");
+        setActionError(data.error || "Не удалось согласовать");
         return;
       }
       setDocument(data);
       setComment("");
     } catch {
-      setActionError("Failed to approve document");
+      setActionError("Не удалось согласовать документ");
     } finally {
       setActionLoading(false);
     }
@@ -107,7 +107,7 @@ export default function DocumentPage({
 
   async function handleReject() {
     if (!comment.trim()) {
-      setActionError("A comment is required when rejecting");
+      setActionError("При отклонении необходимо указать комментарий");
       return;
     }
     setActionLoading(true);
@@ -124,13 +124,13 @@ export default function DocumentPage({
       });
       const data = await res.json();
       if (!res.ok) {
-        setActionError(data.error || "Failed to reject");
+        setActionError(data.error || "Не удалось отклонить");
         return;
       }
       setDocument(data);
       setComment("");
     } catch {
-      setActionError("Failed to reject document");
+      setActionError("Не удалось отклонить документ");
     } finally {
       setActionLoading(false);
     }
@@ -151,13 +151,13 @@ export default function DocumentPage({
       });
       const data = await res.json();
       if (!res.ok) {
-        setActionError(data.error || "Failed to change status");
+        setActionError(data.error || "Не удалось изменить статус");
         return;
       }
       setDocument({ ...document, status: data.status });
       setNewStatus("");
     } catch {
-      setActionError("Failed to change status");
+      setActionError("Не удалось изменить статус");
     } finally {
       setStatusChanging(false);
     }
@@ -166,7 +166,7 @@ export default function DocumentPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <p className="text-[13px] text-zinc-400">Loading...</p>
+        <p className="text-[13px] text-zinc-400">Загрузка...</p>
       </div>
     );
   }
@@ -175,16 +175,16 @@ export default function DocumentPage({
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <p className="text-[13px] font-mono text-zinc-400">{id}</p>
-        <h2 className="mt-2 text-xl font-semibold text-zinc-900">Document not found</h2>
+        <h2 className="mt-2 text-xl font-semibold text-zinc-900">Документ не найден</h2>
         <p className="mt-1 text-[14px] text-zinc-500">
-          The document you&apos;re looking for does not exist or you don&apos;t have access.
+          Документ, который вы ищете, не существует или у вас нет доступа.
         </p>
         <Link
           href="/documents"
           className="mt-6 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white hover:bg-zinc-700 transition-colors"
         >
           <BackIcon />
-          Back to Documents
+          Назад к документам
         </Link>
       </div>
     );
@@ -222,7 +222,7 @@ export default function DocumentPage({
           className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
         >
           <BackIcon />
-          Back to Documents
+          Назад к документам
         </Link>
       </div>
 
@@ -247,13 +247,13 @@ export default function DocumentPage({
         {/* Metadata strip */}
         <div className="mt-5 grid grid-cols-2 gap-x-8 gap-y-3 border-t border-zinc-100 pt-5 sm:grid-cols-4">
           {[
-            { label: "Template",  value: document.template?.name || "—" },
-            { label: "Initiator", value: document.initiator?.name || "—" },
-            { label: "Created",   value: new Date(document.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) },
+            { label: "Шаблон",  value: document.template?.name || "—" },
+            { label: "Инициатор", value: document.initiator?.name || "—" },
+            { label: "Создано",   value: new Date(document.createdAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "short", year: "numeric" }) },
             {
               label: document.currentStepNumber
-                ? `Approver (Step ${document.currentStepNumber})`
-                : "Current Approver",
+                ? `Согласующий (Этап ${document.currentStepNumber})`
+                : "Текущий согласующий",
               value: document.currentApprover?.name || "—",
               highlight: document.status === "IN_APPROVAL",
             },
@@ -285,7 +285,7 @@ export default function DocumentPage({
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-6 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
-                  Document Information
+                  Информация о документе
                 </h3>
               </div>
               <div className="grid grid-cols-1 gap-px bg-zinc-100 sm:grid-cols-2">
@@ -308,7 +308,7 @@ export default function DocumentPage({
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-6 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
-                  Attached Files
+                  Прикреплённые файлы
                 </h3>
               </div>
               <ul className="divide-y divide-zinc-100">
@@ -332,7 +332,7 @@ export default function DocumentPage({
                           {file.name}
                         </a>
                         <p className="text-[11.5px] text-zinc-400">
-                          {sizeKb} KB · {file.user?.name}
+                          {sizeKb} КБ · {file.user?.name}
                         </p>
                       </div>
                       <a
@@ -340,7 +340,7 @@ export default function DocumentPage({
                         download={file.name}
                         className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
                       >
-                        Download
+                        Скачать
                       </a>
                     </li>
                   );
@@ -388,7 +388,7 @@ export default function DocumentPage({
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <div className="border-b border-zinc-100 px-5 py-4">
               <h3 className="text-[14px] font-semibold text-zinc-900">
-                {isCurrentApprover ? "Action Required" : "Approval Status"}
+                {isCurrentApprover ? "Требуется действие" : "Статус согласования"}
               </h3>
             </div>
 
@@ -398,21 +398,21 @@ export default function DocumentPage({
                 <div className="space-y-4">
                   <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                     <p className="text-[12.5px] font-semibold text-amber-800">
-                      Your approval is required
+                      Требуется ваше согласование
                     </p>
                     {currentStep && (
                       <p className="mt-0.5 text-[12px] text-amber-700">
-                        Step {currentStep.stepNumber}: {currentStep.name}
+                        Этап {currentStep.stepNumber}: {currentStep.name}
                         {currentStep.requireAll && (
                           <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                            All must approve
+                            Все должны согласовать
                           </span>
                         )}
                       </p>
                     )}
                     {!currentStep && (
                       <p className="mt-0.5 text-[12px] text-amber-700">
-                        Please review and take action.
+                        Пожалуйста, рассмотрите и примите решение.
                       </p>
                     )}
                   </div>
@@ -420,7 +420,7 @@ export default function DocumentPage({
                   {/* Progress within step (for requireAll steps) */}
                   {currentStep?.requireAll && currentStepApprovals.length > 1 && (
                     <div className="text-[12px] text-zinc-500">
-                      {currentStepApprovals.filter((a: any) => a.status === "APPROVED").length} of {currentStepApprovals.length} approvers have approved
+                      {currentStepApprovals.filter((a: any) => a.status === "APPROVED").length} из {currentStepApprovals.length} согласующих одобрили
                     </div>
                   )}
 
@@ -429,15 +429,15 @@ export default function DocumentPage({
                       htmlFor="approval-comment"
                       className="mb-1.5 block text-[12px] font-medium text-zinc-600"
                     >
-                      Comment{" "}
-                      <span className="text-zinc-400">(required for rejection)</span>
+                      Комментарий{" "}
+                      <span className="text-zinc-400">(обязателен при отклонении)</span>
                     </label>
                     <textarea
                       id="approval-comment"
                       rows={3}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      placeholder="Add a comment or reason…"
+                      placeholder="Добавить комментарий или причину…"
                       className="w-full resize-none rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-[13px] text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors"
                     />
                   </div>
@@ -453,7 +453,7 @@ export default function DocumentPage({
                       disabled={actionLoading}
                       className="flex-1 rounded-lg bg-zinc-900 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {actionLoading ? "Processing…" : "Approve"}
+                      {actionLoading ? "Обработка…" : "Согласовать"}
                     </button>
                     <button
                       type="button"
@@ -461,12 +461,12 @@ export default function DocumentPage({
                       disabled={actionLoading}
                       className="flex-1 rounded-lg border border-zinc-200 bg-white py-2 text-[13px] font-semibold text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {actionLoading ? "Processing…" : "Reject"}
+                      {actionLoading ? "Обработка…" : "Отклонить"}
                     </button>
                   </div>
 
                   <p className="text-center text-[11.5px] text-zinc-400">
-                    This action will be logged and cannot be undone.
+                    Это действие будет записано и не может быть отменено.
                   </p>
                 </div>
               ) : (
@@ -475,14 +475,14 @@ export default function DocumentPage({
                   {document.status === "IN_APPROVAL" && (
                     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
                       <p className="text-[12px] font-medium text-zinc-500">
-                        Awaiting approval from
+                        Ожидает согласования от
                       </p>
                       <p className="mt-0.5 text-[13.5px] font-semibold text-zinc-900">
                         {document.currentApprover?.name || "—"}
                       </p>
                       {currentStep && (
                         <p className="mt-1 text-[11.5px] text-zinc-400">
-                          Step {currentStep.stepNumber}: {currentStep.name}
+                          Этап {currentStep.stepNumber}: {currentStep.name}
                         </p>
                       )}
                     </div>
@@ -490,17 +490,17 @@ export default function DocumentPage({
                   {document.status === "APPROVED" && (
                     <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
                       <p className="text-[12.5px] font-semibold text-emerald-800">
-                        Document approved
+                        Документ согласован
                       </p>
                       <p className="mt-0.5 text-[12px] text-emerald-700">
-                        This document has completed the approval process.
+                        Этот документ прошёл процесс согласования.
                       </p>
                     </div>
                   )}
                   {document.status === "REJECTED" && (
                     <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3">
                       <p className="text-[12.5px] font-semibold text-rose-800">
-                        Document rejected
+                        Документ отклонён
                       </p>
                       {(() => {
                         const rejectedApproval = document.approvals?.find(
@@ -508,11 +508,11 @@ export default function DocumentPage({
                         );
                         return rejectedApproval?.comment ? (
                           <p className="mt-0.5 text-[12px] text-rose-700">
-                            Reason: {rejectedApproval.comment}
+                            Причина: {rejectedApproval.comment}
                           </p>
                         ) : (
                           <p className="mt-0.5 text-[12px] text-rose-700">
-                            This document was rejected.
+                            Этот документ был отклонён.
                           </p>
                         );
                       })()}
@@ -520,9 +520,9 @@ export default function DocumentPage({
                   )}
                   {document.status === "DRAFT" && (
                     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
-                      <p className="text-[12.5px] font-semibold text-zinc-700">Draft</p>
+                      <p className="text-[12.5px] font-semibold text-zinc-700">Черновик</p>
                       <p className="mt-0.5 text-[12px] text-zinc-500">
-                        This document has not been submitted for approval yet.
+                        Этот документ ещё не отправлен на согласование.
                       </p>
                     </div>
                   )}
@@ -541,13 +541,13 @@ export default function DocumentPage({
                         return (
                           <div key={step.stepNumber} className="rounded-lg border border-zinc-100 bg-zinc-50 px-3 py-2.5">
                             <p className="text-[11.5px] font-semibold text-zinc-700">
-                              Step {step.stepNumber}: {step.name}
+                              Этап {step.stepNumber}: {step.name}
                             </p>
                             {stepApprovals.map((a: any) => (
                               <div key={a.approverId} className="mt-1 flex items-center gap-1.5">
                                 <span className={`inline-block h-1.5 w-1.5 rounded-full ${a.status === "APPROVED" ? "bg-emerald-500" : "bg-rose-500"}`} />
                                 <span className="text-[11.5px] text-zinc-600">
-                                  {a.approver?.name} — {a.status === "APPROVED" ? "Approved" : "Rejected"}
+                                  {a.approver?.name} — {a.status === "APPROVED" ? "Согласовано" : "Отклонено"}
                                   {a.comment && <span className="text-zinc-400"> ({a.comment})</span>}
                                 </span>
                               </div>
@@ -566,13 +566,13 @@ export default function DocumentPage({
           <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
             <div className="border-b border-zinc-100 px-5 py-4">
               <h3 className="text-[14px] font-semibold text-zinc-900">
-                Document Details
+                Детали документа
               </h3>
             </div>
             <div className="px-5 py-4 space-y-3">
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-                  Document Number
+                  Номер документа
                 </p>
                 <p className="mt-0.5 text-[13px] font-medium text-zinc-700">
                   {document.number}
@@ -580,10 +580,10 @@ export default function DocumentPage({
               </div>
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-400">
-                  Created At
+                  Дата создания
                 </p>
                 <p className="mt-0.5 text-[13px] font-medium text-zinc-700">
-                  {new Date(document.createdAt).toLocaleString("en-GB", {
+                  {new Date(document.createdAt).toLocaleString("ru-RU", {
                     day: "2-digit",
                     month: "short",
                     year: "numeric",
@@ -600,10 +600,10 @@ export default function DocumentPage({
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-5 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
-                  Admin Override
+                  Управление администратора
                 </h3>
                 <p className="mt-0.5 text-[12px] text-zinc-400">
-                  Manually change document status.
+                  Изменить статус документа вручную.
                 </p>
               </div>
               <div className="px-5 py-4 space-y-3">
@@ -613,7 +613,7 @@ export default function DocumentPage({
                     onChange={(e) => setNewStatus(e.target.value as DocStatus | "")}
                     className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer"
                   >
-                    <option value="">Select new status…</option>
+                    <option value="">Выберите новый статус…</option>
                     {(["DRAFT", "IN_APPROVAL", "APPROVED", "REJECTED"] as DocStatus[])
                       .filter((s) => s !== document.status)
                       .map((s) => (
@@ -633,7 +633,7 @@ export default function DocumentPage({
                   disabled={!newStatus || statusChanging}
                   className="w-full rounded-lg border border-zinc-200 bg-white py-2 text-[13px] font-semibold text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {statusChanging ? "Changing…" : "Change Status"}
+                  {statusChanging ? "Изменение…" : "Изменить статус"}
                 </button>
               </div>
             </div>
