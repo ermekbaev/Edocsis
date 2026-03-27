@@ -13,9 +13,10 @@ export async function PUT(
 
   let name: string | undefined,
     role: string | undefined,
-    department: string | undefined;
+    department: string | undefined,
+    positionId: string | null | undefined;
   try {
-    ({ name, role, department } = await req.json());
+    ({ name, role, department, positionId } = await req.json());
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
@@ -38,12 +39,12 @@ export async function PUT(
   }
 
   // Validate role if provided
-  if (role !== undefined && !["USER", "INITIATOR", "APPROVER", "ADMIN"].includes(role)) {
+  if (role !== undefined && !["USER", "ADMIN"].includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
   // Build update data
-  const data: { name?: string; role?: "USER" | "INITIATOR" | "APPROVER" | "ADMIN"; department?: string | null } = {};
+  const data: { name?: string; role?: "USER" | "INITIATOR" | "APPROVER" | "ADMIN"; department?: string | null; positionId?: string | null } = {};
   if (name !== undefined) {
     if (name.trim().length === 0) {
       return NextResponse.json(
@@ -59,6 +60,9 @@ export async function PUT(
   if (department !== undefined) {
     data.department = department.trim() || null;
   }
+  if (positionId !== undefined) {
+    data.positionId = positionId || null;
+  }
 
   const updatedUser = await prisma.user.update({
     where: { id },
@@ -70,6 +74,8 @@ export async function PUT(
       role: true,
       department: true,
       createdAt: true,
+      positionId: true,
+      position: { select: { id: true, name: true } },
     },
   });
 

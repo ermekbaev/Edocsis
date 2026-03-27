@@ -336,6 +336,27 @@ export function RoutesIcon(props: IconProps) {
   );
 }
 
+export function RolesIcon(props: IconProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+      <path d="M4 20v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" />
+      <path d="M16 7h6M16 12h6M16 17h6" />
+    </svg>
+  );
+}
+
 export function LogoIcon(props: IconProps) {
   return (
     <svg

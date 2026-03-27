@@ -40,7 +40,13 @@ export async function GET(
           stepNumber: true,
           comment: true,
           decidedAt: true,
-          approver: { select: { name: true } },
+          approver: {
+            select: {
+              name: true,
+              department: true,
+              position: { select: { name: true } },
+            },
+          },
         },
       },
       files: {

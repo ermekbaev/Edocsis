@@ -119,7 +119,7 @@ export default function TemplateDetailPage() {
 
   if (loading) {
     return (
-      <RoleGuard allowedRoles={["ADMIN"]}>
+      <RoleGuard allowedRoles={["ADMIN", "USER"]}>
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
@@ -133,7 +133,7 @@ export default function TemplateDetailPage() {
 
   if (error || !template) {
     return (
-      <RoleGuard allowedRoles={["ADMIN"]}>
+      <RoleGuard allowedRoles={["ADMIN", "USER"]}>
         <div className="space-y-6">
           <Link
             href="/templates"
@@ -156,7 +156,7 @@ export default function TemplateDetailPage() {
   const steps = template.approvalRoute?.steps || [];
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "USER"]}>
       <div className="space-y-6">
         {/* ── Back link ──────────────────────────────────────────────────────── */}
         <Link

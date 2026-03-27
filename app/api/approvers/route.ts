@@ -7,9 +7,6 @@ export async function GET(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
 
   const approvers = await prisma.user.findMany({
-    where: {
-      role: { in: ["APPROVER", "ADMIN"] },
-    },
     select: {
       id: true,
       name: true,

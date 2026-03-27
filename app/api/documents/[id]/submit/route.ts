@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { writeFile } from "fs/promises";
+import path from "path";
 
 export async function POST(
   req: NextRequest,
@@ -26,6 +28,7 @@ export async function POST(
   const document = await prisma.document.findUnique({
     where: { id },
     include: {
+      initiator: { select: { name: true } },
       template: {
         include: {
           approvalRoute: {
@@ -76,25 +79,11 @@ export async function POST(
           { status: 400 }
         );
       }
-
-      if (approver.role !== "APPROVER" && approver.role !== "ADMIN") {
-        return NextResponse.json(
-          { error: "Selected user is not an approver" },
-          { status: 400 }
-        );
-      }
     } else {
-      // Fallback: find first APPROVER
-      approver = await prisma.user.findFirst({
-        where: { role: "APPROVER" },
-      });
-
-      if (!approver) {
-        return NextResponse.json(
-          { error: "No approver available" },
-          { status: 400 }
-        );
-      }
+      return NextResponse.json(
+        { error: "Укажите согласующего" },
+        { status: 400 }
+      );
     }
 
     // Update document, create approval, log action, and notify approver
@@ -132,6 +121,7 @@ export async function POST(
       }),
     ]);
 
+    await generateDocumentFile(id, auth.userId, document as any);
     return NextResponse.json(updatedDocument);
   }
 
@@ -141,16 +131,16 @@ export async function POST(
   const approverRole = firstStep.approverRole as string | null;
 
   // Get all approvers for the first step:
-  // - If approverRole is set → find all users with that role
+  // - If approverRole is set → find all users with that position (from справочник)
   // - Otherwise → find specific users by approverIds
   let approvers;
   if (approverRole) {
     approvers = await prisma.user.findMany({
-      where: { role: approverRole as any },
+      where: { positionId: approverRole },
     });
     if (approvers.length === 0) {
       return NextResponse.json(
-        { error: `No users found with role ${approverRole} for first step` },
+        { error: `Нет пользователей с ролью для первого этапа` },
         { status: 400 }
       );
     }
@@ -164,7 +154,6 @@ export async function POST(
     approvers = await prisma.user.findMany({
       where: {
         id: { in: approverIds },
-        role: { in: ["APPROVER", "ADMIN"] },
       },
     });
   }
@@ -220,10 +209,105 @@ export async function POST(
     ...notificationCreates.map((data) => prisma.notification.create({ data })),
   ]);
 
+  await generateDocumentFile(id, auth.userId, document as any);
   return NextResponse.json(updatedDocument);
 
   } catch (error: any) {
     console.error("Submit route error:", error);
     return NextResponse.json({ error: "Failed to submit document", detail: error?.message }, { status: 500 });
+  }
+}
+
+// ─── Auto-generate document file on submit ────────────────────────────────────
+
+async function generateDocumentFile(
+  documentId: string,
+  userId: string,
+  doc: {
+    title: string;
+    number: string;
+    initiator?: { name: string } | null;
+    createdAt: Date;
+    fieldValues: any;
+    template?: {
+      content?: string | null;
+      fields?: any;
+    } | null;
+  }
+) {
+  try {
+    let text = doc.template?.content || "";
+    text = text.replace(/\\n/g, "\n");
+
+    const fieldValues = (doc.fieldValues as Record<string, string>) || {};
+    Object.keys(fieldValues).forEach((key) => {
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+      text = text.replace(regex, fieldValues[key] ?? "");
+    });
+    // Replace {{STAMP}} with an HTML stamp placeholder (approvals not yet done at submit time)
+    const stampHtml = `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px solid #444;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;line-height:1.7"><strong>Документ подписан электронной подписью</strong><br>Владелец: _______________<br>Должность: _______________<br>Дата подписи: _______________</td></tr></table>`;
+    text = text.replace(/\{\{STAMP\}\}/g, stampHtml);
+    text = text.replace(/\{\{[^}]+\}\}/g, "");
+
+    const fields: any[] = Array.isArray(doc.template?.fields) ? doc.template!.fields : [];
+
+    const fieldsTable = fields.length > 0
+      ? `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px">
+          ${fields.map((f: any) => `
+            <tr style="border-bottom:1px solid #e5e7eb">
+              <td style="padding:6px 12px 6px 0;font-weight:600;color:#6b7280;width:35%">${f.label}</td>
+              <td style="padding:6px 0;color:#111827">${fieldValues[f.key] || "—"}</td>
+            </tr>`).join("")}
+         </table>`
+      : "";
+
+    const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>${doc.title}</title>
+<style>
+  body { font-family: 'Times New Roman', serif; margin: 30mm 25mm; color: #000; }
+  h1 { font-size: 16px; text-align: center; font-weight: bold; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #6b7280; text-align: center; margin-bottom: 20px; }
+  hr { border: none; border-top: 1px solid #d1d5db; margin: 16px 0; }
+  pre { font-family: 'Times New Roman', serif; font-size: 13px; white-space: pre-wrap; line-height: 1.7; }
+  .footer { margin-top: 40px; font-size: 10px; color: #9ca3af; text-align: center; }
+</style>
+</head>
+<body>
+  <h1>${doc.title}</h1>
+  <div class="meta">
+    ${doc.number} &nbsp;·&nbsp; Инициатор: ${doc.initiator?.name || "—"} &nbsp;·&nbsp;
+    ${new Date(doc.createdAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" })}
+  </div>
+  <hr/>
+  ${fieldsTable}
+  <pre>${text}</pre>
+  <div class="footer">Документ сформирован автоматически при запуске в документооборот</div>
+</body>
+</html>`;
+
+    const htmlBuffer = Buffer.from(html, "utf-8");
+    const timestamp = Date.now();
+    const safeName = doc.title.replace(/[^а-яёa-z0-9\s]/gi, "").trim().replace(/\s+/g, "_") || "document";
+    const fileName = `${timestamp}-${safeName}.doc`;
+    const filePath = path.join(process.cwd(), "public", "uploads", fileName);
+
+    await writeFile(filePath, htmlBuffer);
+
+    await prisma.file.create({
+      data: {
+        name: `${doc.title}.doc`,
+        path: `/uploads/${fileName}`,
+        size: htmlBuffer.length,
+        mimeType: "application/msword",
+        documentId,
+        userId,
+      },
+    });
+  } catch (err) {
+    // Non-critical: log but don't fail the submission
+    console.error("Failed to auto-generate document file:", err);
   }
 }

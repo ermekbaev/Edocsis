@@ -38,14 +38,12 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "updated", label: "По дате изменения" },
 ];
 
-type RoleFilter = "All" | "USER" | "INITIATOR" | "APPROVER" | "ADMIN";
+type RoleFilter = "All" | "USER" | "ADMIN";
 
 const ROLE_FILTER_OPTIONS: { value: RoleFilter; label: string }[] = [
-  { value: "All",       label: "Все роли"      },
-  { value: "INITIATOR", label: "Инициатор"    },
-  { value: "APPROVER",  label: "Согласующий"  },
-  { value: "ADMIN",     label: "Администратор"},
-  { value: "USER",      label: "Пользователь" },
+  { value: "All",   label: "Все права"       },
+  { value: "USER",  label: "Пользователь"   },
+  { value: "ADMIN", label: "Администратор"  },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

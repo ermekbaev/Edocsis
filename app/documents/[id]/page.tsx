@@ -212,11 +212,86 @@ export default function DocumentPage({
     (a: any) => a.stepNumber === document.currentStepNumber
   ) ?? [];
 
+  function handleDownloadDoc() {
+    if (!document) return;
+
+    let text = document.template?.content || "";
+    text = text.replace(/\\n/g, "\n");
+    if (document.fieldValues) {
+      Object.keys(document.fieldValues).forEach((key: string) => {
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+        text = text.replace(regex, document.fieldValues[key] ?? "");
+      });
+    }
+    // Replace {{STAMP}} with actual stamp(s) based on approvals
+    const approvedForDoc = (document.approvals || []).filter((a: any) => a.status === "APPROVED");
+    let stampIdx = 0;
+    text = text.replace(/\{\{STAMP\}\}/g, () => {
+      const a = approvedForDoc[stampIdx++];
+      if (a) {
+        return `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px solid #444;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;line-height:1.8"><strong>Документ подписан электронной подписью</strong><br>Владелец: ${a.approver?.name || "—"}<br>Должность: ${a.approver?.position?.name || a.approver?.department || "—"}<br>Дата подписи: ${a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—"}</td></tr></table>`;
+      }
+      return `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px solid #ccc;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;color:#999;line-height:1.8"><strong>Документ подписан электронной подписью</strong><br>Владелец: _______________<br>Должность: _______________<br>Дата подписи: _______________</td></tr></table>`;
+    });
+    text = text.replace(/\{\{[^}]+\}\}/g, "");
+
+    const completedApprovals = (document.approvals || []).filter(
+      (a: any) => a.status !== "PENDING"
+    );
+
+    const stampsHtml = completedApprovals.length > 0
+      ? `<hr style="margin:24px 0"/>
+         <p style="font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;color:#666">Подписи согласования</p>
+         <table style="width:100%;border-collapse:collapse;margin-top:12px">
+           <tr>${completedApprovals.map((a: any) => `
+             <td style="border:2px solid #333;padding:10px;width:${100 / completedApprovals.length}%;vertical-align:top">
+               <div style="font-size:9px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px">
+                 ${a.status === "APPROVED" ? "Документ подписан" : "Отклонено"}${a.stepNumber ? ` · Этап ${a.stepNumber}` : ""}
+               </div>
+               <div style="font-size:11px;font-weight:bold">${a.approver?.name || "—"}</div>
+               ${a.approver?.department ? `<div style="font-size:10px;color:#666">${a.approver.department}</div>` : ""}
+               ${a.decidedAt ? `<div style="font-size:10px;color:#888;margin-top:4px">${new Date(a.decidedAt).toLocaleDateString("ru-RU")}</div>` : ""}
+               ${a.comment ? `<div style="font-size:10px;font-style:italic;margin-top:4px">«${a.comment}»</div>` : ""}
+             </td>
+           `).join("")}</tr>
+         </table>`
+      : "";
+
+    const html = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>${document.title}</title>
+<style>
+  body { font-family: 'Times New Roman', serif; margin: 30mm 25mm; color: #000; }
+  h1 { font-size: 16px; text-align: center; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #666; text-align: center; margin-bottom: 20px; }
+  pre { font-family: 'Times New Roman', serif; font-size: 13px; white-space: pre-wrap; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <h1>${document.title}</h1>
+  <div class="meta">${document.number} · Инициатор: ${document.initiator?.name || "—"}</div>
+  <hr/>
+  <pre>${text}</pre>
+  ${stampsHtml}
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const a = window.document.createElement("a");
+    a.href = url;
+    a.download = `${document.title.replace(/[^а-яёa-z0-9\s]/gi, "")}.doc`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="space-y-6">
 
       {/* ── Breadcrumb / Back ─────────────────────────────────────────────── */}
-      <div>
+      <div className="flex items-center justify-between gap-4">
         <Link
           href="/documents"
           className="inline-flex items-center gap-1.5 text-[12.5px] font-medium text-zinc-400 transition-colors hover:text-zinc-700"
@@ -224,6 +299,29 @@ export default function DocumentPage({
           <BackIcon />
           Назад к документам
         </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/documents/${id}/print`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Сохранить PDF
+          </a>
+          <button
+            type="button"
+            onClick={handleDownloadDoc}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Скачать DOC
+          </button>
+        </div>
       </div>
 
       {/* ── Document Header ───────────────────────────────────────────────── */}
@@ -303,12 +401,147 @@ export default function DocumentPage({
             </div>
           )}
 
-          {/* Attached Files */}
+          {/* Document Content */}
+          {document.template?.content && (
+            <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
+              <div className="border-b border-zinc-100 px-6 py-4">
+                <h3 className="text-[14px] font-semibold text-zinc-900">
+                  {document.title}
+                </h3>
+              </div>
+              <div className="px-6 py-5">
+                {(() => {
+                  let text = document.template.content.replace(/\\n/g, "\n");
+                  if (document.fieldValues) {
+                    Object.keys(document.fieldValues).forEach((key) => {
+                      const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
+                      text = text.replace(regex, document.fieldValues[key] ?? "");
+                    });
+                  }
+                  // Clear remaining field vars but preserve {{STAMP}}
+                  text = text.replace(/\{\{(?!STAMP\}\})[^}]+\}\}/g, "");
+
+                  const approvedApprovals = (document.approvals || []).filter(
+                    (a: any) => a.status === "APPROVED"
+                  );
+                  const parts = text.split("{{STAMP}}");
+
+                  return parts.map((part: string, i: number) => (
+                    <span key={i}>
+                      <pre className="whitespace-pre-wrap font-sans text-[13.5px] leading-relaxed text-zinc-600">
+                        {part}
+                      </pre>
+                      {i < parts.length - 1 && (
+                        approvedApprovals[i] ? (
+                          /* Actual stamp — official table-style */
+                          <table className="my-4 border-collapse" style={{ fontFamily: "'Times New Roman', serif" }}>
+                            <tbody>
+                              <tr>
+                                <td className="border border-zinc-500 px-4 py-3 text-[12px] leading-[1.8] min-w-[260px]">
+                                  <strong>Документ подписан электронной подписью</strong><br />
+                                  Владелец: {approvedApprovals[i].approver?.name || "—"}<br />
+                                  Должность: {approvedApprovals[i].approver?.position?.name || approvedApprovals[i].approver?.department || "—"}<br />
+                                  Дата подписи: {approvedApprovals[i].decidedAt
+                                    ? new Date(approvedApprovals[i].decidedAt).toLocaleDateString("ru-RU")
+                                    : "—"}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        ) : (
+                          /* Placeholder stamp */
+                          <table className="my-4 border-collapse opacity-50" style={{ fontFamily: "'Times New Roman', serif" }}>
+                            <tbody>
+                              <tr>
+                                <td className="border border-dashed border-zinc-400 px-4 py-3 text-[12px] leading-[1.8] text-zinc-400 min-w-[260px]">
+                                  <strong>Документ подписан электронной подписью</strong><br />
+                                  Владелец: _______________<br />
+                                  Должность: _______________<br />
+                                  Дата подписи: _______________
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        )
+                      )}
+                    </span>
+                  ));
+                })()}
+              </div>
+
+              {/* ── Approval Stamps ── */}
+              {document.approvals && document.approvals.some((a: any) => a.status !== "PENDING") && (
+                <div className="border-t border-zinc-100 px-6 py-5">
+                  <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+                    Подписи согласования
+                  </p>
+
+                  {/* Stamp table — bordered rectangular cells in a row */}
+                  <div className="flex flex-wrap border border-zinc-400 divide-x divide-zinc-400">
+                    {document.approvals
+                      .filter((a: any) => a.status !== "PENDING")
+                      .map((a: any, idx: number) => (
+                        <div
+                          key={`${a.approverId}-${idx}`}
+                          className="flex-1 min-w-[180px] px-4 py-3 font-['Times_New_Roman',serif]"
+                        >
+                          <p className={`text-[10px] font-bold uppercase tracking-wider pb-1 mb-2 border-b ${
+                            a.status === "APPROVED"
+                              ? "text-zinc-700 border-zinc-300"
+                              : "text-rose-700 border-rose-200"
+                          }`}>
+                            {a.status === "APPROVED" ? "Документ подписан" : "Отклонено"}
+                            {a.stepNumber ? ` · Этап ${a.stepNumber}` : ""}
+                          </p>
+                          <p className="text-[12px] font-semibold text-zinc-800 leading-snug">
+                            {a.approver?.name || "—"}
+                          </p>
+                          <p className="text-[11px] text-zinc-600 mt-0.5">
+                            {a.approver?.position?.name || a.approver?.department || "—"}
+                          </p>
+                          <p className="text-[11px] text-zinc-500 mt-1.5">
+                            Дата:{" "}
+                            {a.decidedAt
+                              ? new Date(a.decidedAt).toLocaleDateString("ru-RU", {
+                                  day: "2-digit", month: "2-digit", year: "numeric",
+                                })
+                              : "___.____.______"}
+                          </p>
+                          {a.comment && (
+                            <p className={`mt-1.5 text-[11px] italic ${
+                              a.status === "APPROVED" ? "text-zinc-500" : "text-rose-600"
+                            }`}>
+                              «{a.comment}»
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+
+                  {document.status === "APPROVED" && (
+                    <div className="mt-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600 shrink-0">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <p className="text-[12px] font-semibold text-emerald-800">
+                        Документ полностью согласован —{" "}
+                        {new Date(document.updatedAt || document.createdAt).toLocaleDateString("ru-RU", {
+                          day: "2-digit", month: "long", year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Attached Files — shown after approval result */}
           {document.files && document.files.length > 0 && (
             <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
               <div className="border-b border-zinc-100 px-6 py-4">
                 <h3 className="text-[14px] font-semibold text-zinc-900">
-                  Прикреплённые файлы
+                  Вложения
                 </h3>
               </div>
               <ul className="divide-y divide-zinc-100">
@@ -324,7 +557,7 @@ export default function DocumentPage({
                       </div>
                       <div className="min-w-0 flex-1">
                         <a
-                          href={`/api/files/${file.id}`}
+                          href={file.path}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block truncate text-[13px] font-medium text-zinc-900 hover:text-zinc-600 transition-colors"
@@ -332,11 +565,13 @@ export default function DocumentPage({
                           {file.name}
                         </a>
                         <p className="text-[11.5px] text-zinc-400">
-                          {sizeKb} КБ · {file.user?.name}
+                          {sizeKb} КБ
+                          {file.user?.name ? ` · ${file.user.name}` : ""}
+                          {" · "}{new Date(file.createdAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "short", year: "numeric" })}
                         </p>
                       </div>
                       <a
-                        href={`/api/files/${file.id}`}
+                        href={file.path}
                         download={file.name}
                         className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
                       >
@@ -346,37 +581,6 @@ export default function DocumentPage({
                   );
                 })}
               </ul>
-            </div>
-          )}
-
-          {/* Document Content */}
-          {document.template?.content && (
-            <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden">
-              <div className="border-b border-zinc-100 px-6 py-4">
-                <h3 className="text-[14px] font-semibold text-zinc-900">
-                  {document.title}
-                </h3>
-              </div>
-              <div className="px-6 py-5">
-                {(() => {
-                  // Replace literal \n with real newlines
-                  let text = document.template.content.replace(/\\n/g, "\n");
-                  // Fill in field values
-                  if (document.fieldValues) {
-                    Object.keys(document.fieldValues).forEach((key) => {
-                      const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-                      text = text.replace(regex, document.fieldValues[key] ?? "");
-                    });
-                  }
-                  // Remove any remaining unfilled {{variables}}
-                  text = text.replace(/\{\{[^}]+\}\}/g, "");
-                  return (
-                    <pre className="whitespace-pre-wrap font-sans text-[13.5px] leading-relaxed text-zinc-600">
-                      {text}
-                    </pre>
-                  );
-                })()}
-              </div>
             </div>
           )}
         </div>

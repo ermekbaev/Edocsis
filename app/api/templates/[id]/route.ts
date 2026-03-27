@@ -6,7 +6,7 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const auth = await requireRole(req, "ADMIN");
+  const auth = await requireRole(req, "ADMIN", "USER");
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await context.params;

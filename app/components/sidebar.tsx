@@ -9,6 +9,7 @@ import {
   ApprovalsIcon,
   UsersIcon,
   RoutesIcon,
+  RolesIcon,
   SettingsIcon,
   LogoIcon,
   XIcon,
@@ -39,9 +40,10 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const ADMIN_ITEMS: NavItem[] = [
-  { label: "Пользователи", href: "/users",    icon: UsersIcon    },
-  { label: "Маршруты",     href: "/routes",   icon: RoutesIcon   },
-  { label: "Настройки",    href: "/settings", icon: SettingsIcon },
+  { label: "Пользователи",      href: "/users",    icon: UsersIcon    },
+  { label: "Справочник Ролей",  href: "/roles",    icon: RolesIcon    },
+  { label: "Маршруты",          href: "/routes",   icon: RoutesIcon   },
+  { label: "Настройки",         href: "/settings", icon: SettingsIcon },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -52,25 +54,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   // Filter nav items based on role
   const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (!user) return true; // Show all if no user loaded yet
-
-    if (user.role === "ADMIN") return true;
-
-    if (user.role === "APPROVER") {
-      // Hide Templates
-      return item.href !== "/templates";
-    }
-
-    if (user.role === "INITIATOR") {
-      // Initiator can create docs from templates but cannot approve
-      return item.href !== "/approvals";
-    }
-
-    if (user.role === "USER") {
-      // User can only view their own documents
-      return item.href !== "/templates" && item.href !== "/approvals";
-    }
-
+    if (!user) return true;
+    // ADMIN sees everything; USER sees all main nav items
     return true;
   });
 

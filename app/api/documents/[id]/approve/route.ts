@@ -135,19 +135,30 @@ export async function POST(
     if (nextStep) {
       // Advance to next step
       const nextApproverIds = nextStep.approverIds as string[];
+      const nextApproverRole = nextStep.approverRole as string | null;
 
-      const nextApprovers = await prisma.user.findMany({
-        where: {
-          id: { in: nextApproverIds },
-          role: { in: ["APPROVER", "ADMIN"] },
-        },
-      });
-
-      if (nextApprovers.length === 0) {
-        return NextResponse.json(
-          { error: "No valid approvers found for next step" },
-          { status: 500 }
-        );
+      let nextApprovers;
+      if (nextApproverRole) {
+        // Role-based: position ID from справочник
+        nextApprovers = await prisma.user.findMany({
+          where: { positionId: nextApproverRole },
+        });
+        if (nextApprovers.length === 0) {
+          return NextResponse.json(
+            { error: "No users found with the configured role for next step" },
+            { status: 500 }
+          );
+        }
+      } else {
+        nextApprovers = await prisma.user.findMany({
+          where: { id: { in: nextApproverIds } },
+        });
+        if (nextApprovers.length === 0) {
+          return NextResponse.json(
+            { error: "No valid approvers found for next step" },
+            { status: 500 }
+          );
+        }
       }
 
       const approvalCreates = nextApprovers.map((approver) => ({

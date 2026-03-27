@@ -52,8 +52,8 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white">
-            <LogoIcon width={18} height={18} />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl overflow-hidden">
+            <img src="/EDOCSIS.png" alt="Edocsis" className="h-12 w-12 object-contain" />
           </div>
           <div className="text-center">
             <h1 className="text-[18px] font-semibold tracking-tight text-zinc-900">

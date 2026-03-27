@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireRole(req, "ADMIN");
+  const auth = await requireRole(req, "ADMIN", "USER");
   if (auth instanceof NextResponse) return auth;
 
   let name: string, description: string | undefined, content: string | undefined, fields: any;

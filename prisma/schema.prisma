@@ -35,6 +35,16 @@ enum ApprovalStatus {
 
 // ─── Models ───────────────────────────────────────────────────────────────────
 
+model Position {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  users User[]
+}
+
 model User {
   id         String   @id @default(uuid())
   name       String
@@ -43,6 +53,10 @@ model User {
   role       Role     @default(USER)
   department String?
   createdAt  DateTime @default(now())
+
+  // Position (job title / должность)
+  position   Position? @relation(fields: [positionId], references: [id], onDelete: SetNull)
+  positionId String?
 
   // Relations
   templates        Template[]   @relation("TemplateCreator")

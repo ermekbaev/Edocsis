@@ -17,6 +17,13 @@ interface User {
   name: string;
   email: string;
   role: string;
+  position?: { name: string } | null;
+}
+
+interface Position {
+  id: string;
+  name: string;
+  description: string | null;
 }
 
 type ApproverMode = "users" | "role";
@@ -43,6 +50,7 @@ export default function CreateRoutePage() {
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [approvers, setApprovers] = useState<User[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -64,17 +72,20 @@ export default function CreateRoutePage() {
           setTemplates(available);
         }
 
-        // Fetch users who can be approvers (APPROVER and ADMIN roles)
-        const usersRes = await fetch("/api/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Fetch all users (any user can be an approver)
+        const [usersRes, positionsRes] = await Promise.all([
+          fetch("/api/users", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch("/api/positions", { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
 
         if (usersRes.ok) {
           const allUsers = await usersRes.json();
-          const approverUsers = allUsers.filter((u: User) =>
-            u.role === "APPROVER" || u.role === "ADMIN"
-          );
-          setApprovers(approverUsers);
+          setApprovers(allUsers);
+        }
+
+        if (positionsRes.ok) {
+          const allPositions = await positionsRes.json();
+          setPositions(allPositions);
         }
       } catch (err) {
         console.error("Failed to fetch data:", err);
@@ -404,9 +415,12 @@ export default function CreateRoutePage() {
                                 onChange={(e) => updateStep(index, "approverRole", e.target.value)}
                                 className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-white pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-900 focus:outline-none cursor-pointer"
                               >
-                                <option value="">Выберите роль…</option>
-                                <option value="APPROVER">Согласующий — все пользователи с ролью Согласующий</option>
-                                <option value="ADMIN">Администратор — все пользователи с ролью Администратор</option>
+                                <option value="">Выберите роль из справочника…</option>
+                                {positions.map((pos) => (
+                                  <option key={pos.id} value={pos.id}>
+                                    {pos.name}
+                                  </option>
+                                ))}
                               </select>
                               <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
@@ -414,7 +428,7 @@ export default function CreateRoutePage() {
                             </div>
                             {step.approverRole && (
                               <p className="text-[11.5px] text-zinc-500">
-                                Все текущие и будущие пользователи с ролью <strong>{step.approverRole}</strong> будут уведомлены и смогут согласовать.
+                                Все пользователи с ролью <strong>{positions.find(p => p.id === step.approverRole)?.name ?? step.approverRole}</strong> будут уведомлены и смогут согласовать.
                               </p>
                             )}
                           </div>
@@ -426,7 +440,7 @@ export default function CreateRoutePage() {
                             <div className="max-h-48 overflow-y-auto rounded-lg border border-zinc-200 bg-white">
                               {approvers.length === 0 ? (
                                 <p className="p-3 text-[12px] text-zinc-400">
-                                  Нет доступных согласующих. Создайте пользователей с ролью СОГЛАСУЮЩИЙ или АДМИНИСТРАТОР.
+                                  Нет пользователей в системе.
                                 </p>
                               ) : (
                                 approvers.map((approver) => (
@@ -445,7 +459,7 @@ export default function CreateRoutePage() {
                                         {approver.name}
                                       </p>
                                       <p className="text-[11.5px] text-zinc-500">
-                                        {approver.email} · {approver.role}
+                                        {approver.email}{approver.position?.name ? ` · ${approver.position.name}` : ""}
                                       </p>
                                     </div>
                                   </label>

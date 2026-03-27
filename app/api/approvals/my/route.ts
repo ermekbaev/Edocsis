@@ -9,15 +9,12 @@ export async function GET(req: NextRequest) {
   const approvals = await prisma.approval.findMany({
     where: {
       approverId: auth.userId,
-      status: "PENDING",
     },
     include: {
       document: {
         include: {
           initiator: {
-            select: {
-              name: true,
-            },
+            select: { name: true },
           },
         },
       },
@@ -35,6 +32,10 @@ export async function GET(req: NextRequest) {
     documentNumber: approval.document.number,
     documentTitle: approval.document.title,
     documentStatus: approval.document.status,
+    approvalStatus: approval.status,
+    stepNumber: approval.stepNumber,
+    comment: approval.comment,
+    decidedAt: approval.decidedAt,
     initiatorName: approval.document.initiator.name,
   }));
 

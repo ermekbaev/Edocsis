@@ -5,109 +5,26 @@ import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type UserRole = "Admin" | "Initiator" | "Approver" | "User";
+type UserAccess = "Admin" | "User";
 type UserStatus = "Active" | "Pending" | "Disabled";
+
+interface Position {
+  id: string;
+  name: string;
+}
 
 interface SystemUser {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  access: UserAccess;
   status: UserStatus;
   createdDate: string;
+  position?: Position | null;
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const USERS: SystemUser[] = [
-  {
-    id: "usr-001",
-    name: "Администратор",
-    email: "admin@edocsis.com",
-    role: "Admin",
-    status: "Active",
-    createdDate: "12 Jan 2026",
-  },
-  {
-    id: "usr-002",
-    name: "Elena Volkova",
-    email: "e.volkova@edocsis.com",
-    role: "Approver",
-    status: "Active",
-    createdDate: "12 Jan 2026",
-  },
-  {
-    id: "usr-003",
-    name: "Boris Nikitin",
-    email: "b.nikitin@edocsis.com",
-    role: "Approver",
-    status: "Active",
-    createdDate: "14 Jan 2026",
-  },
-  {
-    id: "usr-004",
-    name: "Maria Kuznetsova",
-    email: "m.kuznetsova@edocsis.com",
-    role: "User",
-    status: "Active",
-    createdDate: "15 Jan 2026",
-  },
-  {
-    id: "usr-005",
-    name: "Sergey Lebedev",
-    email: "s.lebedev@edocsis.com",
-    role: "User",
-    status: "Active",
-    createdDate: "16 Jan 2026",
-  },
-  {
-    id: "usr-006",
-    name: "Dmitry Ryabov",
-    email: "d.ryabov@edocsis.com",
-    role: "User",
-    status: "Active",
-    createdDate: "18 Jan 2026",
-  },
-  {
-    id: "usr-007",
-    name: "Nikita Korobov",
-    email: "n.korobov@edocsis.com",
-    role: "User",
-    status: "Active",
-    createdDate: "20 Jan 2026",
-  },
-  {
-    id: "usr-008",
-    name: "Anna Petrova",
-    email: "a.petrova@edocsis.com",
-    role: "User",
-    status: "Pending",
-    createdDate: "03 Feb 2026",
-  },
-  {
-    id: "usr-009",
-    name: "Viktor Sorokin",
-    email: "v.sorokin@edocsis.com",
-    role: "Approver",
-    status: "Pending",
-    createdDate: "10 Feb 2026",
-  },
-  {
-    id: "usr-010",
-    name: "Irina Belyaeva",
-    email: "i.belyaeva@edocsis.com",
-    role: "User",
-    status: "Disabled",
-    createdDate: "05 Jan 2026",
-  },
-];
-
-const ROLE_OPTIONS: UserRole[] = ["User", "Initiator", "Approver", "Admin"];
-
-const ROLE_LABELS: Record<UserRole, string> = {
+const ACCESS_LABELS: Record<UserAccess, string> = {
   Admin: "Администратор",
-  Initiator: "Инициатор",
-  Approver: "Согласующий",
   User: "Пользователь",
 };
 
@@ -119,14 +36,10 @@ const STATUS_LABELS: Record<UserStatus, string> = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function roleBadge(role: UserRole): string {
-  const map: Record<UserRole, string> = {
-    Admin: "bg-zinc-900 text-white",
-    Initiator: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",
-    Approver: "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200",
-    User: "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200",
-  };
-  return map[role];
+function accessBadge(access: UserAccess): string {
+  return access === "Admin"
+    ? "bg-zinc-900 text-white"
+    : "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200";
 }
 
 function statusBadge(status: UserStatus): string {
@@ -189,46 +102,51 @@ interface CreateUserModalProps {
     role: string;
     password: string;
     department?: string;
+    positionId?: string;
   }) => Promise<void>;
+  positions: Position[];
 }
 
-function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
+function CreateUserModal({ onClose, onSubmit, positions }: CreateUserModalProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [department, setDepartment] = useState("");
-  const [role, setRole] = useState<UserRole>("User");
+  const [access, setAccess] = useState<UserAccess>("User");
+  const [positionId, setPositionId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const canSubmit =
-    fullName.trim().length > 0 &&
-    email.trim().length > 0 &&
-    password.length >= 6;
-
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (!fullName.trim()) {
+      setError("Введите ФИО пользователя");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Введите электронную почту");
+      return;
+    }
+    if (!password) {
+      setError("Введите пароль");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Пароль должен содержать минимум 6 символов");
+      return;
+    }
 
     setError("");
     setSubmitting(true);
 
     try {
-      // Convert UI role to API role
-      const apiRole =
-        role === "Admin"
-          ? "ADMIN"
-          : role === "Initiator"
-            ? "INITIATOR"
-            : role === "Approver"
-              ? "APPROVER"
-              : "USER";
       await onSubmit({
         name: fullName.trim(),
         email: email.trim(),
-        role: apiRole,
+        role: access === "Admin" ? "ADMIN" : "USER",
         password,
         department: department.trim() || undefined,
+        positionId: positionId || undefined,
       });
       setSuccess(true);
       setTimeout(() => {
@@ -361,51 +279,65 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
             />
           </div>
 
-          {/* Role */}
+          {/* Role (from positions справочник) */}
           <div>
             <label
-              htmlFor="invite-role"
+              htmlFor="invite-position"
               className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
             >
-              Роль
+              Роль {positions.length === 0 && <span className="font-normal text-zinc-400">(справочник пуст)</span>}
             </label>
             <div className="relative">
               <select
-                id="invite-role"
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer"
+                id="invite-position"
+                value={positionId}
+                onChange={(e) => setPositionId(e.target.value)}
+                disabled={positions.length === 0}
+                className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer disabled:opacity-50"
               >
-                {ROLE_OPTIONS.map((r) => (
-                  <option key={r} value={r}>
-                    {ROLE_LABELS[r]}
+                <option value="">— Не назначена —</option>
+                {positions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
                   </option>
                 ))}
               </select>
               <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          {/* Права */}
+          <div>
+            <label
+              htmlFor="invite-access"
+              className="mb-1.5 block text-[12.5px] font-medium text-zinc-700"
+            >
+              Права
+            </label>
+            <div className="relative">
+              <select
+                id="invite-access"
+                value={access}
+                onChange={(e) => setAccess(e.target.value as UserAccess)}
+                className="h-9 w-full appearance-none rounded-lg border border-zinc-200 bg-zinc-50 pl-3 pr-8 text-[13px] text-zinc-700 focus:border-zinc-400 focus:bg-white focus:outline-none transition-colors cursor-pointer"
+              >
+                <option value="User">Пользователь</option>
+                <option value="Admin">Администратор</option>
+              </select>
+              <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-zinc-400">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </span>
             </div>
             <p className="mt-1.5 text-[11.5px] text-zinc-400">
-              {role === "Admin"
-                ? "Полный доступ к системе, включая управление пользователями и настройками."
-                : role === "Initiator"
-                  ? "Может создавать документы, заполнять поля и отправлять на согласование."
-                  : role === "Approver"
-                    ? "Может просматривать, согласовывать или отклонять документы в назначенных маршрутах."
-                    : "Может просматривать свои документы, но не может создавать новые."}
+              {access === "Admin"
+                ? "Полный доступ ко всем функциям системы, включая управление пользователями."
+                : "Может создавать документы и шаблоны. Видит только свои документы."}
             </p>
           </div>
         </div>
@@ -424,8 +356,8 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={!canSubmit || submitting}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              disabled={submitting}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? "Создание..." : "Создать пользователя"}
             </button>
@@ -440,49 +372,53 @@ function CreateUserModal({ onClose, onSubmit }: CreateUserModalProps) {
 
 export default function UsersPage() {
   const [users, setUsers] = useState<SystemUser[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [editingPosition, setEditingPosition] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchUsers() {
+    async function fetchData() {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("/api/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const headers = { Authorization: `Bearer ${token}` };
 
-        if (res.ok) {
-          const data = await res.json();
+        const [usersRes, positionsRes] = await Promise.all([
+          fetch("/api/users", { headers }),
+          fetch("/api/positions", { headers }),
+        ]);
+
+        if (usersRes.ok) {
+          const data = await usersRes.json();
           const mapped: SystemUser[] = data.map((user: any) => ({
             id: user.id,
             name: user.name,
             email: user.email,
-            role:
-              user.role === "ADMIN"
-                ? "Admin"
-                : user.role === "INITIATOR"
-                  ? "Initiator"
-                  : user.role === "APPROVER"
-                    ? "Approver"
-                    : "User",
-            status: "Active" as UserStatus, // TODO: implement status in DB
+            access: (user.role === "ADMIN" ? "Admin" : "User") as UserAccess,
+            status: "Active" as UserStatus,
             createdDate: new Date(user.createdAt).toLocaleDateString("ru-RU", {
               year: "numeric",
               month: "short",
               day: "numeric",
             }),
+            position: user.position ?? null,
           }));
           setUsers(mapped);
         }
+
+        if (positionsRes.ok) {
+          const data = await positionsRes.json();
+          setPositions(data.map((p: any) => ({ id: p.id, name: p.name })));
+        }
       } catch (err) {
-        console.error("Failed to fetch users:", err);
+        console.error("Failed to fetch data:", err);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchUsers();
+    fetchData();
   }, []);
 
   async function handleCreateUser(data: {
@@ -491,6 +427,7 @@ export default function UsersPage() {
     role: string;
     password: string;
     department?: string;
+    positionId?: string;
   }) {
     const token = localStorage.getItem("token");
     const res = await fetch("/api/users", {
@@ -512,48 +449,59 @@ export default function UsersPage() {
       id: result.id,
       name: result.name,
       email: result.email,
-      role:
-        result.role === "ADMIN"
-          ? "Admin"
-          : result.role === "INITIATOR"
-            ? "Initiator"
-            : result.role === "APPROVER"
-              ? "Approver"
-              : "User",
+      access: result.role === "ADMIN" ? "Admin" : "User",
       status: "Active",
       createdDate: new Date(result.createdAt).toLocaleDateString("ru-RU", {
         year: "numeric",
         month: "short",
         day: "numeric",
       }),
+      position: result.position ?? null,
     };
 
     setUsers([newUser, ...users]);
   }
 
-  async function handleUpdateRole(userId: string, newRole: UserRole) {
+  async function handleUpdatePosition(userId: string, newPositionId: string) {
     const token = localStorage.getItem("token");
-    const apiRole =
-      newRole === "Admin"
-        ? "ADMIN"
-        : newRole === "Initiator"
-          ? "INITIATOR"
-          : newRole === "Approver"
-            ? "APPROVER"
-            : "USER";
-
     const res = await fetch(`/api/users/${userId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ role: apiRole }),
+      body: JSON.stringify({ positionId: newPositionId || null }),
     });
 
     if (!res.ok) {
       const error = await res.json();
-      alert(error.error || "Не удалось обновить роль");
+      alert(error.error || "Не удалось обновить должность");
+      return;
+    }
+
+    const updatedUser = await res.json();
+    setUsers(
+      users.map((u) =>
+        u.id === userId ? { ...u, position: updatedUser.position ?? null } : u,
+      ),
+    );
+    setEditingPosition(null);
+  }
+
+  async function handleUpdateAccess(userId: string, newAccess: UserAccess) {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`/api/users/${userId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ role: newAccess === "Admin" ? "ADMIN" : "USER" }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      alert(error.error || "Не удалось обновить права");
       return;
     }
 
@@ -561,17 +509,7 @@ export default function UsersPage() {
     setUsers(
       users.map((u) =>
         u.id === userId
-          ? {
-              ...u,
-              role:
-                updatedUser.role === "ADMIN"
-                  ? "Admin"
-                  : updatedUser.role === "INITIATOR"
-                    ? "Initiator"
-                    : updatedUser.role === "APPROVER"
-                      ? "Approver"
-                      : "User",
-            }
+          ? { ...u, access: updatedUser.role === "ADMIN" ? "Admin" : "User" }
           : u,
       ),
     );
@@ -624,6 +562,7 @@ export default function UsersPage() {
         <CreateUserModal
           onClose={() => setModalOpen(false)}
           onSubmit={handleCreateUser}
+          positions={positions}
         />
       )}
 
@@ -686,7 +625,10 @@ export default function UsersPage() {
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
                     Эл. почта
                   </th>
-                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[110px]">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-27.5">
+                    Права
+                  </th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-35">
                     Роль
                   </th>
                   <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[100px]">
@@ -734,34 +676,60 @@ export default function UsersPage() {
                       </p>
                     </td>
 
-                    {/* Role badge */}
+                    {/* Права */}
                     <td className="px-4 py-3.5">
                       {editingRole === user.id ? (
                         <select
-                          value={user.role}
+                          value={user.access}
                           onChange={(e) =>
-                            handleUpdateRole(
-                              user.id,
-                              e.target.value as UserRole,
-                            )
+                            handleUpdateAccess(user.id, e.target.value as UserAccess)
                           }
                           onBlur={() => setEditingRole(null)}
                           autoFocus
                           className="h-7 appearance-none rounded-lg border border-zinc-300 bg-white pl-2 pr-6 text-[11px] font-semibold focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
                         >
-                          {ROLE_OPTIONS.map((r) => (
-                            <option key={r} value={r}>
-                              {ROLE_LABELS[r].toUpperCase()}
+                          <option value="User">ПОЛЬЗОВАТЕЛЬ</option>
+                          <option value="Admin">АДМИНИСТРАТОР</option>
+                        </select>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setEditingRole(user.id)}
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap transition-opacity hover:opacity-75 ${accessBadge(user.access)}`}
+                        >
+                          {ACCESS_LABELS[user.access].toUpperCase()}
+                        </button>
+                      )}
+                    </td>
+
+                    {/* Position */}
+                    <td className="px-4 py-3.5">
+                      {editingPosition === user.id ? (
+                        <select
+                          value={user.position?.id ?? ""}
+                          onChange={(e) =>
+                            handleUpdatePosition(user.id, e.target.value)
+                          }
+                          onBlur={() => setEditingPosition(null)}
+                          autoFocus
+                          className="h-7 appearance-none rounded-lg border border-zinc-300 bg-white pl-2 pr-6 text-[12px] focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                        >
+                          <option value="">— Не назначена —</option>
+                          {positions.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.name}
                             </option>
                           ))}
                         </select>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => setEditingRole(user.id)}
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap transition-opacity hover:opacity-75 ${roleBadge(user.role)}`}
+                          onClick={() => setEditingPosition(user.id)}
+                          className="text-[12.5px] text-zinc-500 hover:text-zinc-800 hover:underline whitespace-nowrap"
                         >
-                          {ROLE_LABELS[user.role].toUpperCase()}
+                          {user.position?.name ?? (
+                            <span className="text-zinc-300 italic">Не назначена</span>
+                          )}
                         </button>
                       )}
                     </td>

@@ -15,6 +15,8 @@ export async function GET(req: NextRequest) {
       role: true,
       department: true,
       createdAt: true,
+      positionId: true,
+      position: { select: { id: true, name: true } },
     },
     orderBy: {
       createdAt: "desc",
@@ -28,9 +30,9 @@ export async function POST(req: NextRequest) {
   const auth = await requireRole(req, "ADMIN");
   if (auth instanceof NextResponse) return auth;
 
-  let email: string, name: string, role: string, department: string | undefined, password: string;
+  let email: string, name: string, role: string, department: string | undefined, password: string, positionId: string | undefined;
   try {
-    ({ email, name, role, department, password } = await req.json());
+    ({ email, name, role, department, password, positionId } = await req.json());
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Validate role
-  if (!["USER", "INITIATOR", "APPROVER", "ADMIN"].includes(role)) {
+  if (!["USER", "ADMIN"].includes(role)) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 });
   }
 
@@ -77,6 +79,7 @@ export async function POST(req: NextRequest) {
       role: role as "USER" | "INITIATOR" | "APPROVER" | "ADMIN",
       password: hashedPassword,
       department: department || null,
+      positionId: positionId || null,
     },
     select: {
       id: true,
@@ -85,6 +88,8 @@ export async function POST(req: NextRequest) {
       role: true,
       department: true,
       createdAt: true,
+      positionId: true,
+      position: { select: { id: true, name: true } },
     },
   });
 

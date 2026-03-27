@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { RoleGuard } from "@/app/components/role-guard";
-import { TemplateModal } from "@/app/components/template-modal";
+import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,11 +75,10 @@ function TrashIcon() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TemplatesPage() {
+  const currentUser = useCurrentUser();
+  const isAdmin = currentUser?.role === "ADMIN";
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateItem | null>(null);
 
   useEffect(() => {
     async function fetchTemplates() {
@@ -122,85 +121,6 @@ export default function TemplatesPage() {
     fetchTemplates();
   }, []);
 
-  // Handler functions
-  async function handleCreateTemplate(data: { name: string; description: string }) {
-    const token = localStorage.getItem("token");
-    const res = await fetch("/api/templates", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || "Не удалось создать шаблон");
-    }
-
-    const newTemplate = await res.json();
-    const mapped: TemplateItem = {
-      id: newTemplate.id,
-      name: newTemplate.name,
-      category: "Legal" as TemplateCategory,
-      description: newTemplate.description || "",
-      fieldCount: 0,
-      approvalSteps: 0,
-      createdDate: new Date(newTemplate.createdAt).toLocaleDateString("ru-RU", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
-      updatedDate: new Date(newTemplate.createdAt).toLocaleDateString("ru-RU", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
-      status: "Active" as TemplateStatus,
-    };
-
-    setTemplates([mapped, ...templates]);
-  }
-
-  async function handleEditTemplate(data: { name: string; description: string }) {
-    if (!selectedTemplate) return;
-
-    const token = localStorage.getItem("token");
-    const res = await fetch(`/api/templates/${selectedTemplate.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error.error || "Не удалось обновить шаблон");
-    }
-
-    const updatedTemplate = await res.json();
-    const mapped: TemplateItem = {
-      id: updatedTemplate.id,
-      name: updatedTemplate.name,
-      category: selectedTemplate.category,
-      description: updatedTemplate.description || "",
-      fieldCount: selectedTemplate.fieldCount,
-      approvalSteps: selectedTemplate.approvalSteps,
-      createdDate: selectedTemplate.createdDate,
-      updatedDate: new Date(updatedTemplate.updatedAt).toLocaleDateString("ru-RU", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      }),
-      status: selectedTemplate.status,
-    };
-
-    setTemplates(templates.map((t) => (t.id === mapped.id ? mapped : t)));
-  }
-
   async function handleDeleteTemplate(templateId: string, templateName: string) {
     if (!window.confirm(`Вы уверены, что хотите удалить "${templateName}"?`)) {
       return;
@@ -227,7 +147,7 @@ export default function TemplatesPage() {
 
   if (loading) {
     return (
-      <RoleGuard allowedRoles={["ADMIN"]}>
+      <RoleGuard allowedRoles={["ADMIN", "USER"]}>
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
@@ -243,7 +163,7 @@ export default function TemplatesPage() {
   }
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "USER"]}>
       <div className="space-y-6">
 
       {/* ── Page Header ───────────────────────────────────────────────────── */}
@@ -401,29 +321,28 @@ export default function TemplatesPage() {
                   {/* Actions */}
                   <td className="px-4 py-3.5">
                     <div className="flex items-center justify-end gap-2">
-                      {/* Edit */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedTemplate(tpl);
-                          setModalMode("edit");
-                          setModalOpen(true);
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
-                      >
-                        <EditIcon />
-                        Изменить
-                      </button>
+                      {isAdmin && (
+                        <>
+                          {/* Edit */}
+                          <Link
+                            href={`/templates/${tpl.id}/edit`}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
+                          >
+                            <EditIcon />
+                            Изменить
+                          </Link>
 
-                      {/* Delete */}
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteTemplate(tpl.id, tpl.name)}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
-                      >
-                        <TrashIcon />
-                        Удалить
-                      </button>
+                          {/* Delete */}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTemplate(tpl.id, tpl.name)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
+                          >
+                            <TrashIcon />
+                            Удалить
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -442,21 +361,6 @@ export default function TemplatesPage() {
         </div>
       </div>
 
-      {/* Template Modal */}
-      <TemplateModal
-        isOpen={modalOpen}
-        onClose={() => {
-          setModalOpen(false);
-          setSelectedTemplate(null);
-        }}
-        onSubmit={modalMode === "create" ? handleCreateTemplate : handleEditTemplate}
-        initialData={
-          selectedTemplate
-            ? { name: selectedTemplate.name, description: selectedTemplate.description }
-            : undefined
-        }
-        mode={modalMode}
-      />
       </div>
     </RoleGuard>
   );

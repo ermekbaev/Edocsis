@@ -48,6 +48,7 @@ function extractVariablesFromContent(content: string): Field[] {
 
   for (const match of matches) {
     const key = match[1];
+    if (key === "STAMP") continue; // system tag, not a user field
     if (!uniqueKeys.has(key)) {
       uniqueKeys.add(key);
       // Generate a human-readable label from camelCase key
@@ -317,7 +318,7 @@ export default function NewTemplatePage() {
   }
 
   return (
-    <RoleGuard allowedRoles={["ADMIN"]}>
+    <RoleGuard allowedRoles={["ADMIN", "USER"]}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Link
           href="/templates"
@@ -575,13 +576,26 @@ export default function NewTemplatePage() {
         </div>
 
         <div className="rounded-xl border border-zinc-200 bg-white p-6">
-          <div className="mb-4">
-            <h2 className="text-[15px] font-semibold text-zinc-900">
-              Содержимое документа
-            </h2>
-            <p className="mt-0.5 text-[12px] text-zinc-500">
-              Напишите содержимое документа. Используйте кнопки "Вставить в содержимое" выше для добавления переменных полей
-            </p>
+          <div className="mb-4 flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-[15px] font-semibold text-zinc-900">
+                Содержимое документа
+              </h2>
+              <p className="mt-0.5 text-[12px] text-zinc-500">
+                Используйте кнопки "Вставить в содержимое" выше для добавления переменных полей
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setContent(content + "\n{{STAMP}}")}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-[12px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+              title="Вставить тег {{STAMP}} — место где появится штамп подписи"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 0 0-2 2v2h12V5a2 2 0 0 0-2-2z"/>
+              </svg>
+              Вставить место для штампа
+            </button>
           </div>
 
           <textarea
