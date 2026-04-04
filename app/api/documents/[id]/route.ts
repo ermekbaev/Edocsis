@@ -68,9 +68,10 @@ export async function GET(
     return NextResponse.json({ error: "Document not found" }, { status: 404 });
   }
 
-  // Non-admins can only view their own documents
+  // Allow: ADMIN, initiator, or anyone listed as an approver for this document
   const user = await prisma.user.findUnique({ where: { id: auth.userId }, select: { role: true } });
-  if (user?.role !== "ADMIN" && document.initiatorId !== auth.userId) {
+  const isApprover = document.approvals.some((a) => a.approverId === auth.userId);
+  if (user?.role !== "ADMIN" && document.initiatorId !== auth.userId && !isApprover) {
     return NextResponse.json({ error: "Access denied" }, { status: 403 });
   }
 

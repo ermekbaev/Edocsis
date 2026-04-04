@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -134,6 +135,7 @@ function formatTime(dateString: string): string {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState("Добрый день");
@@ -310,14 +312,15 @@ export default function DashboardPage() {
               </div>
             ) : (
               data.recentDocuments.map((doc) => (
-                <Link
+                <div
                   key={doc.id}
-                  href={`/documents/${doc.id}`}
-                  className="grid grid-cols-[2fr_1.2fr_100px_1fr_1fr] items-center gap-3 px-5 py-3 hover:bg-zinc-50 transition-colors"
+                  onDoubleClick={() => router.push(`/documents/${doc.id}`)}
+                  title="Двойной щелчок — открыть документ"
+                  className="group grid grid-cols-[2fr_1.2fr_100px_1fr_1fr] items-center gap-3 px-5 py-3 cursor-pointer hover:bg-zinc-50 transition-colors"
                 >
                   {/* Title */}
                   <div className="min-w-0">
-                    <p className="truncate text-[13px] font-medium text-zinc-900">
+                    <p className="truncate text-[13px] font-medium text-zinc-900 group-hover:text-zinc-700 transition-colors">
                       {doc.title}
                     </p>
                     <p className="mt-0.5 text-[11.5px] text-zinc-400">{doc.number}</p>
@@ -346,7 +349,7 @@ export default function DashboardPage() {
                   <p className="truncate text-[12.5px] text-zinc-600">
                     {doc.currentApprover?.name || "—"}
                   </p>
-                </Link>
+                </div>
               ))
             )}
           </div>

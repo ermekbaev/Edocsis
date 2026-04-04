@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { RoleGuard } from "@/app/components/role-guard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,6 +36,7 @@ function ViewIcon() {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
+  const router = useRouter();
   const [items, setItems] = useState<ApprovalItem[]>([]);
   const [processing, setProcessing] = useState<Set<string>>(new Set());
 
@@ -208,9 +210,14 @@ export default function ApprovalsPage() {
                 </thead>
                 <tbody className="divide-y divide-zinc-100">
                   {completed.map((doc) => (
-                    <tr key={doc.id} className="hover:bg-zinc-50 transition-colors">
+                    <tr
+                      key={doc.id}
+                      onDoubleClick={() => router.push(`/documents/${doc.documentId}`)}
+                      title="Двойной щелчок — открыть документ"
+                      className="group cursor-pointer hover:bg-zinc-50 transition-colors"
+                    >
                       <td className="px-5 py-3.5">
-                        <p className="text-[13px] font-semibold text-zinc-900">{doc.title}</p>
+                        <p className="text-[13px] font-semibold text-zinc-900 group-hover:text-zinc-700 transition-colors">{doc.title}</p>
                         <p className="text-[11.5px] font-mono text-zinc-400">{doc.documentNumber}</p>
                       </td>
                       <td className="px-4 py-3.5">
@@ -237,7 +244,7 @@ export default function ApprovalsPage() {
                             : "—"}
                         </p>
                       </td>
-                      <td className="px-4 py-3.5 text-right">
+                      <td className="px-4 py-3.5 text-right" onDoubleClick={(e) => e.stopPropagation()}>
                         <Link
                           href={`/documents/${doc.documentId}`}
                           className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 ml-auto"
