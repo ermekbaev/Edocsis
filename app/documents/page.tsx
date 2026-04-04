@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { SearchIcon } from "../components/icons";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
 
@@ -118,7 +119,10 @@ function TrashIcon() {
 
 export default function DocumentsPage() {
   const currentUser = useCurrentUser();
+  const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<DocStatus | "All">("All");
@@ -137,35 +141,26 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     async function fetchDocuments() {
+      setLoading(true);
+      setFetchError(null);
       try {
         const token = localStorage.getItem("token");
 
-        // Build query params
         const params = new URLSearchParams();
-        if (debouncedSearch) {
-          params.append("search", debouncedSearch);
-        }
+        if (debouncedSearch) params.append("search", debouncedSearch);
         if (statusFilter !== "All") {
           const apiStatus = statusFilter === "Draft" ? "DRAFT" : statusFilter === "In Approval" ? "IN_APPROVAL" : statusFilter === "Approved" ? "APPROVED" : "REJECTED";
           params.append("status", apiStatus);
         }
-        if (roleFilter !== "All") {
-          params.append("initiatorRole", roleFilter);
-        }
-        if (sortOption === "oldest") {
-          params.append("sortOrder", "asc");
-        } else if (sortOption === "updated") {
-          params.append("sortBy", "updatedAt");
-        }
+        if (roleFilter !== "All") params.append("initiatorRole", roleFilter);
+        if (sortOption === "oldest") params.append("sortOrder", "asc");
+        else if (sortOption === "updated") params.append("sortBy", "updatedAt");
 
         const url = `/api/documents${params.toString() ? `?${params.toString()}` : ""}`;
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
         if (res.ok) {
           const data = await res.json();
-          // Map API response to UI format
           const mapped = data.map((doc: any) => ({
             id: doc.id,
             number: doc.number,
@@ -177,9 +172,15 @@ export default function DocumentsPage() {
             currentApprover: doc.currentApprover?.name || "—",
           }));
           setDocuments(mapped);
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          setFetchError(errData.error || `Ошибка ${res.status}`);
         }
       } catch (err) {
         console.error("Failed to fetch documents:", err);
+        setFetchError("Не удалось загрузить документы. Проверьте соединение.");
+      } finally {
+        setLoading(false);
       }
     }
     fetchDocuments();
@@ -230,15 +231,13 @@ export default function DocumentsPage() {
             Управление и отслеживание документов организации.
           </p>
         </div>
-        {(currentUser?.role === "INITIATOR" || currentUser?.role === "ADMIN") && (
-          <Link
-            href="/documents/create"
-            className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
-          >
-            <span className="text-[16px] leading-none font-light">+</span>
-            Создать документ
-          </Link>
-        )}
+        <Link
+          href="/documents/create"
+          className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-zinc-700"
+        >
+          <span className="text-[16px] leading-none font-light">+</span>
+          Создать документ
+        </Link>
       </div>
 
       {/* ── Filter Panel ──────────────────────────────────────────────────── */}
@@ -246,7 +245,7 @@ export default function DocumentsPage() {
         <div className="flex flex-wrap items-center gap-3">
 
           {/* Search */}
-          <div className="relative min-w-[240px] flex-1">
+          <div className="relative min-w-60 flex-1">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-400">
               <SearchIcon width={14} height={14} />
             </span>
@@ -331,7 +330,7 @@ export default function DocumentsPage() {
 
           {/* Results count */}
           <span className="ml-auto text-[12.5px] text-zinc-400">
-            {filteredDocuments.length} документов
+            {loading ? "Загрузка..." : `${filteredDocuments.length} документов`}
           </span>
         </div>
       </div>
@@ -347,7 +346,7 @@ export default function DocumentsPage() {
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
                 Шаблон
               </th>
-              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[110px]">
+              <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-27.5">
                 Статус
               </th>
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400">
@@ -359,27 +358,53 @@ export default function DocumentsPage() {
               <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-zinc-400 whitespace-nowrap">
                 Согласующий
               </th>
-              <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-[200px]">
+              <th className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-wide text-zinc-400 w-50">
                 Действия
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
-            {filteredDocuments.map((doc) => (
+            {loading && (
+              <tr>
+                <td colSpan={7} className="px-5 py-12 text-center text-[13px] text-zinc-400">
+                  Загрузка документов...
+                </td>
+              </tr>
+            )}
+            {!loading && fetchError && (
+              <tr>
+                <td colSpan={7} className="px-5 py-12 text-center">
+                  <p className="text-[13px] text-rose-600">{fetchError}</p>
+                  <p className="mt-1 text-[12px] text-zinc-400">Попробуйте обновить страницу</p>
+                </td>
+              </tr>
+            )}
+            {!loading && !fetchError && filteredDocuments.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-5 py-12 text-center">
+                  <p className="text-[13px] text-zinc-500">Документов не найдено</p>
+                  <p className="mt-1 text-[12px] text-zinc-400">
+                    {debouncedSearch || statusFilter !== "All"
+                      ? "Попробуйте изменить фильтры"
+                      : "Создайте первый документ, нажав «Создать документ»"}
+                  </p>
+                </td>
+              </tr>
+            )}
+            {!loading && !fetchError && filteredDocuments.map((doc) => (
               <tr
                 key={doc.id}
-                className="group transition-colors hover:bg-zinc-50"
+                onClick={() => router.push(`/documents/${doc.id}`)}
+                className="group cursor-pointer transition-colors hover:bg-zinc-50"
               >
                 {/* Title + Number */}
                 <td className="px-5 py-3.5">
-                  <Link href={`/documents/${doc.id}`} className="block">
-                    <p className="text-[13px] font-semibold text-zinc-900 leading-snug group-hover:text-zinc-700 transition-colors">
-                      {doc.title}
-                    </p>
-                    <p className="mt-0.5 text-[11.5px] font-mono text-zinc-400">
-                      {doc.number}
-                    </p>
-                  </Link>
+                  <p className="text-[13px] font-semibold text-zinc-900 leading-snug group-hover:text-zinc-700 transition-colors">
+                    {doc.title}
+                  </p>
+                  <p className="mt-0.5 text-[11.5px] font-mono text-zinc-400">
+                    {doc.number}
+                  </p>
                 </td>
 
                 {/* Template */}
@@ -391,9 +416,7 @@ export default function DocumentsPage() {
 
                 {/* Status */}
                 <td className="px-4 py-3.5">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${statusBadge(doc.status)}`}
-                  >
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap ${statusBadge(doc.status)}`}>
                     {doc.status === "Draft" ? "Черновик" : doc.status === "In Approval" ? "На согласовании" : doc.status === "Approved" ? "Согласовано" : "Отклонено"}
                   </span>
                 </td>
@@ -420,9 +443,8 @@ export default function DocumentsPage() {
                 </td>
 
                 {/* Actions */}
-                <td className="px-4 py-3.5">
+                <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-2">
-                    {/* Edit (only for DRAFT) */}
                     {doc.status === "Draft" && (
                       <Link
                         href={`/documents/${doc.id}/edit`}
@@ -432,8 +454,6 @@ export default function DocumentsPage() {
                         Изменить
                       </Link>
                     )}
-
-                    {/* Delete */}
                     <button
                       type="button"
                       onClick={() => handleDeleteDocument(doc.id, doc.title)}

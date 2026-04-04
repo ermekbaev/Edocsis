@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
   if (auth instanceof NextResponse) return auth;
 
+  try {
   // Get current user to check role
   const user = await prisma.user.findUnique({
     where: { id: auth.userId },
@@ -92,6 +93,10 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json(documents);
+  } catch (err: any) {
+    console.error("[Documents GET]", err);
+    return NextResponse.json({ error: "Не удалось загрузить документы" }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {

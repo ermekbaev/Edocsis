@@ -157,6 +157,81 @@ export default function CreateDocumentPage() {
     setFormValues((prev) => ({ ...prev, [key]: value }));
   }
 
+  function buildRenderedHtml(): string {
+    if (!template) return "";
+    let text = template.content || "";
+    text = text.replace(/\\n/g, "\n");
+    Object.entries(formValues).forEach(([key, value]) => {
+      text = text.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value ?? "");
+    });
+    text = text.replace(/\{\{[^}]+\}\}/g, "_______________");
+
+    const fieldsHtml = template.fields && template.fields.length > 0
+      ? `<table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px">
+          <tbody>
+            ${template.fields.map((f) => `
+              <tr style="border-bottom:1px solid #e5e7eb">
+                <td style="padding:6px 12px 6px 0;font-weight:600;color:#555;width:35%">${f.label}</td>
+                <td style="padding:6px 0;color:#111">${formValues[f.key] || "—"}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>`
+      : "";
+
+    return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>${title || template.name}</title>
+<style>
+  @media print { @page { margin: 20mm; size: A4; } }
+  body { font-family: 'Times New Roman', Times, serif; margin: 30mm 25mm; color: #000; background: #fff; }
+  h1 { font-size: 16px; text-align: center; margin-bottom: 4px; }
+  .meta { font-size: 11px; color: #666; text-align: center; margin-bottom: 20px; }
+  pre { font-family: 'Times New Roman', serif; font-size: 13px; white-space: pre-wrap; line-height: 1.6; }
+  .no-print { display: none; }
+  @media screen { .no-print { display: block; position: fixed; top: 16px; right: 16px; z-index: 99; } }
+</style>
+</head>
+<body>
+  <div class="no-print">
+    <button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-right:8px">
+      Печать / Сохранить PDF
+    </button>
+    <button onclick="window.close()" style="background:#fff;color:#333;border:1px solid #ccc;padding:8px 18px;border-radius:8px;font-size:13px;cursor:pointer">
+      Закрыть
+    </button>
+  </div>
+  <h1>${title || template.name}</h1>
+  <div class="meta">Черновик · Шаблон: ${template.name}</div>
+  <hr style="border:none;border-top:1px solid #ccc;margin-bottom:20px"/>
+  ${fieldsHtml}
+  <pre>${text}</pre>
+</body>
+</html>`;
+  }
+
+  function handleDownloadDoc() {
+    if (!template) return;
+    const html = buildRenderedHtml();
+    const blob = new Blob([html], { type: "application/msword" });
+    const url = URL.createObjectURL(blob);
+    const a = window.document.createElement("a");
+    a.href = url;
+    a.download = `${(title || template.name).replace(/[^а-яёa-z0-9\s]/gi, "")}.doc`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handlePreviewPdf() {
+    if (!template) return;
+    const html = buildRenderedHtml();
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
   async function handleSubmit(asDraft: boolean) {
     if (!title.trim()) {
       alert("Введите название документа");
@@ -726,6 +801,41 @@ export default function CreateDocumentPage() {
             <p className="text-center text-[11px] text-zinc-400">
               Черновики можно редактировать и отправить позже.
             </p>
+
+            {/* Export buttons — shown only when template with content is selected */}
+            {template?.content && (
+              <>
+                <div className="relative flex items-center pt-1">
+                  <div className="grow border-t border-zinc-100" />
+                  <span className="mx-3 shrink-0 text-[10.5px] font-medium uppercase tracking-wide text-zinc-400">
+                    Экспорт
+                  </span>
+                  <div className="grow border-t border-zinc-100" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePreviewPdf}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white py-2 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    Просмотр PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDownloadDoc}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white py-2 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Скачать DOC
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

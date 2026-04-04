@@ -88,8 +88,8 @@ function PositionModal({
     try {
       await onSave(name.trim(), description.trim());
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Не удалось сохранить");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось сохранить");
     } finally {
       setSaving(false);
     }
@@ -173,6 +173,15 @@ export default function RolesPage() {
 
   useEffect(() => { fetchData(); }, []);
 
+  async function apiError(res: Response): Promise<string> {
+    try {
+      const data = await res.json();
+      return data.error || `Ошибка ${res.status}`;
+    } catch {
+      return `Ошибка сервера (${res.status})`;
+    }
+  }
+
   async function handleSavePosition(name: string, description: string) {
     const token = localStorage.getItem("token");
     const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
@@ -181,14 +190,14 @@ export default function RolesPage() {
       const res = await fetch(`/api/positions/${editingPosition.id}`, {
         method: "PUT", headers, body: JSON.stringify({ name, description }),
       });
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      if (!res.ok) throw new Error(await apiError(res));
       const updated = await res.json();
       setPositions((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     } else {
       const res = await fetch("/api/positions", {
         method: "POST", headers, body: JSON.stringify({ name, description }),
       });
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      if (!res.ok) throw new Error(await apiError(res));
       const created = await res.json();
       setPositions((prev) => [...prev, created]);
     }
@@ -201,7 +210,7 @@ export default function RolesPage() {
     const res = await fetch(`/api/positions/${pos.id}`, {
       method: "DELETE", headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) { const e = await res.json(); alert(e.error); return; }
+    if (!res.ok) { alert(await apiError(res)); return; }
     setPositions((prev) => prev.filter((p) => p.id !== pos.id));
     setUsers((prev) => prev.map((u) => u.positionId === pos.id ? { ...u, positionId: null, position: null } : u));
   }

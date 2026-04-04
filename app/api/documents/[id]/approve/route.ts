@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateApprovalStamp, saveStampToDisk } from "@/lib/generate-stamp";
 
 export async function POST(
   req: NextRequest,
@@ -215,7 +216,7 @@ export async function POST(
         await tx.notification.create({
           data: {
             type: "DOCUMENT_APPROVED",
-            message: `Your document "${document.title}" (${document.number}) has been approved`,
+            message: `Ваш документ "${document.title}" (${document.number}) согласован`,
             userId: document.initiatorId,
           },
         });
@@ -231,6 +232,9 @@ export async function POST(
 
         return doc;
       });
+
+      // Generate approval stamp PDF
+      await attachApprovalStamp({ documentId: id, approverId: auth.userId, document });
 
       return NextResponse.json(updatedDocument);
     }
@@ -254,7 +258,7 @@ export async function POST(
       await tx.notification.create({
         data: {
           type: "DOCUMENT_APPROVED",
-          message: `Your document "${document.title}" (${document.number}) has been approved`,
+          message: `Ваш документ "${document.title}" (${document.number}) согласован`,
           userId: document.initiatorId,
         },
       });
@@ -271,6 +275,70 @@ export async function POST(
       return doc;
     });
 
+    // Generate approval stamp PDF
+    await attachApprovalStamp({ documentId: id, approverId: auth.userId, document });
+
     return NextResponse.json(updatedDocument);
+  }
+}
+
+/** Генерирует штамп согласования и сохраняет его как файл документа */
+async function attachApprovalStamp({
+  documentId,
+  approverId,
+  document,
+}: {
+  documentId: string;
+  approverId: string;
+  document: { title: string; number: string };
+}) {
+  try {
+    // Загружаем данные согласующего
+    const approver = await prisma.user.findUnique({
+      where: { id: approverId },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        position: { select: { name: true } },
+      },
+    });
+
+    if (!approver) return;
+
+    const roleLabels: Record<string, string> = {
+      ADMIN: "Администратор",
+      USER: "Пользователь",
+      APPROVER: "Согласующий",
+      INITIATOR: "Инициатор",
+    };
+
+    const position =
+      approver.position?.name ?? roleLabels[approver.role] ?? approver.role;
+
+    const stampBuffer = await generateApprovalStamp({
+      approverName: approver.name,
+      position,
+      date: new Date(),
+      documentTitle: document.title,
+      documentNumber: document.number,
+    });
+
+    const { webPath, fileName } = await saveStampToDisk(documentId, stampBuffer);
+
+    // Создаём запись файла в БД
+    await prisma.file.create({
+      data: {
+        name: `Штамп согласования — ${document.number}.pdf`,
+        path: webPath,
+        size: stampBuffer.length,
+        mimeType: "application/pdf",
+        documentId,
+        userId: approverId,
+      },
+    });
+  } catch (err) {
+    // Не прерываем основной поток — штамп опционален
+    console.error("[STAMP] Failed to generate approval stamp:", err);
   }
 }

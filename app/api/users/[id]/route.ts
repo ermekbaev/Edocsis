@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export async function PUT(
   req: NextRequest,
@@ -14,72 +15,63 @@ export async function PUT(
   let name: string | undefined,
     role: string | undefined,
     department: string | undefined,
-    positionId: string | null | undefined;
+    positionId: string | null | undefined,
+    password: string | undefined;
   try {
-    ({ name, role, department, positionId } = await req.json());
+    ({ name, role, department, positionId, password } = await req.json());
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Неверный формат запроса" }, { status: 400 });
   }
 
-  // Check if user exists
-  const user = await prisma.user.findUnique({
-    where: { id },
-  });
-
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  // Prevent admin from changing their own role (safety)
-  if (id === auth.userId && role !== undefined && role !== user.role) {
-    return NextResponse.json(
-      { error: "Cannot change your own role" },
-      { status: 400 }
-    );
-  }
-
-  // Validate role if provided
-  if (role !== undefined && !["USER", "ADMIN"].includes(role)) {
-    return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-  }
-
-  // Build update data
-  const data: { name?: string; role?: "USER" | "INITIATOR" | "APPROVER" | "ADMIN"; department?: string | null; positionId?: string | null } = {};
-  if (name !== undefined) {
-    if (name.trim().length === 0) {
-      return NextResponse.json(
-        { error: "name cannot be empty" },
-        { status: 400 }
-      );
+  try {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
     }
-    data.name = name.trim();
-  }
-  if (role !== undefined) {
-    data.role = role as "USER" | "INITIATOR" | "APPROVER" | "ADMIN";
-  }
-  if (department !== undefined) {
-    data.department = department.trim() || null;
-  }
-  if (positionId !== undefined) {
-    data.positionId = positionId || null;
-  }
 
-  const updatedUser = await prisma.user.update({
-    where: { id },
-    data,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      department: true,
-      createdAt: true,
-      positionId: true,
-      position: { select: { id: true, name: true } },
-    },
-  });
+    // Нельзя менять свою роль
+    if (id === auth.userId && role !== undefined && role !== user.role) {
+      return NextResponse.json({ error: "Нельзя изменить свою роль" }, { status: 400 });
+    }
 
-  return NextResponse.json(updatedUser);
+    if (role !== undefined && !["USER", "ADMIN"].includes(role)) {
+      return NextResponse.json({ error: "Недопустимая роль" }, { status: 400 });
+    }
+
+    if (password !== undefined && password.length < 6) {
+      return NextResponse.json({ error: "Пароль должен содержать минимум 6 символов" }, { status: 400 });
+    }
+
+    const data: any = {};
+    if (name !== undefined) {
+      if (!name.trim()) return NextResponse.json({ error: "Имя не может быть пустым" }, { status: 400 });
+      data.name = name.trim();
+    }
+    if (role !== undefined) data.role = role;
+    if (department !== undefined) data.department = department.trim() || null;
+    if (positionId !== undefined) data.positionId = positionId || null;
+    if (password !== undefined) data.password = await bcrypt.hash(password, 10);
+
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        department: true,
+        createdAt: true,
+        positionId: true,
+        position: { select: { id: true, name: true } },
+      },
+    });
+
+    return NextResponse.json(updatedUser);
+  } catch (err: any) {
+    console.error("[Users PUT]", err);
+    return NextResponse.json({ error: "Не удалось обновить пользователя" }, { status: 500 });
+  }
 }
 
 export async function DELETE(
@@ -91,27 +83,20 @@ export async function DELETE(
 
   const { id } = await context.params;
 
-  // Prevent admin from deleting themselves
   if (id === auth.userId) {
-    return NextResponse.json(
-      { error: "Cannot delete yourself" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Нельзя удалить себя" }, { status: 400 });
   }
 
-  // Check if user exists
-  const user = await prisma.user.findUnique({
-    where: { id },
-  });
+  try {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+    }
 
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
+    await prisma.user.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error("[Users DELETE]", err);
+    return NextResponse.json({ error: "Не удалось удалить пользователя" }, { status: 500 });
   }
-
-  // Hard delete (since we don't have a status field for soft delete)
-  await prisma.user.delete({
-    where: { id },
-  });
-
-  return NextResponse.json({ success: true });
 }

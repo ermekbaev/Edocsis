@@ -68,6 +68,12 @@ export async function GET(
     return NextResponse.json({ error: "Document not found" }, { status: 404 });
   }
 
+  // Non-admins can only view their own documents
+  const user = await prisma.user.findUnique({ where: { id: auth.userId }, select: { role: true } });
+  if (user?.role !== "ADMIN" && document.initiatorId !== auth.userId) {
+    return NextResponse.json({ error: "Access denied" }, { status: 403 });
+  }
+
   return NextResponse.json(document);
 }
 

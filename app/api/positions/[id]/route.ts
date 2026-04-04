@@ -15,33 +15,38 @@ export async function PUT(
   try {
     ({ name, description } = await req.json());
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Неверный формат запроса" }, { status: 400 });
   }
 
-  const existing = await prisma.position.findUnique({ where: { id } });
-  if (!existing) {
-    return NextResponse.json({ error: "Роль не найдена" }, { status: 404 });
-  }
-
-  if (name !== undefined) {
-    const duplicate = await prisma.position.findFirst({
-      where: { name: name.trim(), NOT: { id } },
-    });
-    if (duplicate) {
-      return NextResponse.json({ error: "Роль с таким названием уже существует" }, { status: 400 });
+  try {
+    const existing = await prisma.position.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Роль не найдена" }, { status: 404 });
     }
+
+    if (name !== undefined) {
+      const duplicate = await prisma.position.findFirst({
+        where: { name: name.trim(), NOT: { id } },
+      });
+      if (duplicate) {
+        return NextResponse.json({ error: "Роль с таким названием уже существует" }, { status: 400 });
+      }
+    }
+
+    const position = await prisma.position.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name: name.trim() }),
+        ...(description !== undefined && { description: description.trim() || null }),
+      },
+      include: { _count: { select: { users: true } } },
+    });
+
+    return NextResponse.json(position);
+  } catch (err: any) {
+    console.error("[Positions PUT]", err);
+    return NextResponse.json({ error: "Не удалось обновить роль" }, { status: 500 });
   }
-
-  const position = await prisma.position.update({
-    where: { id },
-    data: {
-      ...(name !== undefined && { name: name.trim() }),
-      ...(description !== undefined && { description: description.trim() || null }),
-    },
-    include: { _count: { select: { users: true } } },
-  });
-
-  return NextResponse.json(position);
 }
 
 export async function DELETE(
@@ -53,22 +58,26 @@ export async function DELETE(
 
   const { id } = await context.params;
 
-  const existing = await prisma.position.findUnique({
-    where: { id },
-    include: { _count: { select: { users: true } } },
-  });
-  if (!existing) {
-    return NextResponse.json({ error: "Роль не найдена" }, { status: 404 });
-  }
-
-  if (existing._count.users > 0) {
-    // Unlink users before deleting
-    await prisma.user.updateMany({
-      where: { positionId: id },
-      data: { positionId: null },
+  try {
+    const existing = await prisma.position.findUnique({
+      where: { id },
+      include: { _count: { select: { users: true } } },
     });
-  }
+    if (!existing) {
+      return NextResponse.json({ error: "Роль не найдена" }, { status: 404 });
+    }
 
-  await prisma.position.delete({ where: { id } });
-  return NextResponse.json({ success: true });
+    if (existing._count.users > 0) {
+      await prisma.user.updateMany({
+        where: { positionId: id },
+        data: { positionId: null },
+      });
+    }
+
+    await prisma.position.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error("[Positions DELETE]", err);
+    return NextResponse.json({ error: "Не удалось удалить роль" }, { status: 500 });
+  }
 }
