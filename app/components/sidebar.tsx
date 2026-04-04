@@ -11,7 +11,6 @@ import {
   RoutesIcon,
   RolesIcon,
   SettingsIcon,
-  LogoIcon,
   XIcon,
 } from "./icons";
 import { useCurrentUser } from "@/lib/hooks/useCurrentUser";
@@ -103,20 +102,21 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         .join(" ")}
     >
       {/* ── Logo ───────────────────────────────────────────────────────── */}
-      <div
-        className={[
-          "flex h-16 shrink-0 items-center border-b border-zinc-200",
-          open ? "justify-between px-6" : "justify-center px-3 md:justify-center lg:justify-between lg:px-6",
-        ].join(" ")}
-      >
-        {/* Icon always visible */}
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white">
-            <LogoIcon width={18} height={18} />
-          </div>
-          <span className={`text-[15px] font-semibold tracking-tight text-zinc-900 ${labelClass}`}>
-            Edocsis
-          </span>
+      <div className="relative flex h-16 shrink-0 items-center justify-center border-b border-zinc-200">
+        {/* Logo always visible */}
+        <div className="flex items-center justify-center">
+          {/* Collapsed: show icon-only square */}
+          <img
+            src="/EDSIS_logo.svg"
+            alt="Edocsis"
+            className={`h-7 w-6 shrink-0 object-contain ${open ? "hidden" : "block md:block lg:hidden"}`}
+          />
+          {/* Expanded: show full logo */}
+          <img
+            src="/EDSIS_logo.svg"
+            alt="Edocsis"
+            className={`h-7 object-contain ${open ? "block" : "hidden md:hidden lg:block"}`}
+          />
         </div>
 
         {/* Close button — visible only when sidebar is open as overlay (mobile/tablet) */}
@@ -124,7 +124,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 lg:hidden"
+            className="absolute right-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 lg:hidden"
             aria-label="Закрыть боковую панель"
           >
             <XIcon width={16} height={16} />
