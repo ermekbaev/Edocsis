@@ -397,7 +397,7 @@ export default function DashboardPage() {
                   {/* Action buttons */}
                   <div className="flex gap-2">
                     <Link
-                      href={`/approvals/${doc.id}`}
+                      href={`/documents/${doc.id}`}
                       className="flex-1 rounded-lg bg-zinc-900 py-1.5 text-[12px] font-semibold text-white text-center transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
                     >
                       Рассмотреть

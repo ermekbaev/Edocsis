@@ -80,6 +80,7 @@ export async function PUT(
             name: step.name,
             description: step.description,
             approverIds: step.approverIds,
+            approverRole: step.approverRole ?? null,
             requireAll: step.requireAll ?? false,
           })),
         },

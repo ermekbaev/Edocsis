@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
 export async function GET(
@@ -74,10 +74,12 @@ export async function POST(
     const nameWithoutExt = path.basename(originalName, ext);
     const uniqueName = `${timestamp}-${nameWithoutExt}${ext}`;
 
-    // Save file to public/uploads
+    // Save file to public/uploads (create dir if missing)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filePath = path.join(process.cwd(), "public", "uploads", uniqueName);
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await mkdir(uploadsDir, { recursive: true });
+    const filePath = path.join(uploadsDir, uniqueName);
     await writeFile(filePath, buffer);
 
     // Create file record in database

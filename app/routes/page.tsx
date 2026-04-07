@@ -39,6 +39,16 @@ function TrashIcon() {
   );
 }
 
+function PencilIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function RoutesPage() {
@@ -189,14 +199,23 @@ export default function RoutesPage() {
                       </div>
                     )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteRoute(route.id, route.name)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
-                  >
-                    <TrashIcon />
-                    Удалить
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/routes/${route.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-zinc-600 transition-colors hover:bg-zinc-50 hover:border-zinc-300"
+                    >
+                      <PencilIcon />
+                      Изменить
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteRoute(route.id, route.name)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-rose-600 transition-colors hover:bg-rose-50 hover:border-rose-300"
+                    >
+                      <TrashIcon />
+                      Удалить
+                    </button>
+                  </div>
                 </div>
               </div>
 
