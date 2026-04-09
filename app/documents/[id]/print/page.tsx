@@ -140,31 +140,33 @@ export default function DocumentPrintPage({
                 </pre>
                 {i < textParts.length - 1 && (
                   completedApprovals[i] ? (
-                    <table className="border-collapse my-4" style={{ fontFamily: "'Times New Roman', serif" }}>
-                      <tbody>
-                        <tr>
-                          <td style={{ border: "1px solid #333", padding: "10px 14px", fontSize: "12px", lineHeight: "1.8", minWidth: "260px" }}>
-                            <strong>Документ подписан электронной подписью</strong><br />
-                            Владелец: {completedApprovals[i].approver?.name || "—"}<br />
-                            Должность: {completedApprovals[i].approver?.position?.name || completedApprovals[i].approver?.department || "—"}<br />
-                            Дата подписи: {completedApprovals[i].decidedAt ? new Date(completedApprovals[i].decidedAt).toLocaleDateString("ru-RU") : "—"}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div className="my-4 inline-block" style={{ border: "2px solid #142872", minWidth: "260px", fontFamily: "Arial, sans-serif" }}>
+                      <div style={{ background: "#142872", color: "#fff", textAlign: "center", padding: "7px 14px", fontWeight: "bold", fontSize: "13px", letterSpacing: "1px" }}>
+                        СОГЛАСОВАНО
+                      </div>
+                      <div style={{ background: "#f8f8fa", padding: "10px 14px", fontSize: "12px", lineHeight: "2" }}>
+                        <span style={{ color: "#888", marginRight: 6 }}>Владелец:</span>
+                        <span style={{ color: "#000" }}>{completedApprovals[i].approver?.name || "—"}</span><br />
+                        <span style={{ color: "#888", marginRight: 6 }}>Должность:</span>
+                        <span style={{ color: "#000" }}>{completedApprovals[i].approver?.position?.name || completedApprovals[i].approver?.department || "—"}</span><br />
+                        <span style={{ color: "#888", marginRight: 6 }}>Дата:</span>
+                        <span style={{ color: "#000" }}>{completedApprovals[i].decidedAt ? new Date(completedApprovals[i].decidedAt).toLocaleDateString("ru-RU") : "—"}</span><br />
+                        <span style={{ color: "#888", marginRight: 6 }}>Документ:</span>
+                        <span style={{ color: "#888", fontSize: "11px" }}>{document.number}</span>
+                      </div>
+                    </div>
                   ) : (
-                    <table className="border-collapse my-4" style={{ fontFamily: "'Times New Roman', serif", opacity: 0.5 }}>
-                      <tbody>
-                        <tr>
-                          <td style={{ border: "1px dashed #999", padding: "10px 14px", fontSize: "12px", lineHeight: "1.8", minWidth: "260px", color: "#999" }}>
-                            <strong>Документ подписан электронной подписью</strong><br />
-                            Владелец: _______________<br />
-                            Должность: _______________<br />
-                            Дата подписи: _______________
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <div className="my-4 inline-block" style={{ border: "2px dashed #ccc", minWidth: "260px", fontFamily: "Arial, sans-serif", opacity: 0.5 }}>
+                      <div style={{ background: "#ccc", color: "#fff", textAlign: "center", padding: "7px 14px", fontWeight: "bold", fontSize: "13px", letterSpacing: "1px" }}>
+                        СОГЛАСОВАНО
+                      </div>
+                      <div style={{ background: "#f8f8fa", padding: "10px 14px", fontSize: "12px", lineHeight: "2", color: "#999" }}>
+                        Владелец: _______________<br />
+                        Должность: _______________<br />
+                        Дата: _______________<br />
+                        Документ: _______________
+                      </div>
+                    </div>
                   )
                 )}
               </span>
@@ -180,22 +182,26 @@ export default function DocumentPrintPage({
               <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-4">
                 Подписи согласования
               </p>
-              <table className="border-collapse w-full" style={{ fontFamily: "'Times New Roman', serif" }}>
-                <tbody>
-                  <tr>
-                    {completedApprovals.map((a: any, idx: number) => (
-                      <td key={idx} style={{ border: "1px solid #333", padding: "10px 14px", fontSize: "12px", lineHeight: "1.8", verticalAlign: "top", width: `${100 / completedApprovals.length}%` }}>
-                        <strong>{a.status === "APPROVED" ? "Документ подписан электронной подписью" : "Отклонено"}</strong>
-                        {a.stepNumber ? <><br /><span style={{ fontSize: "10px", color: "#666" }}>Этап {a.stepNumber}</span></> : null}<br />
-                        Владелец: {a.approver?.name || "—"}<br />
-                        Должность: {a.approver?.position?.name || a.approver?.department || "—"}<br />
-                        Дата подписи: {a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—"}
-                        {a.comment ? <><br /><em style={{ fontSize: "11px", color: "#555" }}>«{a.comment}»</em></> : null}
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+              <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                {completedApprovals.map((a: any, idx: number) => (
+                  <div key={idx} style={{ border: "2px solid #142872", minWidth: "220px", fontFamily: "Arial, sans-serif" }}>
+                    <div style={{ background: "#142872", color: "#fff", textAlign: "center", padding: "7px 14px", fontWeight: "bold", fontSize: "13px", letterSpacing: "1px" }}>
+                      {a.status === "APPROVED" ? "СОГЛАСОВАНО" : "ОТКЛОНЕНО"}
+                    </div>
+                    <div style={{ background: "#f8f8fa", padding: "10px 14px", fontSize: "12px", lineHeight: "2" }}>
+                      <span style={{ color: "#888", marginRight: 6 }}>Владелец:</span>
+                      <span style={{ color: "#000" }}>{a.approver?.name || "—"}</span><br />
+                      <span style={{ color: "#888", marginRight: 6 }}>Должность:</span>
+                      <span style={{ color: "#000" }}>{a.approver?.position?.name || a.approver?.department || "—"}</span><br />
+                      <span style={{ color: "#888", marginRight: 6 }}>Дата:</span>
+                      <span style={{ color: "#000" }}>{a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—"}</span><br />
+                      <span style={{ color: "#888", marginRight: 6 }}>Документ:</span>
+                      <span style={{ color: "#888", fontSize: "11px" }}>{document.number}</span>
+                      {a.comment ? <><br /><em style={{ fontSize: "11px", color: "#555" }}>«{a.comment}»</em></> : null}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {document.status === "APPROVED" && (
                 <div className="mt-4 border-2 border-zinc-900 rounded p-3 text-center">

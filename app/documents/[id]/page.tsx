@@ -229,9 +229,12 @@ export default function DocumentPage({
     text = text.replace(/\{\{STAMP\}\}/g, () => {
       const a = approvedForDoc[stampIdx++];
       if (a) {
-        return `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px solid #444;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;line-height:1.8"><strong>Документ подписан электронной подписью</strong><br>Владелец: ${a.approver?.name || "—"}<br>Должность: ${a.approver?.position?.name || a.approver?.department || "—"}<br>Дата подписи: ${a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—"}</td></tr></table>`;
+        const name = a.approver?.name || "—";
+        const pos = a.approver?.position?.name || a.approver?.department || "—";
+        const date = a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—";
+        return `<table style="border-collapse:collapse;margin:16px 0;font-family:Arial,sans-serif"><tr><td style="border:2px solid #142872;padding:0;min-width:260px"><div style="background:#142872;color:#fff;text-align:center;padding:7px 14px;font-weight:bold;font-size:13px;letter-spacing:1px">СОГЛАСОВАНО</div><div style="background:#f8f8fa;padding:10px 14px;font-size:12px;line-height:2"><span style="color:#888">Владелец:</span> ${name}<br><span style="color:#888">Должность:</span> ${pos}<br><span style="color:#888">Дата:</span> ${date}<br><span style="color:#888">Документ:</span> <span style="color:#888;font-size:11px">${document.number}</span></div></td></tr></table>`;
       }
-      return `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px solid #ccc;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;color:#999;line-height:1.8"><strong>Документ подписан электронной подписью</strong><br>Владелец: _______________<br>Должность: _______________<br>Дата подписи: _______________</td></tr></table>`;
+      return `<table style="border-collapse:collapse;margin:16px 0;font-family:Arial,sans-serif;opacity:0.5"><tr><td style="border:2px dashed #ccc;padding:0;min-width:260px"><div style="background:#ccc;color:#fff;text-align:center;padding:7px 14px;font-weight:bold;font-size:13px;letter-spacing:1px">СОГЛАСОВАНО</div><div style="background:#f8f8fa;padding:10px 14px;font-size:12px;line-height:2;color:#999">Владелец: _______________<br>Должность: _______________<br>Дата: _______________<br>Документ: _______________</div></td></tr></table>`;
     });
     text = text.replace(/\{\{[^}]+\}\}/g, "");
 
@@ -239,23 +242,7 @@ export default function DocumentPage({
       (a: any) => a.status !== "PENDING"
     );
 
-    const stampsHtml = completedApprovals.length > 0
-      ? `<hr style="margin:24px 0"/>
-         <p style="font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;color:#666">Подписи согласования</p>
-         <table style="width:100%;border-collapse:collapse;margin-top:12px">
-           <tr>${completedApprovals.map((a: any) => `
-             <td style="border:2px solid #333;padding:10px;width:${100 / completedApprovals.length}%;vertical-align:top">
-               <div style="font-size:9px;font-weight:bold;text-transform:uppercase;color:#555;margin-bottom:4px">
-                 ${a.status === "APPROVED" ? "Документ подписан" : "Отклонено"}${a.stepNumber ? ` · Этап ${a.stepNumber}` : ""}
-               </div>
-               <div style="font-size:11px;font-weight:bold">${a.approver?.name || "—"}</div>
-               ${a.approver?.department ? `<div style="font-size:10px;color:#666">${a.approver.department}</div>` : ""}
-               ${a.decidedAt ? `<div style="font-size:10px;color:#888;margin-top:4px">${new Date(a.decidedAt).toLocaleDateString("ru-RU")}</div>` : ""}
-               ${a.comment ? `<div style="font-size:10px;font-style:italic;margin-top:4px">«${a.comment}»</div>` : ""}
-             </td>
-           `).join("")}</tr>
-         </table>`
-      : "";
+    const stampsHtml = "";
 
     const html = `<!DOCTYPE html>
 <html lang="ru">
@@ -575,13 +562,6 @@ export default function DocumentPage({
                           {" · "}{new Date(file.createdAt).toLocaleDateString("ru-RU", { day: "2-digit", month: "short", year: "numeric" })}
                         </p>
                       </div>
-                      <a
-                        href={`/api/files/${file.id}`}
-                        download={file.name}
-                        className="shrink-0 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[12px] font-medium text-zinc-600 hover:bg-zinc-50 transition-colors"
-                      >
-                        Скачать
-                      </a>
                     </li>
                   );
                 })}

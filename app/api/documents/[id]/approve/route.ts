@@ -326,12 +326,12 @@ async function regenerateDocWithStamps(documentId: string) {
     text = text.replace(/\{\{STAMP\}\}/g, () => {
       const a = doc.approvals[approvalIdx++];
       if (!a) {
-        return `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px dashed #999;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;line-height:1.7;color:#999"><strong>Документ подписан электронной подписью</strong><br>Владелец: _______________<br>Должность: _______________<br>Дата подписи: _______________</td></tr></table>`;
+        return `<table style="border-collapse:collapse;margin:16px 0;font-family:Arial,sans-serif;opacity:0.5"><tr><td style="border:2px dashed #ccc;padding:0;min-width:260px"><div style="background:#ccc;color:#fff;text-align:center;padding:7px 14px;font-weight:bold;font-size:13px;letter-spacing:1px">СОГЛАСОВАНО</div><div style="background:#f8f8fa;padding:10px 14px;font-size:12px;line-height:2;color:#999">Владелец: _______________<br>Должность: _______________<br>Дата: _______________<br>Документ: _______________</div></td></tr></table>`;
       }
       const name = a.approver?.name || "—";
       const pos = (a.approver as any)?.position?.name || (a.approver as any)?.department || "—";
       const date = a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—";
-      return `<table style="border-collapse:collapse;margin:16px 0"><tr><td style="border:1px solid #444;padding:10px 14px;font-family:'Times New Roman',serif;font-size:12px;line-height:1.7"><strong>Документ подписан электронной подписью</strong><br>Владелец: ${name}<br>Должность: ${pos}<br>Дата подписи: ${date}</td></tr></table>`;
+      return `<table style="border-collapse:collapse;margin:16px 0;font-family:Arial,sans-serif"><tr><td style="border:2px solid #142872;padding:0;min-width:260px"><div style="background:#142872;color:#fff;text-align:center;padding:7px 14px;font-weight:bold;font-size:13px;letter-spacing:1px">СОГЛАСОВАНО</div><div style="background:#f8f8fa;padding:10px 14px;font-size:12px;line-height:2"><span style="color:#888">Владелец:</span> ${name}<br><span style="color:#888">Должность:</span> ${pos}<br><span style="color:#888">Дата:</span> ${date}<br><span style="color:#888">Документ:</span> <span style="color:#888;font-size:11px">${doc.number}</span></div></td></tr></table>`;
     });
 
     text = text.replace(/\{\{[^}]+\}\}/g, "");
@@ -345,17 +345,7 @@ async function regenerateDocWithStamps(documentId: string) {
 
     // Approval table at the end (if no inline {{STAMP}})
     const hasInlineStamps = (doc.template?.content || "").includes("{{STAMP}}");
-    const stampsSection = !hasInlineStamps && doc.approvals.length > 0
-      ? `<hr style="margin:24px 0"/><p style="font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:2px;color:#666">Подписи согласования</p>
-         <table style="width:100%;border-collapse:collapse;margin-top:12px"><tr>
-           ${doc.approvals.map((a: any) => {
-             const name = a.approver?.name || "—";
-             const pos = a.approver?.position?.name || a.approver?.department || "—";
-             const date = a.decidedAt ? new Date(a.decidedAt).toLocaleDateString("ru-RU") : "—";
-             return `<td style="border:2px solid #333;padding:10px;width:${100 / doc.approvals.length}%;vertical-align:top;font-size:12px;line-height:1.7"><strong>${a.status === "APPROVED" ? "Документ подписан электронной подписью" : "Отклонено"}</strong><br>Владелец: ${name}<br>Должность: ${pos}<br>Дата подписи: ${date}</td>`;
-           }).join("")}
-         </tr></table>`
-      : "";
+    const stampsSection = "";
 
     const html = `<!DOCTYPE html>
 <html lang="ru"><head><meta charset="UTF-8"><title>${doc.title}</title>
